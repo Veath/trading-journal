@@ -5,18 +5,21 @@
 ## 项目背景
 
 - 仓库主人是 ICT 策略交易者，正在学习《Trade Psychology & Effective Journaling》，也在学自然交易理论、RSI 等。
-- 仓库有三种内容：**交易数据**（`journal/`）、**学习资料**（`notes/`）、**仪表盘代码**（`src/`）。
+- 仓库内容：**交易数据**（`journal/`）、**学习资料**（`notes/`，含导师资料 `notes/mentors/`）、**仪表盘代码**（`src/`）、**脚本**（`scripts/`）、**导师 skill**（`.claude/skills/keyshot-mentor/`）、**本地数据**（`data/`，gitignore）。
 - 与用户交流、写文档和界面文案都用**中文**；ICT 术语保留英文原文（FVG、Order Block、Killzone、DOL、Silver Bullet 等）。
 
 ## 常用命令
 
 ```bash
-pnpm dev          # 开发服务器
-pnpm test         # vitest 单元测试（src/lib/*.test.ts）
-pnpm typecheck    # tsc --noEmit
-pnpm build        # 类型检查 + vite build
-pnpm new:trade NQ # 按模板新建交易
-pnpm new:day      # 按模板新建当日日志
+pnpm dev             # 开发服务器
+pnpm test            # vitest 单元测试（src/lib/*.test.ts、scripts/diagrams/*.test.ts）
+pnpm typecheck       # tsc --noEmit
+pnpm build           # 类型检查 + vite build
+pnpm new:trade NQ    # 按模板新建交易
+pnpm new:day         # 按模板新建当日日志
+pnpm diagrams        # 由 scripts/diagrams/ict.ts 生成 notes/ict/img/*.svg
+pnpm mentor:collect  # 生成 X 采集脚本（会覆盖用户剪贴板）
+pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 ```
 
 改动代码后至少跑 `pnpm typecheck && pnpm test`。
@@ -28,6 +31,7 @@ pnpm new:day      # 按模板新建当日日志
 - 路由是 `src/lib/router.ts` 里的极简 hash 路由（`#/trades/:id`、`#/notes/...`），不要引入 react-router。
 - 图表用手写 SVG（`EquityChart`、`RHistogram`），不要引入图表库。
 - 样式集中在 `src/styles.css`，颜色用 CSS 变量，同时支持浅色和深色模式。盈利 = 蓝色（`--pos`），亏损 = 红色（`--neg`），数字始终带 +/- 号。
+- 部署：push 到 `main` 触发 `.github/workflows/deploy.yml`，测试 + 构建后发布到 GitHub Pages；`vite.config.ts` 的 `base` 由 CI 的 `BASE_PATH` 设为 `/trading-journal/`。
 
 ## 数据约定
 
@@ -47,11 +51,14 @@ pnpm new:day      # 按模板新建当日日志
 - 新主题目录需要在 `src/pages/Notes.tsx` 的 `CATEGORY_LABELS` 里加中文名。
 - `notes/psychology/course-notes.md` 是用户自己的课程笔记，不要代写课程内容；其余通用笔记不是课程摘录，不要声称出自该课程。
 
-## 导师 skill
+## 导师 skill 与同步
 
-- `.claude/skills/keyshot-mentor/`：以 `notes/mentors/keyshotvv/` 的规则为标准点评日志、分析行情、布置练习。
-- 导师资料只保存转述和原帖链接，不存档原文；新增的引用必须有真实的原帖链接，不要编造对方观点。
+- `.claude/skills/keyshot-mentor/`：以 `notes/mentors/keyshotvv/` 的规则为标准点评日志、分析行情、布置练习、更新导师资料。具体流程以 SKILL.md 为准。
+- 导师资料只保存转述和原帖链接，不存档原文；新增的引用必须来自 `data/mentors/*/posts.json` 或 digest 中的真实链接，不要编造对方观点。
 - 不以第一人称冒充被引用的交易员。
+- 同步流程：`pnpm mentor:collect` → 用户在已登录 X 的浏览器控制台运行脚本并下载 JSON → `pnpm mentor:ingest` → 按 skill 的「更新导师资料」提炼，并在 `00-profile.md` 的「更新记录」追加一行。
+- `scripts/mentor-sync/`：`collector.js` 是浏览器端模板（`__HANDLE__` 等占位符由 `collect.ts` 替换），依赖 X 的 DOM（`article[data-testid="tweet"]`、`time`、`tweetText`）；采集为 0 条时优先检查这些选择器。`store.ts` 存储与 `nextSince`，`ingest.ts` 合并、去重并生成 `digest-YYYYMMDD-HHMM.md`。
+- 代用户操作浏览器采集时，下载文件前先征得同意。
 
 ## 边界
 
@@ -59,4 +66,4 @@ pnpm new:day      # 按模板新建当日日志
 - 不要编造交易数据或统计结果。分析交易时只依据文件内容，缺失的字段如实说明。
 - 不提供个性化投资建议，也不替用户下单。可以做的是：基于日志数据做统计、复盘，指出执行和纪律上的问题。
 - 学习笔记（`notes/`）由用户整理，补充内容前先确认，不要覆盖用户原有笔记。
-- 不要提交 `dist/`、`node_modules/`；只有用户要求时才 commit。
+- 不要提交 `dist/`、`node_modules/`、`data/`；只有用户要求时才 commit。
