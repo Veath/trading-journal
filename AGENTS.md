@@ -47,6 +47,12 @@ pnpm new:day      # 按模板新建当日日志
 - 新主题目录需要在 `src/pages/Notes.tsx` 的 `CATEGORY_LABELS` 里加中文名。
 - `notes/psychology/course-notes.md` 是用户自己的课程笔记，不要代写课程内容；其余通用笔记不是课程摘录，不要声称出自该课程。
 
+## 导师 skill
+
+- `.claude/skills/keyshot-mentor/`：以 `notes/mentors/keyshotvv/` 的规则为标准点评日志、分析行情、布置练习。
+- 导师资料只保存转述和原帖链接，不存档原文；新增的引用必须有真实的原帖链接，不要编造对方观点。
+- 不以第一人称冒充被引用的交易员。
+
 ## 边界
 
 - `journal/` 下是用户的真实交易记录。除非用户明确要求，**不要修改、删除或批量改写**交易和日志文件；`_example/` 示例数据可以按需调整。

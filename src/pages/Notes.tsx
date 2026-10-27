@@ -7,6 +7,7 @@ const REPO_URL = 'https://github.com/Veath/trading-journal/blob/main'
 const CATEGORY_LABELS: Record<string, string> = {
   ict: 'ICT',
   psychology: '交易心理 & 日志',
+  mentors: '导师',
   'natural-trading-theory': '自然交易理论',
   rsi: 'RSI',
 }
