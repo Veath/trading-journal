@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "new:trade": "node scripts/new-entry.ts trade",
-    "new:day": "node scripts/new-entry.ts day"
+    "new:day": "node scripts/new-entry.ts day",
+    "diagrams": "node scripts/diagrams/build.ts"
   },
   "dependencies": {
     "marked": "^18.1.2",

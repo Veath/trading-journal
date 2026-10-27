@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="555" height="370" viewBox="0 0 555 370" role="img" aria-label="2022 Model / Silver Bullet：扫 SSL → MSS → FVG 入场 → 目标 BSL">
+<style>
+  .bg { fill: #fcfcfb; }
+  .title { fill: #0b0b0b; font-weight: 600; font-size: 14px; }
+  text { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 12px; fill: #0b0b0b; paint-order: stroke; stroke: #fcfcfb; stroke-width: 3px; stroke-linejoin: round; }
+  .muted { fill: #52514e; }
+  .wick { stroke-width: 1.5; }
+  .up { fill: #2a78d6; stroke: #2a78d6; }
+  .down { fill: #e34948; stroke: #e34948; }
+  .z-bull { fill: rgba(42, 120, 214, 0.14); stroke: rgba(42, 120, 214, 0.5); }
+  .z-bear { fill: rgba(227, 73, 72, 0.12); stroke: rgba(227, 73, 72, 0.5); }
+  .z-neutral { fill: rgba(120, 120, 115, 0.10); stroke: none; }
+  .z-accent { fill: rgba(237, 161, 0, 0.22); stroke: rgba(201, 133, 0, 0.8); }
+  .l-neutral { stroke: #52514e; stroke-dasharray: 4 3; }
+  .l-stop { stroke: #e34948; stroke-dasharray: 6 3; }
+  .l-target { stroke: #2a78d6; stroke-dasharray: 6 3; }
+  .l-entry { stroke: #0b0b0b; }
+  .bracket { stroke: #52514e; fill: none; }
+  .arrow { fill: #52514e; stroke: none; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #1a1a19; }
+    .title, text { fill: #f0efec; }
+    text { stroke: #1a1a19; }
+    .muted { fill: #c3c2b7; }
+    .up { fill: #3987e5; stroke: #3987e5; }
+    .down { fill: #e66767; stroke: #e66767; }
+    .l-neutral, .bracket { stroke: #c3c2b7; }
+    .l-entry { stroke: #f0efec; }
+    .arrow { fill: #c3c2b7; }
+  }
+</style>
+<rect class="bg" width="555" height="370" rx="10"/>
+<text class="title" x="16" y="26">2022 Model / Silver Bullet：扫 SSL → MSS → FVG 入场 → 目标 BSL</text>
+<rect class="z-bull" x="198" y="243.3" width="208" height="47.3"/>
+<line class="wick down" x1="29" x2="29" y1="85.8" y2="196.1"/>
+<rect class="down" x="22" y="117.3" width="14" height="70.9" rx="1.5"/>
+<line class="wick down" x1="55" x2="55" y1="180.3" y2="243.3"/>
+<rect class="down" x="48" y="188.2" width="14" height="47.3" rx="1.5"/>
+<line class="wick down" x1="81" x2="81" y1="227.6" y2="274.8"/>
+<rect class="down" x="74" y="235.5" width="14" height="31.5" rx="1.5"/>
+<line class="wick up" x1="107" x2="107" y1="211.8" y2="274.8"/>
+<rect class="up" x="100" y="219.7" width="14" height="47.3" rx="1.5"/>
+<line class="wick down" x1="133" x2="133" y1="203.9" y2="235.5"/>
+<rect class="down" x="126" y="219.7" width="14" height="7.9" rx="1.5"/>
+<line class="wick down" x1="159" x2="159" y1="219.7" y2="290.6"/>
+<rect class="down" x="152" y="227.6" width="14" height="55.1" rx="1.5"/>
+<line class="wick down" x1="185" x2="185" y1="274.8" y2="314.2"/>
+<rect class="down" x="178" y="282.7" width="14" height="23.7" rx="1.5"/>
+<line class="wick up" x1="211" x2="211" y1="290.6" y2="322.1"/>
+<rect class="up" x="204" y="298.5" width="14" height="7.9" rx="1.5"/>
+<line class="wick up" x1="237" x2="237" y1="180.3" y2="306.4"/>
+<rect class="up" x="230" y="188.2" width="14" height="110.3" rx="1.5"/>
+<line class="wick up" x1="263" x2="263" y1="164.5" y2="243.3"/>
+<rect class="up" x="256" y="172.4" width="14" height="15.8" rx="1.5"/>
+<line class="wick down" x1="289" x2="289" y1="164.5" y2="227.6"/>
+<rect class="down" x="282" y="172.4" width="14" height="47.3" rx="1.5"/>
+<line class="wick down" x1="315" x2="315" y1="211.8" y2="259.1"/>
+<rect class="down" x="308" y="219.7" width="14" height="31.5" rx="1.5"/>
+<line class="wick up" x1="341" x2="341" y1="148.8" y2="259.1"/>
+<rect class="up" x="334" y="156.7" width="14" height="94.5" rx="1.5"/>
+<line class="wick up" x1="367" x2="367" y1="77.9" y2="164.5"/>
+<rect class="up" x="360" y="93.6" width="14" height="63.1" rx="1.5"/>
+<line class="wick up" x1="393" x2="393" y1="70" y2="117.3"/>
+<rect class="up" x="386" y="77.9" width="14" height="15.7" rx="1.5"/>
+<line class="l-target" x1="29" x2="406" y1="85.8" y2="85.8" stroke-width="1.5"/>
+<line class="l-neutral" x1="81" x2="185" y1="274.8" y2="274.8" stroke-width="1.5"/>
+<text x="83" y="269.8">SSL</text>
+<line class="l-neutral" x1="133" x2="237" y1="203.9" y2="203.9" stroke-width="1.5"/>
+<text x="135" y="198.9">② MSS</text>
+<line class="l-entry" x1="315" x2="406" y1="251.2" y2="251.2" stroke-width="1.5"/>
+<line class="l-stop" x1="315" x2="406" y1="330" y2="330" stroke-width="1.5"/>
+<text x="420" y="267.2" dy="0.35em">③ FVG</text>
+<text x="420" y="85.8" dy="0.35em">⑤ 目标：BSL（前高）</text>
+<text x="420" y="251.2" dy="0.35em">④ 入场</text>
+<text x="420" y="330" dy="0.35em">止损</text>
+<path class="arrow" d="M185,320.2 l-4,6 h8 z"/>
+<text x="185" y="340.2" text-anchor="middle">① 扫 SSL</text>
+<path class="arrow" d="M237,174.3 l-4,-6 h8 z"/>
+<text x="237" y="164.3" text-anchor="middle">位移</text>
+</svg>

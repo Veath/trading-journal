@@ -4,6 +4,7 @@ import { parseDay, parseTrade, sortByDate } from './parse'
 const tradeFiles = import.meta.glob('/journal/trades/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const dayFiles = import.meta.glob('/journal/days/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const noteFiles = import.meta.glob('/notes/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+const noteAssets = import.meta.glob('/notes/**/*.{svg,png,jpg,jpeg,webp,gif}', { query: '?url', import: 'default', eager: true }) as Record<string, string>
 const screenshotFiles = import.meta.glob('/journal/screenshots/**/*.{png,jpg,jpeg,webp,gif}', { query: '?url', import: 'default', eager: true }) as Record<string, string>
 
 const baseName = (path: string) => path.split('/').pop()!.replace(/\.md$/, '')
@@ -30,4 +31,9 @@ export const notes: Note[] = Object.entries(noteFiles)
 /** 截图在 frontmatter 里写文件名（或相对 journal/screenshots/ 的路径） */
 export function screenshotUrl(name: string): string | undefined {
   return screenshotFiles[`/journal/screenshots/${name}`]
+}
+
+/** 笔记中的图片，path 为相对仓库根目录的路径，如 notes/ict/img/fvg.svg */
+export function noteAssetUrl(path: string): string | undefined {
+  return noteAssets[`/${path}`]
 }

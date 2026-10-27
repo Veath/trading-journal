@@ -29,11 +29,11 @@ pnl:                     # 账户盈亏（扣费后），可选
 grade: A                 # A+ / A / B / C
 followedPlan: true
 confidence: 4            # 1-5
-emotions:
-  before: calm
+emotions:                # 词汇表见 notes/psychology/02-emotions.md
+  before: calm           # calm / confident / anxious / fearful / FOMO / greedy / frustrated / revenge / euphoric / bored / tired
   during:
   after:
-mistakes: []             # FOMO / moved-stop / early-exit / revenge / oversize / no-setup / chased
+mistakes: []             # 统一标签见 notes/psychology/05-mistakes.md，如 no-setup / FOMO / chased / moved-stop / early-exit / revenge
 tags: []
 screenshots: []          # 放到 journal/screenshots/ 下，这里写文件名
 ---

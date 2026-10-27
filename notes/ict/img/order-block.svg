@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="506" height="370" viewBox="0 0 506 370" role="img" aria-label="看涨 Order Block：位移前最后一根下跌 K 线">
+<style>
+  .bg { fill: #fcfcfb; }
+  .title { fill: #0b0b0b; font-weight: 600; font-size: 14px; }
+  text { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 12px; fill: #0b0b0b; paint-order: stroke; stroke: #fcfcfb; stroke-width: 3px; stroke-linejoin: round; }
+  .muted { fill: #52514e; }
+  .wick { stroke-width: 1.5; }
+  .up { fill: #2a78d6; stroke: #2a78d6; }
+  .down { fill: #e34948; stroke: #e34948; }
+  .z-bull { fill: rgba(42, 120, 214, 0.14); stroke: rgba(42, 120, 214, 0.5); }
+  .z-bear { fill: rgba(227, 73, 72, 0.12); stroke: rgba(227, 73, 72, 0.5); }
+  .z-neutral { fill: rgba(120, 120, 115, 0.10); stroke: none; }
+  .z-accent { fill: rgba(237, 161, 0, 0.22); stroke: rgba(201, 133, 0, 0.8); }
+  .l-neutral { stroke: #52514e; stroke-dasharray: 4 3; }
+  .l-stop { stroke: #e34948; stroke-dasharray: 6 3; }
+  .l-target { stroke: #2a78d6; stroke-dasharray: 6 3; }
+  .l-entry { stroke: #0b0b0b; }
+  .bracket { stroke: #52514e; fill: none; }
+  .arrow { fill: #52514e; stroke: none; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #1a1a19; }
+    .title, text { fill: #f0efec; }
+    text { stroke: #1a1a19; }
+    .muted { fill: #c3c2b7; }
+    .up { fill: #3987e5; stroke: #3987e5; }
+    .down { fill: #e66767; stroke: #e66767; }
+    .l-neutral, .bracket { stroke: #c3c2b7; }
+    .l-entry { stroke: #f0efec; }
+    .arrow { fill: #c3c2b7; }
+  }
+</style>
+<rect class="bg" width="506" height="370" rx="10"/>
+<text class="title" x="16" y="26">看涨 Order Block：位移前最后一根下跌 K 线</text>
+<rect class="z-bull" x="120" y="265" width="182" height="65"/>
+<line class="wick up" x1="29" x2="29" y1="185.6" y2="228.9"/>
+<rect class="up" x="22" y="192.8" width="14" height="21.6" rx="1.5"/>
+<line class="wick up" x1="55" x2="55" y1="163.9" y2="200"/>
+<rect class="up" x="48" y="185.6" width="14" height="7.2" rx="1.5"/>
+<line class="wick down" x1="81" x2="81" y1="178.3" y2="243.3"/>
+<rect class="down" x="74" y="185.6" width="14" height="50.5" rx="1.5"/>
+<line class="wick down" x1="107" x2="107" y1="228.9" y2="286.7"/>
+<rect class="down" x="100" y="236.1" width="14" height="36.1" rx="1.5"/>
+<line class="wick down" x1="133" x2="133" y1="265" y2="330"/>
+<rect class="down" x="126" y="272.2" width="14" height="43.4" rx="1.5"/>
+<line class="wick up" x1="159" x2="159" y1="200" y2="322.8"/>
+<rect class="up" x="152" y="207.2" width="14" height="108.4" rx="1.5"/>
+<line class="wick up" x1="185" x2="185" y1="113.3" y2="214.4"/>
+<rect class="up" x="178" y="120.6" width="14" height="86.6" rx="1.5"/>
+<line class="wick down" x1="211" x2="211" y1="98.9" y2="185.6"/>
+<rect class="down" x="204" y="120.6" width="14" height="50.5" rx="1.5"/>
+<line class="wick down" x1="237" x2="237" y1="163.9" y2="279.4"/>
+<rect class="down" x="230" y="171.1" width="14" height="86.7" rx="1.5"/>
+<line class="wick up" x1="263" x2="263" y1="156.7" y2="265"/>
+<rect class="up" x="256" y="163.9" width="14" height="93.9" rx="1.5"/>
+<line class="wick up" x1="289" x2="289" y1="70" y2="171.1"/>
+<rect class="up" x="282" y="84.4" width="14" height="79.5" rx="1.5"/>
+<line class="l-neutral" x1="133" x2="302" y1="293.9" y2="293.9" stroke-width="1.5"/>
+<line class="l-neutral" x1="55" x2="185" y1="163.9" y2="163.9" stroke-width="1.5"/>
+<text x="57" y="158.9">前高</text>
+<path class="bracket" d="M304,297.5 L313,309.9"/>
+<text x="316" y="309.9" dy="0.35em">看涨 OB</text>
+<text x="316" y="293.9" dy="0.35em">Mean Threshold（实体 50%）</text>
+<path class="arrow" d="M159,194 l-4,-6 h8 z"/>
+<text x="159" y="184" text-anchor="middle">位移</text>
+<path class="arrow" d="M185,107.3 l-4,-6 h8 z"/>
+<text x="185" y="97.3" text-anchor="middle">突破结构</text>
+<path class="arrow" d="M237,285.4 l-4,6 h8 z"/>
+<text x="237" y="305.4" text-anchor="middle">回到 OB 入场</text>
+</svg>

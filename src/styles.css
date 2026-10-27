@@ -163,3 +163,4 @@ a.tag:hover { text-decoration: none; color: var(--text); }
   .topbar { padding: 0 16px; gap: 12px; }
 }
 .chart .bar-zero { fill: var(--muted); }
+.markdown img[src$='.svg'] { display: block; margin: 12px 0; border-radius: 10px; border: 1px solid var(--border); }

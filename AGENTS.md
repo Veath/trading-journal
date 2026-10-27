@@ -36,6 +36,16 @@ pnpm new:day      # 按模板新建当日日志
 - 胜率**不含保本单**；只有 `status: closed` 进入统计；`missed` 单独统计；`open` 忽略。
 - 交易文件名：`journal/trades/YYYY/YYYY-MM-DD-<symbol小写>-NN.md`，文件名（不含扩展名）即交易 id。
 - 新增或修改指标时，同步更新 `docs/STATS.md` 的公式和解读，并在 `stats.test.ts` 补测试。
+- `mistakes` 标签和 `emotions` 情绪词以 `notes/psychology/05-mistakes.md`、`02-emotions.md` 为准，分析或补录日志时使用这些统一名称。
+
+## 笔记约定
+
+- `notes/<主题>/` 下用数字前缀控制顺序（`00-overview.md` 为目录页），第一行 `# 标题` 即导航名。
+- 笔记之间用相对路径链接（`./02-liquidity.md`、`../ict/checklist.md`）；仪表盘会在站内跳转，指向仓库其他文件的链接会打开 GitHub。
+- 笔记插图用相对路径引用（`![说明](./img/fvg.svg)`），仪表盘会自动解析。
+- K 线示意图由 `scripts/diagrams/` 生成：在 `ict.ts` 里改 OHLC 和标注，然后运行 `pnpm diagrams`，不要手改生成的 SVG。`diagrams.test.ts` 会检查 OHLC 是否合法。
+- 新主题目录需要在 `src/pages/Notes.tsx` 的 `CATEGORY_LABELS` 里加中文名。
+- `notes/psychology/course-notes.md` 是用户自己的课程笔记，不要代写课程内容；其余通用笔记不是课程摘录，不要声称出自该课程。
 
 ## 边界
 

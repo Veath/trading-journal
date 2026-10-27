@@ -13,7 +13,8 @@ pnpm install
 pnpm dev              # 启动仪表盘 http://localhost:5173
 pnpm new:trade NQ     # 新建交易 → journal/trades/YYYY/YYYY-MM-DD-nq-01.md
 pnpm new:day          # 新建今天的日志 → journal/days/YYYY-MM-DD.md
-pnpm test             # 统计逻辑单元测试
+pnpm diagrams         # 重新生成笔记中的 K 线示意图（notes/ict/img/*.svg）
+pnpm test             # 单元测试
 pnpm build            # 类型检查 + 打包
 ```
 
@@ -51,6 +52,7 @@ notes/                学习资料
   psychology/         交易心理课程笔记
 docs/STATS.md         统计指标定义与解读
 scripts/new-entry.ts  新建交易 / 日志
+scripts/diagrams/     K 线示意图生成器（数据在 ict.ts）
 src/
   types.ts            数据模型（字段说明见注释）
   lib/parse.ts        frontmatter 解析、R 计算、胜负判定
