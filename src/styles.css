@@ -126,15 +126,25 @@ h2 { font-size: 15px; font-weight: 600; }
 .brand-copy { display: flex; flex-direction: column; gap: 2px; }
 .brand-name { font-weight: 650; font-size: 15px; line-height: 1.2; letter-spacing: 0.04em; }
 .brand-tagline { color: var(--muted); font-size: 10px; font-weight: 400; line-height: 1.2; letter-spacing: 0.08em; }
-.nav { display: flex; gap: 2px; }
+.nav { display: flex; gap: 4px; align-self: stretch; }
+/* 标签式导航：选中项在顶栏底边显示指示条，与底部分隔线对齐 */
 .nav a {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 12px; border-radius: var(--radius-sm);
-  color: var(--text-2); white-space: nowrap;
+  position: relative; display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 12px; color: var(--text-2); white-space: nowrap;
+  transition: color 0.15s ease;
 }
 .nav a svg { display: none; }
-.nav a:hover { color: var(--text); background: var(--surface-2); }
-.nav a.active { color: var(--text); background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent), 0 6px 14px -8px var(--accent-ring); }
+.nav a::after {
+  content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; z-index: 1; height: 2px; border-radius: 2px 2px 0 0;
+  background: var(--accent); box-shadow: 0 0 10px var(--accent-ring);
+  transform: scaleX(0); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.nav a:hover { color: var(--text); }
+.nav a.active { color: var(--text); font-weight: 600; }
+/* 按加粗后的宽度占位，选中项加粗时旁边的导航不跳动 */
+.nav a span { display: inline-flex; flex-direction: column; align-items: center; }
+.nav a span::before { content: attr(data-label); font-weight: 600; height: 0; overflow: hidden; visibility: hidden; }
+.nav a.active::after { transform: scaleX(1); opacity: 1; }
 
 main { max-width: 1200px; margin: 0 auto; padding: 20px 24px 64px; }
 .stack { display: flex; flex-direction: column; gap: 16px; }
@@ -468,10 +478,11 @@ div.tv-lightweight-charts td, div.tv-lightweight-charts th { padding: 0; border:
     background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: saturate(160%) blur(12px);
     border-top: 1px solid var(--border);
   }
-  .nav a { flex-direction: column; gap: 2px; padding: 6px 0; font-size: 11px; color: var(--muted); }
+  .nav a { flex-direction: column; justify-content: center; gap: 2px; padding: 6px 0; font-size: 11px; color: var(--muted); }
   .nav a svg { display: block; }
-  .nav a:hover { background: none; }
-  .nav a.active { background: none; box-shadow: none; color: var(--accent); }
+  /* 底部标签栏：指示条移到上边缘 */
+  .nav a::after { top: -6px; bottom: auto; left: 50%; right: auto; width: 20px; margin-left: -10px; border-radius: 0 0 2px 2px; }
+  .nav a.active { color: var(--accent); font-weight: 600; }
 
   .card { padding: 16px; border-radius: 10px; }
   .filters { flex-direction: column; align-items: stretch; }

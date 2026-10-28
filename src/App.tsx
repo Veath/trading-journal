@@ -51,7 +51,7 @@ export default function App() {
               <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                 <path d={n.icon} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span>{n.label}</span>
+              <span data-label={n.label}>{n.label}</span>
             </a>
           ))}
         </nav>
