@@ -2,6 +2,7 @@ import { screenshotUrl, trades } from '../lib/load'
 import { fmtMoney, fmtNum, fmtR, signClass } from '../lib/format'
 import { href } from '../lib/router'
 import Markdown from '../components/Markdown'
+import RiskLadder from '../components/RiskLadder'
 import { handleRepoLinkClick } from '../lib/links'
 
 export default function TradeDetail({ id }: { id: string }) {
@@ -21,9 +22,9 @@ export default function TradeDetail({ id }: { id: string }) {
     ['DOL', t.drawOnLiquidity],
     ['扫掉的流动性', t.liquiditySweep],
     ['PD Arrays', t.pdArrays?.join(', ')],
-    ['入场 / 止损 / 目标 / 出场', [t.entry, t.stop, t.target, t.exit].map((v) => v ?? '—').join(' / ')],
-    ['仓位', t.size],
-    ['盈亏', t.pnl != null && <span className={signClass(t.pnl)}>{fmtMoney(t.pnl)}</span>],
+    ['入场 / 止损 / 目标 / 出场', <span className="num-v">{[t.entry, t.stop, t.target, t.exit].map((v) => v ?? '—').join(' / ')}</span>],
+    ['仓位', t.size != null && <span className="num-v">{t.size}</span>],
+    ['盈亏', t.pnl != null && <span className={`num-v ${signClass(t.pnl)}`}>{fmtMoney(t.pnl)}</span>],
     ['评级', t.grade],
     ['按计划执行', t.followedPlan == null ? undefined : t.followedPlan ? '是' : '否'],
     ['信心', t.confidence && `${t.confidence} / 5`],
@@ -40,14 +41,29 @@ export default function TradeDetail({ id }: { id: string }) {
       </div>
       <section className="card">
         <div className="detail-head">
-          <h1>
-            {t.symbol} {t.setup ?? t.strategy}
-          </h1>
-          <div className={`big-r ${signClass(t.rMultiple)}`}>
-            {t.status === 'closed' ? fmtR(t.rMultiple) : t.status === 'open' ? '持仓中' : `错过 (${fmtR(t.rMultiple)})`}
-            <span className="muted"> / 计划 {fmtNum(t.plannedRR, 1)}R</span>
+          <div>
+            <div className="detail-title">
+              <h1>{t.symbol}</h1>
+              <span className={`dir ${t.direction}`}>{t.direction === 'long' ? '多' : '空'}</span>
+              {t.status !== 'closed' && <span className={`status ${t.status}`}>{t.status === 'open' ? '持仓中' : '错过'}</span>}
+            </div>
+            <p className="sub">
+              {[t.strategy, t.setup].filter(Boolean).join(' · ')} · {t.date} {t.time}
+            </p>
           </div>
+          {t.status === 'open' ? (
+            <div className="big-r">
+              <span className="muted">计划 </span>
+              {fmtNum(t.plannedRR, 1)}R
+            </div>
+          ) : (
+            <div className={`big-r ${signClass(t.rMultiple)}`}>
+              {fmtR(t.rMultiple)}
+              <span className="muted"> / 计划 {fmtNum(t.plannedRR, 1)}R</span>
+            </div>
+          )}
         </div>
+        <RiskLadder trade={t} />
         <dl className="fields">
           {fields
             .filter(([, v]) => v != null && v !== '' && v !== false)

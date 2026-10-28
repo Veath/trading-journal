@@ -8,6 +8,7 @@ import EquityChart from '../components/EquityChart'
 import RHistogram from '../components/RHistogram'
 import GroupTable from '../components/GroupTable'
 import Select from '../components/Select'
+import RiskLadder from '../components/RiskLadder'
 
 const DIMENSIONS: { key: string; label: string; fn: (t: Trade) => string | string[] | undefined }[] = [
   { key: 'setup', label: 'Setup', fn: (t) => t.setup },
@@ -46,7 +47,13 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
     <div className="stack">
       <section className="kpis">
         <Kpi label="总 R" value={fmtR(s.totalR, 1)} tone={signClass(s.totalR)} hint={s.totalPnl != null ? `盈亏 ${fmtMoney(s.totalPnl)}` : `${s.trades} 笔已平仓`} />
-        <Kpi label="胜率" value={fmtPct(s.winRate)} hint={`${s.wins} 胜 ${s.losses} 负 ${s.breakevens} 平`} title="盈 / (盈 + 亏)，保本单不计入" />
+        <Kpi
+          label="胜率"
+          value={fmtPct(s.winRate)}
+          hint={`${s.wins} 胜 ${s.losses} 负 ${s.breakevens} 平`}
+          title="盈 / (盈 + 亏)，保本单不计入；竖线为当前盈亏比下的保本胜率"
+          meter={s.winRate == null ? undefined : { value: s.winRate, mark: s.breakevenWinRate, tone: edge != null && edge < 0 ? 'neg' : 'pos' }}
+        />
         <Kpi label="盈亏比" value={fmtNum(s.payoffRatio)} hint={`${fmtR(s.avgWinR, 1)} / ${fmtR(s.avgLossR, 1)}`} title="平均盈利 R / |平均亏损 R|" />
         <Kpi label="期望值" value={fmtR(s.expectancyR)} tone={signClass(s.expectancyR)} hint="平均每笔" />
         <Kpi label="利润因子" value={fmtNum(s.profitFactor)} hint="盈利 R ÷ 亏损 R" />
@@ -161,10 +168,13 @@ function NoClosedTrades({ trades }: { trades: Trade[] }) {
                     </span>
                     <span className="tc-setup">{t.setup ?? t.strategy}</span>
                   </div>
-                  <div className="tc-r muted">计划 {fmtNum(t.plannedRR, 1)}R</div>
-                  <div className="tc-meta">
-                    {t.date} {t.time} · 入场 {t.entry} · 止损 {t.stop} · 目标 {t.target}
+                  <div className="tc-r">
+                    <span className="status open">持仓中</span>
                   </div>
+                  <div className="tc-meta">
+                    {t.date} {t.time} · 计划 {fmtNum(t.plannedRR, 1)}R
+                  </div>
+                  <RiskLadder trade={t} />
                 </a>
               </li>
             ))}
@@ -186,3 +196,4 @@ function NoClosedTrades({ trades }: { trades: Trade[] }) {
     </section>
   )
 }
+

@@ -13,12 +13,15 @@ export default function Days() {
     <div className="stack">
       {[...days].reverse().map((d) => {
         const dayTrades = trades.filter((t) => t.date === d.date)
-        const dayR = closedTrades(dayTrades).reduce((a, t) => a + t.rMultiple, 0)
+        const dayClosed = closedTrades(dayTrades)
+        const dayR = dayClosed.reduce((a, t) => a + t.rMultiple, 0)
         return (
           <section key={d.id} className="card" onClick={(e) => handleRepoLinkClick(e, `journal/days/${d.id}.md`)}>
             <div className="detail-head">
-              <h2>{d.date}</h2>
-              <div className={`big-r ${signClass(dayR)}`}>{dayTrades.length ? fmtR(dayR, 1) : '无交易'}</div>
+              <h2 className="day-date">{d.date}</h2>
+              <div className={`big-r ${signClass(dayR)}`}>
+                {dayClosed.length ? fmtR(dayR, 1) : <span className="muted">{dayTrades.length ? '未平仓' : '无交易'}</span>}
+              </div>
             </div>
             <div className="tags">
               {d.dailyBias && <span className="tag">Bias: {d.dailyBias}</span>}
@@ -30,7 +33,7 @@ export default function Days() {
               )}
               {dayTrades.map((t) => (
                 <a key={t.id} className="tag" href={href('trades', t.id)}>
-                  {t.symbol} {t.status === 'closed' ? fmtR(t.rMultiple, 1) : t.status}
+                  {t.symbol} {t.status === 'closed' ? fmtR(t.rMultiple, 1) : t.status === 'open' ? '持仓中' : '错过'}
                 </a>
               ))}
             </div>

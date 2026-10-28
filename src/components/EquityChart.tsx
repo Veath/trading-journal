@@ -1,16 +1,18 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import type { EquityPoint } from '../lib/stats'
-import { fmtR } from '../lib/format'
+import { fmtR, signClass } from '../lib/format'
 import { href } from '../lib/router'
 import { niceTicks, useWidth } from './useWidth'
 
-const H = 260
-const PAD = { top: 16, right: 16, bottom: 28, left: 48 }
+const H = 280
+const PAD = { top: 20, right: 64, bottom: 28, left: 52 }
+const TAG_H = 18
 
-/** 权益曲线（累计 R）+ 水下回撤区域，同一 R 轴 */
+/** 权益曲线（累计 R）+ 水下回撤区域，同一 R 轴；右端为现值标签 */
 export default function EquityChart({ points }: { points: EquityPoint[] }) {
   const [ref, width] = useWidth<HTMLDivElement>()
   const [hover, setHover] = useState<number | null>(null)
+  const gid = `eq${useId().replace(/[^\w-]/g, '')}`
 
   if (points.length === 0) return <div className="empty">暂无已平仓交易</div>
 
@@ -25,8 +27,13 @@ export default function EquityChart({ points }: { points: EquityPoint[] }) {
 
   // index 0 是起点 0R
   const line = [`M${x(0)},${y(0)}`, ...points.map((p) => `L${x(p.index)},${y(p.cumR)}`)].join(' ')
+  const area = `${line} L${x(points.length)},${y(0)} L${x(0)},${y(0)}Z`
   const dd = [`M${x(0)},${y(0)}`, ...points.map((p) => `L${x(p.index)},${y(p.drawdownR)}`), `L${x(points.length)},${y(0)}Z`].join(' ')
   const hp = hover != null ? points[hover] : null
+  const last = points.at(-1)!
+  const lastTone = signClass(last.cumR) || 'pos'
+  // 筛选变化时重放描线动画
+  const animKey = `${points.length}-${points[0].id}`
 
   const onMove = (e: React.PointerEvent<SVGRectElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -40,6 +47,12 @@ export default function EquityChart({ points }: { points: EquityPoint[] }) {
     <div className="chart" ref={ref}>
       {width > 0 && (
         <svg width={width} height={H} role="img" aria-label="权益曲线（累计 R）与回撤">
+          <defs>
+            <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" style={{ stopColor: 'var(--area-top)' }} />
+              <stop offset="1" style={{ stopColor: 'var(--area-top)', stopOpacity: 0 }} />
+            </linearGradient>
+          </defs>
           {ticks.map((t) => (
             <g key={t}>
               <line className={t === 0 ? 'axis' : 'grid'} x1={PAD.left} x2={width - PAD.right} y1={y(t)} y2={y(t)} />
@@ -55,12 +68,30 @@ export default function EquityChart({ points }: { points: EquityPoint[] }) {
               </text>
             ) : null,
           )}
-          <path d={dd} className="drawdown" />
-          <path d={line} className="equity" />
+          <g key={animKey}>
+            <path d={area} className="equity-area" fill={`url(#${gid})`} />
+            <path d={dd} className="drawdown" />
+            <path d={line} className="equity" pathLength={1} />
+            <line className={`last-line ${lastTone}`} x1={PAD.left} x2={width - PAD.right} y1={y(last.cumR)} y2={y(last.cumR)} />
+            <circle className={`pulse ${lastTone}`} cx={x(last.index)} cy={y(last.cumR)} r={4} />
+            <g className={`axis-tag last-tag ${lastTone}`} transform={`translate(${width - PAD.right + 6},${y(last.cumR) - TAG_H / 2})`}>
+              <rect width={PAD.right - 8} height={TAG_H} rx={3} />
+              <text x={(PAD.right - 8) / 2} y={TAG_H / 2} dy="0.35em" textAnchor="middle">
+                {fmtR(last.cumR, 1)}
+              </text>
+            </g>
+          </g>
           {hp && (
             <g>
               <line className="crosshair" x1={x(hp.index)} x2={x(hp.index)} y1={PAD.top} y2={H - PAD.bottom} />
+              <line className="crosshair" x1={PAD.left} x2={width - PAD.right} y1={y(hp.cumR)} y2={y(hp.cumR)} />
               <circle className="equity-dot" cx={x(hp.index)} cy={y(hp.cumR)} r={5} />
+              <g className="axis-tag" transform={`translate(2,${y(hp.cumR) - TAG_H / 2})`}>
+                <rect width={PAD.left - 6} height={TAG_H} rx={3} />
+                <text x={(PAD.left - 6) / 2} y={TAG_H / 2} dy="0.35em" textAnchor="middle">
+                  {fmtR(hp.cumR, 1)}
+                </text>
+              </g>
             </g>
           )}
           <rect
@@ -81,9 +112,9 @@ export default function EquityChart({ points }: { points: EquityPoint[] }) {
           <div className="tt-title">
             #{hp.index} · {hp.date}
           </div>
-          <div>本笔 {fmtR(hp.r)}</div>
-          <div>累计 {fmtR(hp.cumR)}</div>
-          <div>回撤 {fmtR(hp.drawdownR)}</div>
+          <div className="tt-row">本笔 <b className={signClass(hp.r)}>{fmtR(hp.r)}</b></div>
+          <div className="tt-row">累计 <b>{fmtR(hp.cumR)}</b></div>
+          <div className="tt-row">回撤 <b>{fmtR(hp.drawdownR)}</b></div>
         </div>
       )}
       <div className="legend">

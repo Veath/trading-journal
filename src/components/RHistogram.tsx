@@ -21,6 +21,14 @@ export default function RHistogram({ buckets }: { buckets: Bucket[] }) {
     <div className="chart" ref={ref}>
       {width > 0 && (
         <svg width={width} height={H} role="img" aria-label="R 倍数分布">
+          <defs>
+            {(['pos', 'neg'] as const).map((k) => (
+              <linearGradient key={k} id={`bar-${k}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" style={{ stopColor: `var(--${k}-mark)` }} />
+                <stop offset="1" style={{ stopColor: `var(--${k}-mark)`, stopOpacity: 0.35 }} />
+              </linearGradient>
+            ))}
+          </defs>
           <line className="axis" x1={PAD.left} x2={width - PAD.right} y1={y(0)} y2={y(0)} />
           <text className="tick" x={PAD.left - 6} y={y(maxCount)} dy="0.32em" textAnchor="end">{maxCount}</text>
           {buckets.map((b, i) => {
@@ -32,8 +40,8 @@ export default function RHistogram({ buckets }: { buckets: Bucket[] }) {
                 <rect x={PAD.left + i * bw} y={PAD.top} width={bw} height={innerH} fill="transparent" />
                 {b.count > 0 && (
                   <path
-                    className={b.center < 0 ? 'bar-neg' : b.center > 0 ? 'bar-pos' : 'bar-zero'}
-                    opacity={hover == null || hover === i ? 1 : 0.5}
+                    className={`${b.center < 0 ? 'bar-neg' : b.center > 0 ? 'bar-pos' : 'bar-zero'}${hover === i ? ' bar-hot' : ''}`}
+                    opacity={hover == null || hover === i ? 1 : 0.45}
                     d={`M${bx},${y(0)} V${y(b.count) + Math.min(4, h)} q0,-${Math.min(4, h)} ${Math.min(4, w / 2)},-${Math.min(4, h)} H${bx + w - Math.min(4, w / 2)} q${Math.min(4, w / 2)},0 ${Math.min(4, w / 2)},${Math.min(4, h)} V${y(0)}Z`}
                   />
                 )}

@@ -4,6 +4,11 @@ import { href } from '../lib/router'
 
 const STATUS_LABEL = { closed: '', open: '持仓中', missed: '错过' }
 
+/** 已平仓显示 R，其余显示状态标签 */
+function Result({ t }: { t: Trade }) {
+  return t.status === 'closed' ? <>{fmtR(t.rMultiple)}</> : <span className={`status ${t.status}`}>{STATUS_LABEL[t.status]}</span>
+}
+
 export default function TradeList({ trades }: { trades: Trade[] }) {
   if (trades.length === 0) {
     return <div className="empty card">当前筛选下没有交易。调整筛选条件，或运行 <code>pnpm new:trade</code> 新建一笔。</div>
@@ -12,7 +17,7 @@ export default function TradeList({ trades }: { trades: Trade[] }) {
   return (
     <section className="card">
       <h2>
-        交易记录 <span className="muted">{trades.length} 笔</span>
+        交易记录 <span className="count">{trades.length}</span> <span className="muted">笔</span>
       </h2>
       {/* 窄屏：卡片列表 */}
       <ul className="trade-cards">
@@ -26,8 +31,8 @@ export default function TradeList({ trades }: { trades: Trade[] }) {
                 </span>
                 <span className="tc-setup">{t.setup ?? t.strategy}</span>
               </div>
-              <div className={`tc-r ${t.status === 'closed' ? signClass(t.rMultiple) : 'muted'}`}>
-                {t.status === 'closed' ? fmtR(t.rMultiple) : STATUS_LABEL[t.status]}
+              <div className={`tc-r ${t.status === 'closed' ? signClass(t.rMultiple) : ''}`}>
+                <Result t={t} />
               </div>
               <div className="tc-meta">
                 {t.date} {t.time} {t.session && `· ${t.session}`} {t.grade && `· ${t.grade}`}
@@ -63,9 +68,9 @@ export default function TradeList({ trades }: { trades: Trade[] }) {
             {rows.map((t) => (
               <tr key={t.id} className="clickable" onClick={() => (window.location.hash = href('trades', t.id))}>
                 <td>
-                  <a href={href('trades', t.id)}>{t.date}</a> <span className="muted">{t.time}</span>
+                  <a className="num-v" href={href('trades', t.id)}>{t.date}</a> <span className="muted num-v">{t.time}</span>
                 </td>
-                <td>{t.symbol}</td>
+                <td className="symbol">{t.symbol}</td>
                 <td>
                   <span className={`dir ${t.direction}`}>{t.direction === 'long' ? '多' : '空'}</span>
                 </td>
@@ -76,8 +81,8 @@ export default function TradeList({ trades }: { trades: Trade[] }) {
                 <td>{t.session}</td>
                 <td>{t.grade}</td>
                 <td className="num">{fmtNum(t.plannedRR, 1)}</td>
-                <td className={`num ${t.status === 'closed' ? signClass(t.rMultiple) : 'muted'}`}>
-                  {t.status === 'closed' ? fmtR(t.rMultiple) : STATUS_LABEL[t.status]}
+                <td className={`num result ${t.status === 'closed' ? signClass(t.rMultiple) : ''}`}>
+                  <Result t={t} />
                 </td>
                 <td>
                   {t.followedPlan === false ? <span className="tag warn">违反计划</span> : null}
