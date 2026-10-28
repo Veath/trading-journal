@@ -12,6 +12,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   rsi: 'RSI',
   vwap: 'VWAP',
   frvp: 'FRVP',
+  ema: 'EMA',
+  macd: 'MACD',
 }
 
 export default function Notes({ path }: { path: string }) {

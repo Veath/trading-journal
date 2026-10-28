@@ -40,7 +40,7 @@ export interface Span {
 export interface Series {
   values: (number | null)[] // 与 candles 对齐，null = 不画
   label?: string // 画成右侧价格轴标签，位置取最后一个值
-  kind: 'main' | 'band'
+  kind: 'main' | 'band' | 'ema1' | 'ema2' | 'ema3' | 'ema4' // ema1–4 由快到慢
 }
 
 export interface Segment {
@@ -61,6 +61,8 @@ export interface Profile {
 export interface Panel {
   title: string
   values: (number | null)[]
+  signal?: (number | null)[] // 第二条线（如 MACD 的 Signal）
+  histogram?: (number | null)[] // 从 0 轴画柱，正蓝负红
   min: number
   max: number
   levels?: { y: number; label?: string }[]
@@ -197,6 +199,19 @@ const INDICATOR_STYLE = `
   .s-band { stroke: #717c8e; stroke-width: 1.2; stroke-dasharray: 5 3; fill: none; }
   .s-osc { stroke: #475163; stroke-width: 1.6; fill: none; }
   .seg { stroke: #c98500; stroke-width: 2; }
+  .s-ema1 { stroke: #c98500; stroke-width: 1.8; fill: none; }
+  .s-ema2 { stroke: #7a52c7; stroke-width: 1.8; fill: none; }
+  .s-ema3 { stroke: #16917f; stroke-width: 1.8; fill: none; }
+  .s-ema4 { stroke: #475163; stroke-width: 2.4; fill: none; }
+  .s-sig { stroke: #c98500; stroke-width: 1.4; fill: none; }
+  .h-pos { fill: rgba(42, 120, 214, 0.45); }
+  .h-neg { fill: rgba(227, 73, 72, 0.45); }
+  .t-ema2 rect { fill: rgba(122, 82, 199, 0.1); stroke: #7a52c7; }
+  .t-ema2 text { fill: #5d3aa3; }
+  .t-ema3 rect { fill: rgba(22, 145, 127, 0.1); stroke: #16917f; }
+  .t-ema3 text { fill: #0f6e60; }
+  .t-ema4 rect { fill: rgba(71, 81, 99, 0.12); stroke: #475163; }
+  .t-ema4 text { fill: #2c3442; }
   .p-row { fill: rgba(71, 81, 99, 0.16); }
   .p-va { fill: rgba(42, 120, 214, 0.22); }
   .p-poc { fill: rgba(212, 145, 34, 0.55); }
@@ -204,6 +219,18 @@ const INDICATOR_STYLE = `
     .s-main, .seg { stroke: #f0b44c; }
     .s-band { stroke: #8293ab; }
     .s-osc { stroke: #c5d0de; }
+    .s-ema1, .s-sig { stroke: #f0b44c; }
+    .s-ema2 { stroke: #a98bf0; }
+    .s-ema3 { stroke: #3cc4ae; }
+    .s-ema4 { stroke: #c5d0de; }
+    .h-pos { fill: rgba(61, 139, 255, 0.45); }
+    .h-neg { fill: rgba(242, 85, 95, 0.45); }
+    .t-ema2 rect { fill: rgba(169, 139, 240, 0.16); stroke: #a98bf0; }
+    .t-ema2 text { fill: #cbb8ff; }
+    .t-ema3 rect { fill: rgba(60, 196, 174, 0.16); stroke: #3cc4ae; }
+    .t-ema3 text { fill: #8fe6d6; }
+    .t-ema4 rect { fill: rgba(197, 208, 222, 0.12); stroke: #c5d0de; }
+    .t-ema4 text { fill: #e3eaf4; }
     .p-row { fill: rgba(160, 176, 197, 0.14); }
     .p-va { fill: rgba(61, 139, 255, 0.24); }
     .p-poc { fill: rgba(240, 180, 76, 0.5); }
@@ -236,7 +263,7 @@ export function render(d: Diagram): string {
     ...(d.lines ?? []).filter((l) => l.to == null && l.label).map((l) => ({ label: l.label!, price: l.y, kind: l.kind ?? 'neutral' })),
     ...(d.series ?? [])
       .filter((s) => s.label)
-      .map((s) => ({ label: s.label!, price: s.values.filter((v) => v != null).at(-1)!, kind: s.kind === 'main' ? 'accent' : 'neutral' })),
+      .map((s) => ({ label: s.label!, price: s.values.filter((v) => v != null).at(-1)!, kind: s.kind === 'main' || s.kind === 'ema1' ? 'accent' : s.kind === 'band' ? 'neutral' : s.kind })),
   ]
   const panelLabels = [
     ...(d.panel?.levels ?? []).filter((l) => l.label).map((l) => ({ label: l.label!, price: l.y, kind: 'neutral' })),
@@ -407,7 +434,14 @@ export function render(d: Diagram): string {
     for (const l of p.levels ?? []) {
       out.push(`<line class="l-neutral" x1="${x0}" x2="${xEnd}" y1="${py(l.y)}" y2="${py(l.y)}" stroke-width="1"/>`)
     }
+    p.histogram?.forEach((v, i) => {
+      if (v == null || Number.isNaN(v)) return
+      const [top, bottom] = v >= 0 ? [py(v), py(0)] : [py(0), py(v)]
+      const w = Math.max(2, Math.round(STEP * 0.5))
+      out.push(`<rect class="${v >= 0 ? 'h-pos' : 'h-neg'}" x="${r1(x(i) - w / 2)}" y="${top}" width="${w}" height="${r1(Math.max(0.5, bottom - top))}"/>`)
+    })
     polyline(p.values, py, 's-osc')
+    if (p.signal) polyline(p.signal, py, 's-sig')
     for (const s of p.segments ?? []) drawSegment(s, py)
     for (const m of p.marks ?? []) {
       const v = p.values[m.at]

@@ -83,3 +83,57 @@ export function profileLevels(p: Profile): { poc: number; vah: number; val: numb
   const r = p.rows
   return { poc: (r[p.poc].lo + r[p.poc].hi) / 2, vah: r[p.va[1]].hi, val: r[p.va[0]].lo }
 }
+
+/** EMA，α = 2 / (n + 1)，以前 n 个值的 SMA 作为初值；warmup 为图上不显示的前置收盘价 */
+export function ema(values: number[], period: number, warmup: number[] = []): number[] {
+  const all = [...warmup, ...values]
+  const k = 2 / (period + 1)
+  const out: number[] = []
+  let prev = NaN
+  all.forEach((v, i) => {
+    if (i < period - 1) return void out.push(NaN)
+    prev = i === period - 1 ? all.slice(0, period).reduce((s, x) => s + x, 0) / period : v * k + prev * (1 - k)
+    out.push(prev)
+  })
+  return out.slice(warmup.length)
+}
+
+/** MACD = EMA(fast) − EMA(slow)，Signal = MACD 的 EMA(signal)，Histogram = MACD − Signal */
+export function macd(candles: OHLC[], warmup: number[] = [], fast = 12, slow = 26, signal = 9) {
+  const closes = [...warmup, ...candles.map((c) => c[3])]
+  const fastE = ema(closes, fast)
+  const slowE = ema(closes, slow)
+  const line = closes.map((_, i) => fastE[i] - slowE[i])
+  const valid = line.findIndex((v) => !Number.isNaN(v))
+  const sig = [...Array(valid).fill(NaN), ...ema(line.slice(valid), signal)]
+  const n = warmup.length
+  return {
+    macd: line.slice(n),
+    signal: sig.slice(n),
+    histogram: line.map((v, i) => v - sig[i]).slice(n),
+  }
+}
+
+/**
+ * 由收盘价路径生成示意 K 线：开盘 = 上一根收盘，影线按 wick 比例伸出实体。
+ * points 为 [下标, 收盘价] 折线拐点，中间线性插值，再叠加确定性的小幅摆动。
+ */
+export function closesFromPath(points: [number, number][], wiggle = 0): number[] {
+  const out: number[] = []
+  for (let k = 0; k < points.length - 1; k++) {
+    const [i0, v0] = points[k]
+    const [i1, v1] = points[k + 1]
+    for (let i = i0; i < i1; i++) out.push(v0 + ((v1 - v0) * (i - i0)) / (i1 - i0) + wiggle * Math.sin(i * 2.1))
+  }
+  out.push(points.at(-1)![1])
+  return out.map((v) => Math.round(v * 100) / 100)
+}
+
+export function candlesFromCloses(closes: number[], open: number, wick = 0.4): OHLC[] {
+  return closes.map((c, i) => {
+    const o = i === 0 ? open : closes[i - 1]
+    const body = Math.max(Math.abs(c - o), 0.3)
+    const r = (v: number) => Math.round(v * 100) / 100
+    return [o, r(Math.max(o, c) + body * wick), r(Math.min(o, c) - body * wick), c]
+  })
+}

@@ -1,0 +1,251 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="987" height="370" viewBox="0 0 987 370" role="img" aria-label="排列转换：跌破 21 / 55，21 下穿 55，反抽被拒绝，再跌破 200">
+<style>
+  .bg { fill: url(#bg); }
+  .bg-grid { stroke: rgba(28, 60, 110, 0.06); }
+  .frame { fill: none; stroke: #d8dfe9; }
+  .title-mark { fill: #c98500; }
+  .title { fill: #111722; font-weight: 650; font-size: 14px; }
+  text { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 12px; fill: #111722; paint-order: stroke; stroke: #f7f9fc; stroke-width: 3px; stroke-linejoin: round; }
+  .muted { fill: #475163; }
+  .wick { stroke-width: 1.5; }
+  .up { fill: #2a78d6; stroke: #2a78d6; }
+  .down { fill: #e34948; stroke: #e34948; }
+  .z-bull { fill: rgba(42, 120, 214, 0.13); stroke: rgba(42, 120, 214, 0.55); }
+  .z-bear { fill: rgba(227, 73, 72, 0.11); stroke: rgba(227, 73, 72, 0.55); }
+  .z-neutral { fill: rgba(71, 81, 99, 0.09); stroke: rgba(71, 81, 99, 0.25); stroke-dasharray: 2 3; }
+  .z-accent { fill: rgba(212, 145, 34, 0.18); stroke: rgba(201, 133, 0, 0.75); }
+  .l-neutral { stroke: #717c8e; stroke-dasharray: 4 3; }
+  .l-stop { stroke: #e34948; stroke-dasharray: 6 3; }
+  .l-target { stroke: #2a78d6; stroke-dasharray: 6 3; }
+  .l-entry { stroke: #c98500; }
+  .bracket { stroke: #717c8e; fill: none; }
+  .grid { stroke: #e4e9f0; stroke-dasharray: 2 4; }
+  .tick { font-family: 'DIN Alternate', 'Bahnschrift', 'Roboto Condensed', sans-serif; font-size: 11px; fill: #717c8e; stroke: none; }
+  .arrow { fill: #c98500; stroke: none; }
+  .tag rect { stroke-width: 1; }
+  .tag text { stroke: none; font-weight: 600; }
+  .t-neutral rect { fill: rgba(71, 81, 99, 0.1); stroke: rgba(71, 81, 99, 0.4); }
+  .t-neutral text { fill: #475163; }
+  .t-stop rect, .t-bear rect { fill: rgba(227, 73, 72, 0.1); stroke: #e34948; }
+  .t-stop text, .t-bear text { fill: #c23a3a; }
+  .t-target rect, .t-bull rect { fill: rgba(42, 120, 214, 0.1); stroke: #2a78d6; }
+  .t-target text, .t-bull text { fill: #1c5cab; }
+  .t-entry rect, .t-accent rect { fill: rgba(212, 145, 34, 0.14); stroke: #c98500; }
+  .t-entry text, .t-accent text { fill: #8a5a0e; }
+  @media (prefers-color-scheme: dark) {
+    .bg-grid { stroke: rgba(110, 160, 230, 0.06); }
+    .frame { stroke: #1c2839; }
+    .title-mark { fill: #f0b44c; }
+    .title, text { fill: #e3eaf4; }
+    text { stroke: #0a111d; }
+    .muted { fill: #a0b0c5; }
+    .up { fill: #3d8bff; stroke: #3d8bff; }
+    .down { fill: #f2555f; stroke: #f2555f; }
+    .candles { filter: url(#glow); }
+    .z-bull { fill: rgba(61, 139, 255, 0.14); stroke: rgba(61, 139, 255, 0.6); }
+    .z-bear { fill: rgba(242, 85, 95, 0.13); stroke: rgba(242, 85, 95, 0.6); }
+    .z-neutral { fill: rgba(160, 176, 197, 0.08); stroke: rgba(160, 176, 197, 0.25); }
+    .z-accent { fill: rgba(240, 180, 76, 0.16); stroke: rgba(240, 180, 76, 0.75); }
+    .l-neutral, .bracket { stroke: #8293ab; }
+    .l-stop { stroke: #f2555f; }
+    .l-target { stroke: #3d8bff; }
+    .l-entry { stroke: #f0b44c; }
+    .grid { stroke: #182334; }
+    .tick { fill: #70829b; }
+    .arrow { fill: #f0b44c; }
+    .t-neutral rect { fill: rgba(160, 176, 197, 0.1); stroke: rgba(160, 176, 197, 0.45); }
+    .t-neutral text { fill: #c5d0de; }
+    .t-stop rect, .t-bear rect { fill: rgba(242, 85, 95, 0.16); stroke: #f2555f; }
+    .t-stop text, .t-bear text { fill: #ff8f98; }
+    .t-target rect, .t-bull rect { fill: rgba(61, 139, 255, 0.16); stroke: #3d8bff; }
+    .t-target text, .t-bull text { fill: #8cc3ff; }
+    .t-entry rect, .t-accent rect { fill: rgba(240, 180, 76, 0.16); stroke: #f0b44c; }
+    .t-entry text, .t-accent text { fill: #ffd38a; }
+  }
+
+  .s-main { stroke: #c98500; stroke-width: 2; fill: none; }
+  .s-band { stroke: #717c8e; stroke-width: 1.2; stroke-dasharray: 5 3; fill: none; }
+  .s-osc { stroke: #475163; stroke-width: 1.6; fill: none; }
+  .seg { stroke: #c98500; stroke-width: 2; }
+  .s-ema1 { stroke: #c98500; stroke-width: 1.8; fill: none; }
+  .s-ema2 { stroke: #7a52c7; stroke-width: 1.8; fill: none; }
+  .s-ema3 { stroke: #16917f; stroke-width: 1.8; fill: none; }
+  .s-ema4 { stroke: #475163; stroke-width: 2.4; fill: none; }
+  .s-sig { stroke: #c98500; stroke-width: 1.4; fill: none; }
+  .h-pos { fill: rgba(42, 120, 214, 0.45); }
+  .h-neg { fill: rgba(227, 73, 72, 0.45); }
+  .t-ema2 rect { fill: rgba(122, 82, 199, 0.1); stroke: #7a52c7; }
+  .t-ema2 text { fill: #5d3aa3; }
+  .t-ema3 rect { fill: rgba(22, 145, 127, 0.1); stroke: #16917f; }
+  .t-ema3 text { fill: #0f6e60; }
+  .t-ema4 rect { fill: rgba(71, 81, 99, 0.12); stroke: #475163; }
+  .t-ema4 text { fill: #2c3442; }
+  .p-row { fill: rgba(71, 81, 99, 0.16); }
+  .p-va { fill: rgba(42, 120, 214, 0.22); }
+  .p-poc { fill: rgba(212, 145, 34, 0.55); }
+  @media (prefers-color-scheme: dark) {
+    .s-main, .seg { stroke: #f0b44c; }
+    .s-band { stroke: #8293ab; }
+    .s-osc { stroke: #c5d0de; }
+    .s-ema1, .s-sig { stroke: #f0b44c; }
+    .s-ema2 { stroke: #a98bf0; }
+    .s-ema3 { stroke: #3cc4ae; }
+    .s-ema4 { stroke: #c5d0de; }
+    .h-pos { fill: rgba(61, 139, 255, 0.45); }
+    .h-neg { fill: rgba(242, 85, 95, 0.45); }
+    .t-ema2 rect { fill: rgba(169, 139, 240, 0.16); stroke: #a98bf0; }
+    .t-ema2 text { fill: #cbb8ff; }
+    .t-ema3 rect { fill: rgba(60, 196, 174, 0.16); stroke: #3cc4ae; }
+    .t-ema3 text { fill: #8fe6d6; }
+    .t-ema4 rect { fill: rgba(197, 208, 222, 0.12); stroke: #c5d0de; }
+    .t-ema4 text { fill: #e3eaf4; }
+    .p-row { fill: rgba(160, 176, 197, 0.14); }
+    .p-va { fill: rgba(61, 139, 255, 0.24); }
+    .p-poc { fill: rgba(240, 180, 76, 0.5); }
+  }
+</style>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f6fa"/></linearGradient>
+<linearGradient id="edge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3d8bff" stop-opacity="0"/><stop offset="0.3" stop-color="#3d8bff" stop-opacity="0.55"/><stop offset="1" stop-color="#3d8bff" stop-opacity="0"/></linearGradient>
+<pattern id="paper" width="24" height="24" patternUnits="userSpaceOnUse"><path class="bg-grid" d="M24 0H0V24" fill="none"/></pattern>
+<filter id="glow" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<style>@media (prefers-color-scheme: dark) { #bg stop:first-child { stop-color: #0f1828; } #bg stop:last-child { stop-color: #070c16; } }</style>
+</defs>
+<rect class="bg" width="987" height="370" rx="10"/>
+<rect width="987" height="370" rx="10" fill="url(#paper)"/>
+<rect class="frame" x="0.5" y="0.5" width="986" height="369" rx="9.5"/>
+<rect fill="url(#edge)" x="0" y="40" width="987" height="1"/>
+<rect class="title-mark" x="16" y="15" width="3" height="14" rx="1.5"/>
+<text class="title" x="26" y="26">排列转换：跌破 21 / 55，21 下穿 55，反抽被拒绝，再跌破 200</text>
+<g class="candles">
+<line class="wick up" x1="24" x2="24" y1="199.4" y2="223"/>
+<rect class="up" x="19.5" y="204.6" width="9" height="13.1" rx="1.5"/>
+<line class="wick up" x1="40" x2="40" y1="182.3" y2="211.1"/>
+<rect class="up" x="35.5" y="188.7" width="9" height="15.9" rx="1.5"/>
+<line class="wick down" x1="56" x2="56" y1="186.8" y2="195"/>
+<rect class="down" x="51.5" y="188.7" width="9" height="4.4" rx="1.5"/>
+<line class="wick up" x1="72" x2="72" y1="170.6" y2="199.5"/>
+<rect class="up" x="67.5" y="177" width="9" height="16.1" rx="1.5"/>
+<line class="wick up" x1="88" x2="88" y1="155.1" y2="183.3"/>
+<rect class="up" x="83.5" y="161.3" width="9" height="15.7" rx="1.5"/>
+<line class="wick down" x1="104" x2="104" y1="159.5" y2="167.6"/>
+<rect class="down" x="99.5" y="161.3" width="9" height="4.5" rx="1.5"/>
+<line class="wick up" x1="120" x2="120" y1="142.9" y2="172.3"/>
+<rect class="up" x="115.5" y="149.4" width="9" height="16.4" rx="1.5"/>
+<line class="wick up" x1="136" x2="136" y1="127.6" y2="155.7"/>
+<rect class="up" x="131.5" y="133.9" width="9" height="15.5" rx="1.5"/>
+<line class="wick down" x1="152" x2="152" y1="132" y2="140.1"/>
+<rect class="down" x="147.5" y="133.9" width="9" height="4.4" rx="1.5"/>
+<line class="wick up" x1="168" x2="168" y1="115.3" y2="144.8"/>
+<rect class="up" x="163.5" y="121.8" width="9" height="16.5" rx="1.5"/>
+<line class="wick up" x1="184" x2="184" y1="100.4" y2="128"/>
+<rect class="up" x="179.5" y="106.5" width="9" height="15.3" rx="1.5"/>
+<line class="wick down" x1="200" x2="200" y1="99.3" y2="131.6"/>
+<rect class="down" x="195.5" y="106.5" width="9" height="17.9" rx="1.5"/>
+<line class="wick up" x1="216" x2="216" y1="119.7" y2="126"/>
+<rect class="up" x="211.5" y="121.3" width="9" height="3.1" rx="1.5"/>
+<line class="wick up" x1="232" x2="232" y1="118" y2="122.9"/>
+<rect class="up" x="227.5" y="119.6" width="9" height="1.7" rx="1.5"/>
+<line class="wick down" x1="248" x2="248" y1="112.4" y2="144.7"/>
+<rect class="down" x="243.5" y="119.6" width="9" height="17.9" rx="1.5"/>
+<line class="wick up" x1="264" x2="264" y1="132.7" y2="139.1"/>
+<rect class="up" x="259.5" y="134.2" width="9" height="3.3" rx="1.5"/>
+<line class="wick up" x1="280" x2="280" y1="131.2" y2="135.8"/>
+<rect class="up" x="275.5" y="132.8" width="9" height="1.5" rx="1.5"/>
+<line class="wick down" x1="296" x2="296" y1="130.8" y2="139.6"/>
+<rect class="down" x="291.5" y="132.8" width="9" height="4.8" rx="1.5"/>
+<line class="wick up" x1="312" x2="312" y1="114.4" y2="144.3"/>
+<rect class="up" x="307.5" y="121" width="9" height="16.6" rx="1.5"/>
+<line class="wick up" x1="328" x2="328" y1="101" y2="126.8"/>
+<rect class="up" x="323.5" y="106.8" width="9" height="14.2" rx="1.5"/>
+<line class="wick down" x1="344" x2="344" y1="104.9" y2="113.3"/>
+<rect class="down" x="339.5" y="106.8" width="9" height="4.7" rx="1.5"/>
+<line class="wick up" x1="360" x2="360" y1="88.1" y2="118.2"/>
+<rect class="up" x="355.5" y="94.7" width="9" height="16.8" rx="1.5"/>
+<line class="wick up" x1="376" x2="376" y1="75" y2="100.4"/>
+<rect class="up" x="371.5" y="80.6" width="9" height="14.1" rx="1.5"/>
+<line class="wick down" x1="392" x2="392" y1="70" y2="117.8"/>
+<rect class="down" x="387.5" y="80.6" width="9" height="26.6" rx="1.5"/>
+<line class="wick down" x1="408" x2="408" y1="105.2" y2="114"/>
+<rect class="down" x="403.5" y="107.2" width="9" height="4.8" rx="1.5"/>
+<line class="wick down" x1="424" x2="424" y1="108.9" y2="123.1"/>
+<rect class="down" x="419.5" y="112" width="9" height="8" rx="1.5"/>
+<line class="wick down" x1="440" x2="440" y1="109.4" y2="157.1"/>
+<rect class="down" x="435.5" y="120" width="9" height="26.5" rx="1.5"/>
+<line class="wick down" x1="456" x2="456" y1="144.7" y2="153"/>
+<rect class="down" x="451.5" y="146.5" width="9" height="4.6" rx="1.5"/>
+<line class="wick down" x1="472" x2="472" y1="147.9" y2="162.5"/>
+<rect class="down" x="467.5" y="151.1" width="9" height="8.1" rx="1.5"/>
+<line class="wick down" x1="488" x2="488" y1="148.6" y2="196.4"/>
+<rect class="down" x="483.5" y="159.2" width="9" height="26.6" rx="1.5"/>
+<line class="wick down" x1="504" x2="504" y1="184" y2="192.1"/>
+<rect class="down" x="499.5" y="185.8" width="9" height="4.5" rx="1.5"/>
+<line class="wick down" x1="520" x2="520" y1="186.8" y2="202"/>
+<rect class="down" x="515.5" y="190.3" width="9" height="8.3" rx="1.5"/>
+<line class="wick down" x1="536" x2="536" y1="188" y2="235.7"/>
+<rect class="down" x="531.5" y="198.6" width="9" height="26.5" rx="1.5"/>
+<line class="wick down" x1="552" x2="552" y1="223.4" y2="231.1"/>
+<rect class="down" x="547.5" y="225.1" width="9" height="4.3" rx="1.5"/>
+<line class="wick down" x1="568" x2="568" y1="226" y2="241.4"/>
+<rect class="down" x="563.5" y="229.4" width="9" height="8.6" rx="1.5"/>
+<line class="wick down" x1="584" x2="584" y1="235.8" y2="245.9"/>
+<rect class="down" x="579.5" y="238" width="9" height="5.6" rx="1.5"/>
+<line class="wick up" x1="600" x2="600" y1="220.3" y2="250.3"/>
+<rect class="up" x="595.5" y="227" width="9" height="16.6" rx="1.5"/>
+<line class="wick up" x1="616" x2="616" y1="210.4" y2="231.7"/>
+<rect class="up" x="611.5" y="215.1" width="9" height="11.9" rx="1.5"/>
+<line class="wick down" x1="632" x2="632" y1="212.8" y2="223.2"/>
+<rect class="down" x="627.5" y="215.1" width="9" height="5.8" rx="1.5"/>
+<line class="wick up" x1="648" x2="648" y1="197.2" y2="227.7"/>
+<rect class="up" x="643.5" y="204" width="9" height="16.9" rx="1.5"/>
+<line class="wick up" x1="664" x2="664" y1="187.6" y2="208.7"/>
+<rect class="up" x="659.5" y="192.3" width="9" height="11.7" rx="1.5"/>
+<line class="wick down" x1="680" x2="680" y1="183.4" y2="223.4"/>
+<rect class="down" x="675.5" y="192.3" width="9" height="22.2" rx="1.5"/>
+<line class="wick up" x1="696" x2="696" y1="212.5" y2="216"/>
+<rect class="up" x="691.5" y="214.1" width="9" height="1.5" rx="1.5"/>
+<line class="wick down" x1="712" x2="712" y1="212.1" y2="221"/>
+<rect class="down" x="707.5" y="214.1" width="9" height="4.9" rx="1.5"/>
+<line class="wick down" x1="728" x2="728" y1="210.1" y2="250.1"/>
+<rect class="down" x="723.5" y="219" width="9" height="22.2" rx="1.5"/>
+<line class="wick up" x1="744" x2="744" y1="238.9" y2="242.7"/>
+<rect class="up" x="739.5" y="240.5" width="9" height="1.5" rx="1.5"/>
+<line class="wick down" x1="760" x2="760" y1="238.4" y2="248"/>
+<rect class="down" x="755.5" y="240.5" width="9" height="5.4" rx="1.5"/>
+<line class="wick down" x1="776" x2="776" y1="237.1" y2="276.6"/>
+<rect class="down" x="771.5" y="245.9" width="9" height="21.9" rx="1.5"/>
+<line class="wick up" x1="792" x2="792" y1="265.5" y2="269.4"/>
+<rect class="up" x="787.5" y="267.1" width="9" height="1.5" rx="1.5"/>
+<line class="wick down" x1="808" x2="808" y1="264.8" y2="274.8"/>
+<rect class="down" x="803.5" y="267.1" width="9" height="5.5" rx="1.5"/>
+<line class="wick down" x1="824" x2="824" y1="263.8" y2="303.3"/>
+<rect class="down" x="819.5" y="272.6" width="9" height="21.9" rx="1.5"/>
+<line class="wick up" x1="840" x2="840" y1="292.1" y2="296.1"/>
+<rect class="up" x="835.5" y="293.6" width="9" height="1.5" rx="1.5"/>
+<line class="wick down" x1="856" x2="856" y1="291.4" y2="301.5"/>
+<rect class="down" x="851.5" y="293.6" width="9" height="5.7" rx="1.5"/>
+<line class="wick down" x1="872" x2="872" y1="290.5" y2="330"/>
+<rect class="down" x="867.5" y="299.3" width="9" height="21.9" rx="1.5"/>
+<line class="wick down" x1="888" x2="888" y1="319.7" y2="324"/>
+<rect class="down" x="883.5" y="321.2" width="9" height="1.5" rx="1.5"/>
+</g>
+<path class="s-ema1" d="M24,223.3 L40,220.1 L56,217.7 L72,214 L88,209.2 L104,205.2 L120,200.2 L136,194.1 L152,189.1 L168,182.9 L184,176 L200,171.3 L216,166.8 L232,162.5 L248,160.2 L264,157.8 L280,155.6 L296,153.9 L312,150.9 L328,146.9 L344,143.7 L360,139.3 L376,133.9 L392,131.5 L408,129.7 L424,128.8 L440,130.4 L456,132.3 L472,134.8 L488,139.4 L504,144 L520,149 L536,155.9 L552,162.6 L568,169.4 L584,176.2 L600,180.8 L616,183.9 L632,187.3 L648,188.8 L664,189.1 L680,191.4 L696,193.5 L712,195.8 L728,199.9 L744,203.6 L760,207.5 L776,213 L792,217.9 L808,222.8 L824,229.4 L840,235.2 L856,241 L872,248.3 L888,255.1"/>
+<path class="s-ema2" d="M24,237.3 L40,235.5 L56,234 L72,232 L88,229.5 L104,227.2 L120,224.4 L136,221.2 L152,218.2 L168,214.8 L184,210.9 L200,207.8 L216,204.7 L232,201.7 L248,199.4 L264,197.1 L280,194.8 L296,192.7 L312,190.2 L328,187.2 L344,184.5 L360,181.3 L376,177.7 L392,175.2 L408,172.9 L424,171 L440,170.1 L456,169.5 L472,169.1 L488,169.7 L504,170.4 L520,171.4 L536,173.4 L552,175.4 L568,177.6 L584,180 L600,181.6 L616,182.8 L632,184.2 L648,184.9 L664,185.2 L680,186.2 L696,187.2 L712,188.3 L728,190.2 L744,192 L760,193.9 L776,196.6 L792,199.1 L808,201.7 L824,205 L840,208.2 L856,211.5 L872,215.4 L888,219.2"/>
+<path class="s-ema3" d="M24,254.9 L40,253.6 L56,252.4 L72,250.9 L88,249.1 L104,247.5 L120,245.5 L136,243.3 L152,241.3 L168,238.9 L184,236.3 L200,234.1 L216,231.8 L232,229.6 L248,227.8 L264,225.9 L280,224.1 L296,222.4 L312,220.4 L328,218.1 L344,216 L360,213.6 L376,211 L392,208.9 L408,207 L424,205.3 L440,204.1 L456,203.1 L472,202.2 L488,201.9 L504,201.6 L520,201.6 L536,202 L552,202.6 L568,203.3 L584,204.1 L600,204.5 L616,204.7 L632,205.1 L648,205 L664,204.8 L680,205 L696,205.2 L712,205.4 L728,206.1 L744,206.8 L760,207.6 L776,208.8 L792,209.9 L808,211.2 L824,212.8 L840,214.4 L856,216.1 L872,218.2 L888,220.3"/>
+<path class="s-ema4" d="M24,293.7 L40,292.7 L56,291.7 L72,290.6 L88,289.3 L104,288 L120,286.7 L136,285.1 L152,283.7 L168,282.1 L184,280.3 L200,278.8 L216,277.2 L232,275.6 L248,274.3 L264,272.9 L280,271.5 L296,270.1 L312,268.7 L328,267 L344,265.5 L360,263.8 L376,262 L392,260.4 L408,259 L424,257.6 L440,256.5 L456,255.4 L472,254.5 L488,253.8 L504,253.2 L520,252.6 L536,252.3 L552,252.1 L568,252 L584,251.9 L600,251.6 L616,251.3 L632,251 L648,250.5 L664,249.9 L680,249.6 L696,249.2 L712,248.9 L728,248.8 L744,248.8 L760,248.7 L776,248.9 L792,249.1 L808,249.3 L824,249.8 L840,250.2 L856,250.7 L872,251.4 L888,252.1"/>
+<path class="bracket" d="M898,255.1 L907,279.2"/>
+<g class="tag t-accent"><rect x="910" y="270.2" width="53.8" height="18" rx="3"/><text x="916" y="279.2" dy="0.35em">EMA 21</text></g>
+<g class="tag t-ema2"><rect x="910" y="210.2" width="53.8" height="18" rx="3"/><text x="916" y="219.2" dy="0.35em">EMA 55</text></g>
+<path class="bracket" d="M898,220.3 L907,239.2"/>
+<g class="tag t-ema3"><rect x="910" y="230.2" width="60.7" height="18" rx="3"/><text x="916" y="239.2" dy="0.35em">EMA 100</text></g>
+<path class="bracket" d="M898,252.1 L907,259.2"/>
+<g class="tag t-ema4"><rect x="910" y="250.2" width="60.7" height="18" rx="3"/><text x="916" y="259.2" dy="0.35em">EMA 200</text></g>
+<path class="arrow" d="M376,69 l-4,-6 h8 z"/>
+<text x="376" y="59" text-anchor="middle">顶部</text>
+<path class="arrow" d="M600,256.3 l-4,6 h8 z"/>
+<text x="600" y="276.3" text-anchor="middle">21 下穿 55</text>
+<path class="arrow" d="M664,181.6 l-4,-6 h8 z"/>
+<text x="664" y="171.6" text-anchor="middle">反抽被拒绝</text>
+<path class="arrow" d="M792,275.4 l-4,6 h8 z"/>
+<text x="792" y="295.4" text-anchor="middle">跌破 200</text>
+</svg>

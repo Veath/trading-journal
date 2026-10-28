@@ -49,7 +49,7 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - `notes/<主题>/` 下用数字前缀控制顺序（`00-overview.md` 为目录页），第一行 `# 标题` 即导航名。
 - 笔记之间用相对路径链接（`./02-liquidity.md`、`../ict/checklist.md`）；仪表盘会在站内跳转，指向仓库其他文件的链接会打开 GitHub。
 - 笔记插图用相对路径引用（`![说明](./img/fvg.svg)`），仪表盘会自动解析。
-- K 线示意图由 `scripts/diagrams/` 生成：在对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`，在 `all.ts` 登记）里改 OHLC 和标注，然后运行 `pnpm diagrams`，不要手改生成的 SVG。RSI / VWAP / Volume Profile 由 `calc.ts` 从 K 线 + 成交量计算，不要手填指标值。`diagrams.test.ts` 会检查 OHLC 是否合法并测试指标公式。
+- K 线示意图由 `scripts/diagrams/` 生成：在对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`、`ema.ts`、`macd.ts`，在 `all.ts` 登记）里改 OHLC 和标注，然后运行 `pnpm diagrams`，不要手改生成的 SVG。RSI / VWAP / Volume Profile / EMA / MACD 由 `calc.ts` 从 K 线 + 成交量计算，不要手填指标值。`diagrams.test.ts` 会检查 OHLC 是否合法并测试指标公式。
 - 新主题目录需要在 `src/pages/Notes.tsx` 的 `CATEGORY_LABELS` 里加中文名。
 - `notes/psychology/course-notes.md` 是用户自己的课程笔记，不要代写课程内容；其余通用笔记不是课程摘录，不要声称出自该课程。
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { allDiagrams } from './all.ts'
-import { profileLevels, rsi, volumeProfile, vwap } from './calc.ts'
+import { candlesFromCloses, closesFromPath, ema, macd, profileLevels, rsi, volumeProfile, vwap } from './calc.ts'
 import type { OHLC } from './render.ts'
 
 const diagrams = Object.values(allDiagrams).flat()
@@ -80,5 +80,23 @@ describe('指标计算', () => {
     expect(p.poc).toBe(1)
     expect(p.va).toEqual([1, 2]) // 6 < 9 × 70%，上下相邻行相等时先并入上方：6 + 1 = 7 ≥ 6.3
     expect(profileLevels(p)).toEqual({ poc: 1.5, vah: 3, val: 1 })
+  })
+
+  it('EMA：SMA 初值，之后 α = 2 / (n + 1)', () => {
+    // n = 3，α = 0.5：初值 (1 + 2 + 3) / 3 = 2，之后 0.5 × 6 + 0.5 × 2 = 4
+    expect(ema([1, 2, 3, 6], 3)).toEqual([NaN, NaN, 2, 4])
+    // warmup 不出现在输出中，但参与计算
+    expect(ema([6], 3, [1, 2, 3])).toEqual([4])
+  })
+
+  it('MACD：柱状图 = MACD − Signal，常数价格时全为 0', () => {
+    const flat = Array.from({ length: 50 }, (): OHLC => [10, 10, 10, 10])
+    const m = macd(flat)
+    expect(m.macd.slice(40)).toEqual(Array(10).fill(0))
+    expect(m.histogram.slice(40)).toEqual(Array(10).fill(0))
+    const up = candlesFromCloses(closesFromPath([[0, 10], [49, 30]]), 10)
+    const mu = macd(up)
+    expect(mu.macd[49]).toBeGreaterThan(0)
+    mu.histogram.forEach((h, i) => Number.isNaN(h) || expect(h).toBeCloseTo(mu.macd[i] - mu.signal[i]))
   })
 })

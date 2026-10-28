@@ -67,6 +67,19 @@
   .s-band { stroke: #717c8e; stroke-width: 1.2; stroke-dasharray: 5 3; fill: none; }
   .s-osc { stroke: #475163; stroke-width: 1.6; fill: none; }
   .seg { stroke: #c98500; stroke-width: 2; }
+  .s-ema1 { stroke: #c98500; stroke-width: 1.8; fill: none; }
+  .s-ema2 { stroke: #7a52c7; stroke-width: 1.8; fill: none; }
+  .s-ema3 { stroke: #16917f; stroke-width: 1.8; fill: none; }
+  .s-ema4 { stroke: #475163; stroke-width: 2.4; fill: none; }
+  .s-sig { stroke: #c98500; stroke-width: 1.4; fill: none; }
+  .h-pos { fill: rgba(42, 120, 214, 0.45); }
+  .h-neg { fill: rgba(227, 73, 72, 0.45); }
+  .t-ema2 rect { fill: rgba(122, 82, 199, 0.1); stroke: #7a52c7; }
+  .t-ema2 text { fill: #5d3aa3; }
+  .t-ema3 rect { fill: rgba(22, 145, 127, 0.1); stroke: #16917f; }
+  .t-ema3 text { fill: #0f6e60; }
+  .t-ema4 rect { fill: rgba(71, 81, 99, 0.12); stroke: #475163; }
+  .t-ema4 text { fill: #2c3442; }
   .p-row { fill: rgba(71, 81, 99, 0.16); }
   .p-va { fill: rgba(42, 120, 214, 0.22); }
   .p-poc { fill: rgba(212, 145, 34, 0.55); }
@@ -74,6 +87,18 @@
     .s-main, .seg { stroke: #f0b44c; }
     .s-band { stroke: #8293ab; }
     .s-osc { stroke: #c5d0de; }
+    .s-ema1, .s-sig { stroke: #f0b44c; }
+    .s-ema2 { stroke: #a98bf0; }
+    .s-ema3 { stroke: #3cc4ae; }
+    .s-ema4 { stroke: #c5d0de; }
+    .h-pos { fill: rgba(61, 139, 255, 0.45); }
+    .h-neg { fill: rgba(242, 85, 95, 0.45); }
+    .t-ema2 rect { fill: rgba(169, 139, 240, 0.16); stroke: #a98bf0; }
+    .t-ema2 text { fill: #cbb8ff; }
+    .t-ema3 rect { fill: rgba(60, 196, 174, 0.16); stroke: #3cc4ae; }
+    .t-ema3 text { fill: #8fe6d6; }
+    .t-ema4 rect { fill: rgba(197, 208, 222, 0.12); stroke: #c5d0de; }
+    .t-ema4 text { fill: #e3eaf4; }
     .p-row { fill: rgba(160, 176, 197, 0.14); }
     .p-va { fill: rgba(61, 139, 255, 0.24); }
     .p-poc { fill: rgba(240, 180, 76, 0.5); }
