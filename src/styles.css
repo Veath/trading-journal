@@ -121,8 +121,11 @@ h2 { font-size: 15px; font-weight: 600; }
   content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none;
   background: linear-gradient(90deg, transparent, var(--edge) 30%, var(--edge) 70%, transparent);
 }
-.brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; font-size: 15px; white-space: nowrap; color: var(--text); }
-.brand svg { color: var(--muted); }
+.brand { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; color: var(--text); }
+.brand-logo { display: block; width: 40px; height: 40px; flex: none; object-fit: contain; }
+.brand-copy { display: flex; flex-direction: column; gap: 2px; }
+.brand-name { font-weight: 650; font-size: 15px; line-height: 1.2; letter-spacing: 0.04em; }
+.brand-tagline { color: var(--muted); font-size: 10px; font-weight: 400; line-height: 1.2; letter-spacing: 0.08em; }
 .nav { display: flex; gap: 2px; }
 .nav a {
   display: inline-flex; align-items: center; gap: 6px;

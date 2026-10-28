@@ -28,12 +28,17 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <a className="brand" href={href()}>
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-            <path d="M5 2v14M13 2v14" stroke="currentColor" strokeWidth="1.5" />
-            <rect x="3" y="5" width="4" height="7" rx="1" fill="var(--neg-mark)" />
-            <rect x="11" y="4" width="4" height="9" rx="1" fill="var(--pos-mark)" />
-          </svg>
-          交易日志
+          <img
+            className="brand-logo"
+            src={`${import.meta.env.BASE_URL}brand/logo.png`}
+            width="40"
+            height="40"
+            alt=""
+          />
+          <span className="brand-copy">
+            <span className="brand-name">交易日志</span>
+            <span className="brand-tagline" aria-hidden="true">记录 · 复盘 · 精进</span>
+          </span>
         </a>
         <nav className="nav" aria-label="主导航">
           {NAV.map((n) => (
