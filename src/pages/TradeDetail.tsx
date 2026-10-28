@@ -2,6 +2,7 @@ import { screenshotUrl, trades } from '../lib/load'
 import { fmtMoney, fmtNum, fmtR, signClass } from '../lib/format'
 import { href } from '../lib/router'
 import Markdown from '../components/Markdown'
+import { handleRepoLinkClick } from '../lib/links'
 
 export default function TradeDetail({ id }: { id: string }) {
   const index = trades.findIndex((t) => t.id === id)
@@ -79,7 +80,7 @@ export default function TradeDetail({ id }: { id: string }) {
         </section>
       ) : null}
       {t.body && (
-        <section className="card">
+        <section className="card" onClick={(e) => handleRepoLinkClick(e, `journal/trades/${t.date.slice(0, 4)}/${t.id}.md`)}>
           <Markdown source={t.body} />
         </section>
       )}
