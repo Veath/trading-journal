@@ -6,6 +6,10 @@ export interface Post {
   date: string // ISO
   text: string
   hasMedia: boolean
+  /** 时间线上显示了「显示更多」，text 只是前半段 */
+  truncated?: boolean
+  /** 来自「帖子」页还是「回复」页；早期采集没有这个字段 */
+  source?: 'posts' | 'replies'
   url: string
 }
 

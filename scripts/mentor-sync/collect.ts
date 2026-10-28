@@ -24,8 +24,9 @@ if (flags.print) console.log(script)
 console.log(`采集 @${handle} 自 ${since} 之后的内容`)
 console.log(copied ? '✓ 采集脚本已复制到剪贴板' : '复制下面的脚本：\n\n' + script)
 console.log(`
-下一步：
-  1. 在已登录的浏览器打开 https://x.com/${handle}/with_replies
+下一步（帖子和回复是两个页面，都要采集）：
+  1. 在已登录的浏览器打开 https://x.com/${handle} （帖子）
   2. 打开开发者工具控制台（Cmd+Option+J），粘贴并回车，等待自动滚动结束
-  3. 下载的 ${handle.toLowerCase()}-YYYY-MM-DD.json 会保存到「下载」目录
-  4. 运行 pnpm mentor:ingest（自动读取「下载」目录中最新的文件）`)
+  3. 再打开 https://x.com/${handle}/with_replies （回复），重复第 2 步
+  4. 下载的 ${handle.toLowerCase()}-posts-YYYY-MM-DD.json 和 ${handle.toLowerCase()}-replies-YYYY-MM-DD.json 会保存到「下载」目录
+  5. 运行 pnpm mentor:ingest（自动读取「下载」目录中帖子、回复各自最新的文件）`)

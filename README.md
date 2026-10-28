@@ -133,8 +133,8 @@ pnpm trade:chart 2026-10-28-btc-01
 导师资料（`notes/mentors/keyshotvv/`）来自 [@Keyshotvv](https://x.com/Keyshotvv) 的公开内容，不定期同步：
 
 1. `pnpm mentor:collect`：生成采集脚本并复制到剪贴板，自动从上次同步到的时间点继续
-2. 在已登录 X 的浏览器打开 `https://x.com/Keyshotvv/with_replies`，在控制台（Cmd+Option+J）粘贴运行，等它自动滚动完成并下载 JSON
-3. `pnpm mentor:ingest`：读取「下载」目录中最新的采集文件，去重后合并到 `data/mentors/keyshotvv/posts.json`，生成 `digest-*.md` 待提炼清单
+2. 在已登录 X 的浏览器先后打开 `https://x.com/Keyshotvv`（帖子）和 `https://x.com/Keyshotvv/with_replies`（回复），分别在控制台（Cmd+Option+J）粘贴运行，等它自动滚动完成并下载 JSON。两个页面内容不重叠，原创推文只在「帖子」页
+3. `pnpm mentor:ingest`：读取「下载」目录中帖子、回复各自最新的采集文件，去重后合并到 `data/mentors/keyshotvv/posts.json`，生成 `digest-*.md` 待提炼清单
 4. 对 Claude 说「更新导师资料」：它会读清单，转述后更新规则、心态和原帖索引
 
 原文只保存在本地的 `data/`（不提交）；仓库里只有转述和原帖链接。第一次运行时没有本地数据，会从今年 1 月 1 日开始采集。
