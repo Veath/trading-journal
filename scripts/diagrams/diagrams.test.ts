@@ -32,6 +32,18 @@ describe('示意图数据', () => {
     }
   })
 
+  it('标注的价格 / 指标值都是有限数', () => {
+    for (const d of diagrams) {
+      const values = [
+        ...(d.zones ?? []).flatMap((z) => [z.top, z.bottom]),
+        ...(d.lines ?? []).map((l) => l.y),
+        ...[...(d.segments ?? []), ...(d.panel?.segments ?? [])].flatMap((s) => [s.from[1], s.to[1]]),
+        ...(d.panel?.levels ?? []).map((l) => l.y),
+      ]
+      for (const v of values) expect(Number.isFinite(v), d.file).toBe(true)
+    }
+  })
+
   it('指标序列与 K 线等长', () => {
     for (const d of diagrams) {
       for (const s of d.series ?? []) expect(s.values.length, d.file).toBe(d.candles.length)

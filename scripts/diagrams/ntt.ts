@@ -23,10 +23,10 @@ function volumesOf(candles: OHLC[], bull: (i: number) => number, bear: (i: numbe
   return candles.map(([o, , , c], i) => Math.round((c >= o ? bull(i) : bear(i)) * (1 + 0.3 * Math.sin(i * 2.3) * Math.cos(i * 0.7))))
 }
 
-/** values 在 [from, to] 内最大值的位置，用于把趋势线画在量能曲线的波峰上 */
+/** values 在 [from, to] 内最大值的位置，用于把趋势线画在量能曲线的波峰上（跳过 EMA 开头的 NaN） */
 function peak(values: number[], from: number, to: number): [number, number] {
-  let at = from
-  for (let i = from; i <= to; i++) if (values[i] > values[at]) at = i
+  let at = -1
+  for (let i = from; i <= to; i++) if (!Number.isNaN(values[i]) && (at < 0 || values[i] > values[at])) at = i
   return [at, Math.round(values[at] * 100) / 100]
 }
 

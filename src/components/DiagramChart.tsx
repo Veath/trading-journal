@@ -180,6 +180,8 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
 
     // —— 副图（RSI / MACD / 成交量 / 量能曲线） ——
     const panel = d.panel
+    const panelTags: OverlayTag[] = (panel?.levels ?? []).flatMap((l) => (l.label ? [{ price: l.y, label: l.label, color: c.muted }] : []))
+    if (panel?.band) panelTags.push({ price: (panel.band.top + panel.band.bottom) / 2, label: panel.band.label, color: c.up })
     if (panel) {
       const fixed = (): AutoscaleInfo => ({ priceRange: { minValue: panel.min, maxValue: panel.max } })
       const common = { priceLineVisible: false, lastValueVisible: false, autoscaleInfoProvider: fixed }
@@ -218,8 +220,6 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
         for (const l of panel.levels ?? []) {
           primary.createPriceLine({ price: l.y, color: c.muted, lineStyle: LineStyle.Dashed, lineWidth: 1, axisLabelVisible: true })
         }
-        const panelTags: OverlayTag[] = (panel.levels ?? []).flatMap((l) => (l.label ? [{ price: l.y, label: l.label, color: c.muted }] : []))
-        if (panel.band) panelTags.push({ price: (panel.band.top + panel.band.bottom) / 2, label: panel.band.label, color: c.up })
         primary.attachPrimitive(
           new Overlay(
             {
@@ -234,13 +234,14 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
         )
         createSeriesMarkers(primary, toMarkers(panel.marks, c.accent))
       }
-      // 留出副图标题和标注箭头的位置
-      primary?.priceScale().applyOptions({ scaleMargins: { top: 0.22, bottom: 0.08 } })
+      // 留出副图标题和标注箭头的位置（取值范围固定，箭头不会自动撑开留白）
+      const has = (pos: Mark['pos']) => panel.marks?.some((m) => m.pos === pos)
+      primary?.priceScale().applyOptions({ scaleMargins: { top: has('above') ? 0.32 : 0.22, bottom: has('below') ? 0.3 : 0.08 } })
       chart.panes()[1]?.setHeight(PANEL_H)
     }
 
     // 右侧留出标签的宽度，避免盖住最后几根 K 线：off 根空位占宽 ≥ 标签宽，off ≥ tagW·bars / (W − tagW)
-    const tagW = Math.max(0, ...tags.map((t) => textWidth(t.label) + 24))
+    const tagW = Math.max(0, ...[...tags, ...panelTags].map((t) => textWidth(t.label) + 24))
     const bars = data.length
     const plotW = el.clientWidth - 56 // 减去右侧价格轴的大致宽度
     const off = tagW && plotW > tagW ? Math.ceil((tagW * bars) / (plotW - tagW)) : 0

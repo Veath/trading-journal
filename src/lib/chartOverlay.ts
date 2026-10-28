@@ -120,8 +120,11 @@ export class Overlay implements ISeriesPrimitive<Time> {
     return this.views
   }
 
+  /** logicalToCoordinate 对非整数下标返回 0，小数部分按 K 线间距线性插值 */
   private x(i: number): number | null {
-    return this.chart!.timeScale().logicalToCoordinate(i as Logical)
+    const lo = Math.floor(i)
+    const x = this.chart!.timeScale().logicalToCoordinate(lo as Logical)
+    return x == null || i === lo ? x : x + (i - lo) * this.half() * 2
   }
   private y(v: number): number | null {
     return this.series!.priceToCoordinate(v)
@@ -150,14 +153,25 @@ export class Overlay implements ISeriesPrimitive<Time> {
     const tags = (this.items.tags ?? [])
       .map((t) => ({ ...t, y: this.y(t.price) }))
       .filter((t): t is OverlayTag & { y: number } => t.y != null)
+      .map((t) => ({ ...t, at: t.y })) // at = 原位置，y = 错开后的位置
       .sort((a, b) => a.y - b.y)
     for (let k = 1; k < tags.length; k++) tags[k].y = Math.max(tags[k].y, tags[k - 1].y + GAP)
+    const right = this.right(width)
     ctx.font = `600 11px ${this.style.font}`
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
     for (const t of tags) {
       const w = ctx.measureText(t.label).width + 12
       const x = width - w - 6
+      // 被错开的标签用引线连回原位置，和静态 SVG 一致
+      if (Math.abs(t.y - t.at) > 2 && x - 3 > right + 2) {
+        ctx.strokeStyle = this.style.muted
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo(right + 2, t.at)
+        ctx.lineTo(x - 3, t.y)
+        ctx.stroke()
+      }
       ctx.fillStyle = this.style.halo
       ctx.fillRect(x, t.y - H / 2, w, H)
       ctx.fillStyle = alpha(t.color, 0.16)
