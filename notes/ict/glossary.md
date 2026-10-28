@@ -7,6 +7,8 @@
 | BPR | Balanced Price Range | 多空 FVG 重叠区 |
 | BSL | Buy-side Liquidity | 买方流动性（高点上方） |
 | CE | Consequent Encroachment | FVG（或影线）的 50% |
+| CHOCH | Change of Character | 逆势第一次破坏结构，趋势可能转变（见 [市场结构](./01-market-structure.md)） |
+| CISD | Change in State of Delivery | 价格投递方向的转变；Keyshot 理解为「次级别的 MSS」 |
 | DOL | Draw on Liquidity | 价格的目标流动性 |
 | EQH / EQL | Equal Highs / Lows | 相对等高 / 等低 |
 | ERL / IRL | External / Internal Range Liquidity | 区间外 / 区间内流动性 |
