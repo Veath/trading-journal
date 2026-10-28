@@ -150,7 +150,7 @@
 <line class="wick up" x1="573" x2="573" y1="262.6" y2="320.7"/>
 <rect class="up" x="568" y="275.6" width="10" height="24.2" rx="1.5"/>
 <line class="wick up" x1="591" x2="591" y1="245.6" y2="285"/>
-<rect class="up" x="586" y="250.8" width="10" height="24.8" rx="1.5"/>
+<rect class="up" x="586" y="256.6" width="10" height="19" rx="1.5"/>
 </g>
 <line class="l-target" x1="591" x2="600" y1="323.6" y2="323.6" stroke-width="1.5"/>
 <line class="l-stop" x1="591" x2="600" y1="261.7" y2="261.7" stroke-width="1.5"/>

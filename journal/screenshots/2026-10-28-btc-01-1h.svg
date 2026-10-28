@@ -248,7 +248,7 @@
 <line class="wick up" x1="835" x2="835" y1="148.7" y2="171.1"/>
 <rect class="up" x="832.5" y="148.7" width="5" height="22" rx="1.5"/>
 <line class="wick up" x1="845" x2="845" y1="70" y2="148.7"/>
-<rect class="up" x="842.5" y="86.8" width="5" height="61.9" rx="1.5"/>
+<rect class="up" x="842.5" y="106" width="5" height="42.7" rx="1.5"/>
 </g>
 <line class="l-target" x1="775" x2="850" y1="324.2" y2="324.2" stroke-width="1.5"/>
 <line class="l-stop" x1="775" x2="850" y1="122.5" y2="122.5" stroke-width="1.5"/>
@@ -269,4 +269,8 @@
 <text x="735" y="109.5" text-anchor="middle">扫 EQH · 信号 K</text>
 <path class="arrow" d="M765,161.7 l-4,-6 h8 z"/>
 <text x="765" y="151.7" text-anchor="middle">CISD（收破 80751）</text>
+<path class="arrow" d="M795,173.9 l-4,6 h8 z"/>
+<text x="795" y="193.9" text-anchor="middle">收回 81000 上方</text>
+<path class="arrow" d="M845,64 l-4,-6 h8 z"/>
+<text x="845" y="54" text-anchor="middle">扫 Asia 高 · 止损</text>
 </svg>
