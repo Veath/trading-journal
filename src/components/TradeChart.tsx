@@ -118,6 +118,8 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       borderDownColor: c.down,
       wickUpColor: c.up,
       wickDownColor: c.down,
+      // 最新价线和止损 / 目标线同色，已平仓的交易不显示，免得混淆
+      priceLineVisible: trade.status === 'open',
       // 纵轴始终包含入场 / 止损 / 目标，方便看 R:R
       autoscaleInfoProvider: (base: () => AutoscaleInfo | null) => {
         const info = base()
@@ -160,7 +162,13 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       const markers: SeriesMarker<Time>[] = [
         { time: entryTime, position: short ? 'aboveBar' : 'belowBar', shape: short ? 'arrowDown' : 'arrowUp', color: c.accent, text: '入场' },
       ]
-      if (exitMs != null) markers.push({ time: toTime(candles[indexAt(candles, exitMs, ms)].t), position: 'inBar', shape: 'circle', color: c.text2, text: '出场' })
+      if (exitMs != null) {
+        const time = toTime(candles[indexAt(candles, exitMs, ms)].t)
+        // 有出场价时画在出场价上，小圆点不遮住整根 K 线
+        markers.push(trade.exit != null
+          ? { time, position: 'atPriceMiddle', price: trade.exit, shape: 'circle', color: c.text2, text: '出场', size: 0.6 }
+          : { time, position: 'inBar', shape: 'circle', color: c.text2, text: '出场', size: 0.6 })
+      }
       const spec = sidecar.intervals?.[interval] ?? {}
       for (const m of spec.marks ?? []) {
         const above = m.pos === 'above'
@@ -180,11 +188,13 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
         ),
       )
 
+      // 按下标设可见范围：出场后的 K 线不够时右侧留空，标注文字和价格标签不会挤在边缘
       const view = VIEW[interval]
-      const last = candles[candles.length - 1].t
-      chart.timeScale().setVisibleRange({
-        from: toTime(Math.max(candles[0].t, entryMs - view.before * ms)),
-        to: toTime(Math.min(last, (exitMs ?? last) + view.after * ms)),
+      const entryIdx = indexAt(candles, entryMs, ms)
+      const lastIdx = exitMs != null ? indexAt(candles, exitMs, ms) : candles.length - 1
+      chart.timeScale().setVisibleLogicalRange({
+        from: Math.max(0, entryIdx - view.before),
+        to: Math.max(lastIdx + view.after, candles.length - 1 + 4),
       })
     }
 

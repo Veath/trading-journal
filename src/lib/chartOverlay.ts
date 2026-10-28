@@ -21,7 +21,7 @@ export interface OverlayZone {
   to?: number // 省略则延伸到右边缘
   top: number
   bottom: number
-  label?: string
+  label?: string // 画在区域左上角；想画成右侧标签时放进 tags，这里留空
   color: string
   dashed?: boolean
 }
@@ -29,7 +29,7 @@ export interface OverlayLine {
   from: number
   to?: number
   y: number
-  label?: string
+  label?: string // 画在起点上方；想画成右侧标签时放进 tags，这里留空
   labelFrom?: number
   color: string
   dash?: number[]
@@ -250,11 +250,14 @@ export class Overlay implements ISeriesPrimitive<Time> {
       ctx.font = `12px ${this.style.font}`
       ctx.textBaseline = 'alphabetic'
 
+      // 起点滚出左边界时，标签贴住左边缘，避免看不到
+      const LEFT = 6
       for (const z of this.items.zones ?? []) {
-        if (!z.label || z.to == null) continue
+        if (!z.label) continue
         const x1 = this.x(z.from)
         const y1 = this.y(z.top)
-        if (x1 != null && y1 != null) this.text(ctx, z.label, x1 - half + 6, y1 + 14, this.style.muted)
+        const x2 = z.to == null ? right : (this.x(z.to) ?? right) + half
+        if (x1 != null && y1 != null && x2 > LEFT) this.text(ctx, z.label, Math.max(x1 - half + 6, LEFT), y1 + 14, this.style.muted)
       }
 
       for (const l of this.items.lines ?? []) {
@@ -270,7 +273,7 @@ export class Overlay implements ISeriesPrimitive<Time> {
         ctx.lineTo(x2, y)
         ctx.stroke()
         ctx.setLineDash([])
-        if (l.label && l.to != null) this.text(ctx, l.label, (l.labelFrom == null ? x1 : (this.x(l.labelFrom) ?? x1)) + 2, y - 5, this.style.text)
+        if (l.label && x2 > LEFT) this.text(ctx, l.label, Math.max((l.labelFrom == null ? x1 : (this.x(l.labelFrom) ?? x1)) + 2, LEFT), y - 5, this.style.text)
       }
 
       for (const s of this.items.segments ?? []) {

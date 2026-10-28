@@ -164,8 +164,9 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
       new Overlay(
         {
           tags,
-          zones: (d.zones ?? []).map((z) => ({ ...z, color: p.zone[z.kind], dashed: z.kind === 'neutral' })),
-          lines: (d.lines ?? []).map((l) => ({ ...l, color: p.line[l.kind ?? 'neutral'], dash: p.lineDash[l.kind ?? 'neutral'] })),
+          // 延伸到右边缘的区域 / 线，名称已经画成右侧标签（tags）
+          zones: (d.zones ?? []).map((z) => ({ ...z, label: z.to == null ? undefined : z.label, color: p.zone[z.kind], dashed: z.kind === 'neutral' })),
+          lines: (d.lines ?? []).map((l) => ({ ...l, label: l.to == null ? undefined : l.label, color: p.line[l.kind ?? 'neutral'], dash: p.lineDash[l.kind ?? 'neutral'] })),
           segments: (d.segments ?? []).map((s) => toSegment(s, p)),
           spans: d.spans,
           vlines: (d.vlines ?? []).map((v) => ({ at: v.at, label: d.panel ? undefined : v.label, color: v.kind === 'accent' ? c.accent : c.muted, width: v.kind === 'accent' ? 1.4 : 1 })),
