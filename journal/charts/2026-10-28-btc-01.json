@@ -1,6 +1,7 @@
 {
   "symbol": "BTCUSDT",
   "tz": "+08:00",
+  "exitTime": "2026-10-28 16:26",
   "intervals": {
     "1d": {
       "marks": [
