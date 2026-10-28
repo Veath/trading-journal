@@ -365,7 +365,8 @@ a.tag:hover { color: var(--text); border-color: var(--accent-ring); }
 .shots { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .shots a { display: block; overflow-x: auto; }
 .shots img { display: block; max-width: 100%; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-.shots img[src$='.svg'], .shots img[src^='data:image/svg'] { width: 100%; }
+/* 生成的 SVG 自带边框和圆角 */
+.shots img[src$='.svg'], .shots img[src^='data:image/svg'] { width: 100%; border: 0; border-radius: 10px; }
 
 /* ---------- Markdown ---------- */
 .markdown { line-height: 1.75; overflow-wrap: anywhere; }
@@ -381,12 +382,12 @@ a.tag:hover { color: var(--text); border-color: var(--accent-ring); }
 .markdown td, .markdown th { border-color: var(--grid); }
 .markdown th { background: var(--surface-2); color: var(--text-2); border-bottom-color: var(--border); }
 .markdown tbody tr:hover td { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
-.markdown blockquote { margin: 12px 0; padding: 8px 14px; border-left: 2px solid var(--accent); background: linear-gradient(90deg, var(--accent-soft), transparent 80%); border-radius: 0 8px 8px 0; color: var(--text-2); box-shadow: -4px 0 12px -6px var(--accent-ring); }
+.markdown blockquote { margin: 12px 0; padding: 8px 14px; border-left: 2px solid var(--accent); background: linear-gradient(90deg, color-mix(in srgb, var(--accent-soft) 70%, transparent), transparent 70%); border-radius: 0 6px 6px 0; color: var(--text-2); }
 .markdown blockquote p { margin: 0; }
 .markdown pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; }
 .markdown pre code { background: none; border: 0; padding: 0; }
 .markdown img { max-width: 100%; height: auto; }
-.markdown img[src$='.svg'], .markdown img[src^='data:image/svg'] { display: block; margin: 16px 0; border-radius: var(--radius); border: 1px solid var(--border); }
+.markdown img[src$='.svg'], .markdown img[src^='data:image/svg'] { display: block; margin: 16px 0; border-radius: 10px; box-shadow: var(--panel-shadow); }
 
 /* ---------- 学习笔记 ---------- */
 .notes { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 16px; align-items: start; }
