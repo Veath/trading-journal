@@ -362,6 +362,24 @@ a.tag:hover { color: var(--text); border-color: var(--accent-ring); }
 .fields > div { padding-left: 12px; border-left: 1px solid var(--border); }
 .fields dt { color: var(--muted); font-size: 12px; }
 .fields dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+/* lightweight-charts 内部用 <table> 排版，不能受全局和 .markdown 的表格样式影响 */
+div.tv-lightweight-charts table { display: table; width: auto; max-width: none; margin: 0; overflow: visible; border-collapse: separate; }
+div.tv-lightweight-charts td, div.tv-lightweight-charts th { padding: 0; border: 0; min-width: 0; white-space: nowrap; }
+.markdown .tv-lightweight-charts tbody tr:hover td { background: none; }
+
+/* 交易详情的行情图（lightweight-charts） */
+.trade-chart { position: relative; height: 460px; border-radius: var(--radius-sm); overflow: hidden; }
+.trade-chart-canvas { position: absolute; inset: 0; }
+.trade-chart-msg {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px; text-align: center; color: var(--muted); background: color-mix(in srgb, var(--surface) 85%, transparent);
+  z-index: 3; /* 盖在图表画布（z-index 1、2）上面 */
+}
+/* 加载失败：不留空白图表区，只显示一行提示 */
+.trade-chart.failed { height: auto; }
+.trade-chart.failed .trade-chart-canvas { display: none; }
+.trade-chart.failed .trade-chart-msg { position: static; padding: 12px 16px; }
+.trade-chart-msg p { margin: 4px 0; }
 .shots { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .shots a { display: block; overflow-x: auto; }
 .shots img { display: block; max-width: 100%; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
@@ -387,6 +405,12 @@ a.tag:hover { color: var(--text); border-color: var(--accent-ring); }
 .markdown pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; }
 .markdown pre code { background: none; border: 0; padding: 0; }
 .markdown img { max-width: 100%; height: auto; }
+/* 笔记中的交互示意图（lightweight-charts，数据来自 scripts/diagrams） */
+.diagram { margin: 16px 0; padding: 12px 12px 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--panel-shadow); }
+.diagram figcaption { position: relative; padding-left: 11px; margin-bottom: 8px; font-weight: 650; color: var(--text); }
+.diagram figcaption::before { content: ''; position: absolute; left: 0; top: 4px; width: 3px; height: 14px; border-radius: 2px; background: var(--accent); }
+.diagram-canvas { position: relative; width: 100%; }
+.diagram-loading { margin: 16px 0; padding: 140px 16px; text-align: center; color: var(--muted); border: 1px solid var(--border); border-radius: 10px; }
 .markdown img[src$='.svg'], .markdown img[src^='data:image/svg'] { display: block; margin: 16px 0; border-radius: 10px; box-shadow: var(--panel-shadow); }
 
 /* ---------- 学习笔记 ---------- */
@@ -431,6 +455,7 @@ a.tag:hover { color: var(--text); border-color: var(--accent-ring); }
 }
 
 @media (max-width: 720px) {
+  .trade-chart { height: 360px; }
   body { font-size: 15px; }
   main { padding: 16px 16px calc(84px + env(safe-area-inset-bottom)); }
   /* backdrop-filter 会让 fixed 子元素相对顶栏定位，窄屏改用实色背景，底部导航才能贴住屏幕底部 */

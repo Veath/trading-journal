@@ -34,7 +34,7 @@ pnpm build            # 类型检查 + 打包
 | 页面 | 内容 |
 |---|---|
 | 概览 | 核心指标、权益曲线（累计 R + 回撤）、R 分布、执行质量、错误的代价、分维度统计；可按时间 / 策略 / 品种筛选 |
-| 交易 | 交易列表，点击查看详情（字段、截图、复盘正文），支持上一笔 / 下一笔 |
+| 交易 | 交易列表，点击查看详情（字段、行情图、截图、复盘正文），支持上一笔 / 下一笔 |
 | 每日日志 | 盘前计划、心理检查、盘后复盘，并汇总当天交易的 R |
 | 学习笔记 | 渲染 `notes/` 下的 Markdown 和插图，按主题分组：ICT、交易心理 & 日志、导师、自然交易理论、RSI |
 
@@ -88,9 +88,19 @@ src/
 - `status: missed`：符合计划但没做的机会，用「如果做了」的 exit 计算潜在 R，不计入正式统计
 - 正文按模板写：交易前计划 → 交易中执行 → 交易后复盘 → 一句话教训
 
-### 复盘图
+### 行情图
 
-加密货币交易可以用真实行情生成复盘图：
+交易详情页有交互式行情图（TradingView `lightweight-charts`），打开页面时在浏览器里直接拉取 Binance USDT 永续的公开 K 线，不需要账户或密钥：
+
+- 周期切换：默认日线 / 4H / 1H，旁注 `timeframes` 可加 15m；初始停在交易的 `timeframe`
+- 入场、止损、目标、出场画成价格线，入场 / 出场 K 线加箭头；`journal/charts/<id>.json` 里的 zones / lines / marks 同样会画上去
+- 持仓中（`status: open`）的交易每 30 秒刷新最新 K 线
+- 目前只支持 Binance USDT 永续上有的品种；交易所代码和 `symbol` 推断不一致时，在旁注里写 `"symbol": "BTCUSDT"`
+- 行情图正常时不再显示 `trade:chart` 生成的静态复盘图；浏览器拉不到行情（网络或地区限制）时，自动改为显示这些静态图兜底
+
+### 复盘图（静态 SVG）
+
+需要静态图（GitHub 上直接查看、离线归档）时，可以用同样的行情生成复盘图：
 
 ```bash
 pnpm trade:chart 2026-10-28-btc-01
@@ -117,7 +127,7 @@ pnpm trade:chart 2026-10-28-btc-01
 
 - **ICT**：从 [学习路线](notes/ict/00-overview.md) 开始，依次是市场结构、流动性、PD Arrays、时间、HTF Bias、交易模型、风险执行；FVG、Order Block、Breaker、Unicorn、Power of 3、2022 Model 等配有 K 线示意图
 - **交易心理 & 日志**：从 [目录](notes/psychology/00-overview.md) 开始；[情绪词汇表](notes/psychology/02-emotions.md) 和 [错误分类](notes/psychology/05-mistakes.md) 定义了日志中 `emotions`、`mistakes` 的统一用词
-- **示意图**：改 `scripts/diagrams/` 下对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`、`ema.ts`、`macd.ts`、`ntt.ts`）中的 K 线数据和标注，运行 `pnpm diagrams` 重新生成，不要手改 SVG；RSI、VWAP、成交量分布、EMA、MACD、Fib 回撤 / 趋势时间、量能曲线由 `calc.ts` 从 K 线算出
+- **示意图**：改 `scripts/diagrams/` 下对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`、`ema.ts`、`macd.ts`、`ntt.ts`）中的 K 线数据和标注，运行 `pnpm diagrams` 重新生成，不要手改 SVG。仪表盘里这些图显示为可拖动、缩放、悬停看价格的交互图（同一份数据，用 `lightweight-charts` 绘制），GitHub 上显示 SVG；RSI、VWAP、成交量分布、EMA、MACD、Fib 回撤 / 趋势时间、量能曲线由 `calc.ts` 从 K 线算出
 
 ## AI 导师
 

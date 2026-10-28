@@ -1,8 +1,18 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { noteAssetUrl, notes, type Note } from '../lib/load'
+import { allDiagrams } from '../../scripts/diagrams/all.ts'
+import type { Diagram } from '../../scripts/diagrams/render.ts'
 import { href } from '../lib/router'
 import Markdown from '../components/Markdown'
 import { handleRepoLinkClick, resolveRepoPath } from '../lib/links'
+
+// 交互图表按需加载，不进首页的包
+const DiagramChart = lazy(() => import('../components/DiagramChart'))
+
+/** 生成的示意图 notes/<主题>/img/<file>.svg → 定义，笔记里引用这些图时换成交互版 */
+const DIAGRAMS = new Map<string, Diagram>(
+  Object.entries(allDiagrams).flatMap(([topic, list]) => list.map((d) => [`notes/${topic}/img/${d.file}.svg`, d] as const)),
+)
 
 const CATEGORY_LABELS: Record<string, string> = {
   ict: 'ICT',
@@ -36,10 +46,23 @@ export default function Notes({ path }: { path: string }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [drawerOpen])
 
+  const notePath = `notes/${current?.path}`
+  const resolveImage = useCallback((src: string) => {
+    const path = resolveRepoPath(notePath, src)
+    return path ? noteAssetUrl(path) : undefined
+  }, [notePath])
+  const embedImage = useCallback((src: string) => {
+    const path = resolveRepoPath(notePath, src)
+    const diagram = path ? DIAGRAMS.get(path) : undefined
+    return diagram && (
+      <Suspense fallback={<div className="diagram-loading">{diagram.title}</div>}>
+        <DiagramChart diagram={diagram} />
+      </Suspense>
+    )
+  }, [notePath])
+
   if (!current) return <div className="empty card">notes/ 目录下还没有笔记</div>
   const noteHref = (n: Note) => href('notes', ...n.path.split('/'))
-
-  const notePath = `notes/${current.path}`
 
   return (
     <div className="notes">
@@ -66,10 +89,7 @@ export default function Notes({ path }: { path: string }) {
         ))}
       </aside>
       <article className="card note-body" onClick={(e) => handleRepoLinkClick(e, notePath)}>
-        <Markdown source={current.body} resolveImage={(src) => {
-          const path = resolveRepoPath(notePath, src)
-          return path ? noteAssetUrl(path) : undefined
-        }} />
+        <Markdown source={current.body} resolveImage={resolveImage} embedImage={embedImage} />
         <nav className="note-pager" aria-label="翻页">
           {prev ? (
             <a href={noteHref(prev)}>

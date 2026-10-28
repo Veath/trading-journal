@@ -1,3 +1,4 @@
+import { Suspense, lazy, useState } from 'react'
 import { screenshotUrl, trades } from '../lib/load'
 import { fmtMoney, fmtNum, fmtR, signClass } from '../lib/format'
 import { href } from '../lib/router'
@@ -5,10 +6,20 @@ import Markdown from '../components/Markdown'
 import RiskLadder from '../components/RiskLadder'
 import { handleRepoLinkClick } from '../lib/links'
 
+// 行情图按需加载，不进首页的包
+const TradeChart = lazy(() => import('../components/TradeChart'))
+
 export default function TradeDetail({ id }: { id: string }) {
   const index = trades.findIndex((t) => t.id === id)
   const t = trades[index]
+  const [chartFailedId, setChartFailedId] = useState<string>()
   if (!t) return <div className="empty card">找不到交易 {id}</div>
+  // pnpm trade:chart 生成的静态复盘图（<id>-1d.svg 等）与交互行情图内容相同：
+  // 行情图正常时不显示；没有 time（不画行情图）或行情加载失败时作为兜底显示
+  const generated = new RegExp(`^${t.id}-(1d|4h|1h|15m)\\.svg$`)
+  const showGenerated = !t.time || chartFailedId === t.id
+  const shots = (t.screenshots ?? []).filter((s) => showGenerated || !generated.test(s))
+  const hasFallback = (t.screenshots ?? []).some((s) => generated.test(s) && screenshotUrl(s))
   const prev = trades[index - 1]
   const next = trades[index + 1]
 
@@ -81,9 +92,14 @@ export default function TradeDetail({ id }: { id: string }) {
           </div>
         ) : null}
       </section>
-      {t.screenshots?.length ? (
+      {t.time && (
+        <Suspense fallback={<section className="card"><div className="trade-chart" /></section>}>
+          <TradeChart key={t.id} trade={t} hasFallback={hasFallback} onError={() => setChartFailedId(t.id)} />
+        </Suspense>
+      )}
+      {shots.length ? (
         <section className="card shots">
-          {t.screenshots.map((s) => {
+          {shots.map((s) => {
             const url = screenshotUrl(s)
             return url ? (
               <a key={s} href={url} target="_blank" rel="noreferrer">

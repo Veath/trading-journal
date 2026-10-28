@@ -30,7 +30,8 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - 没有后端也没有数据库。`src/lib/load.ts` 在构建时用 `import.meta.glob` 读取 `journal/**/*.md` 和 `notes/**/*.md`。
 - 数据流：Markdown → `parse.ts`（解析 frontmatter，计算 `rMultiple`、`plannedRR`、`outcome`）→ `stats.ts`（纯函数统计）→ `pages/` 渲染。
 - 路由是 `src/lib/router.ts` 里的极简 hash 路由（`#/trades/:id`、`#/notes/...`），不要引入 react-router。
-- 图表用手写 SVG（`EquityChart`、`RHistogram`），不要引入图表库。
+- 统计图表用手写 SVG（`EquityChart`、`RHistogram`），不要引入图表库。K 线类图表例外，统一用 TradingView 的 `lightweight-charts`：交易详情的行情图 `TradeChart`，以及笔记里的交互示意图 `DiagramChart`。两者共用 `src/lib/chartTheme.ts`（配色）和 `src/lib/chartOverlay.ts`（区域、线段、括号、竖线、成交量分布、右侧标签等标注，横坐标用 K 线下标）。lightweight-charts 内部用 `<table>` 排版，`styles.css` 里有对应的样式隔离，改表格样式时注意不要影响它。
+- 行情数据：`src/lib/market.ts` 在浏览器里直接请求 Binance USDT 永续公开 K 线（`fapi.binance.com`，无需密钥）；`scripts/trade-chart` 也复用它。持仓中的交易每 30 秒刷新最新 K 线。目前只支持 Binance 上有的品种。
 - 样式集中在 `src/styles.css`，颜色用 CSS 变量，同时支持浅色和深色模式。盈利 = 蓝色（`--pos`），亏损 = 红色（`--neg`），数字始终带 +/- 号。
 - 部署：push 到 `main` 触发 `.github/workflows/deploy.yml`，测试 + 构建后发布到 GitHub Pages；`vite.config.ts` 的 `base` 由 CI 的 `BASE_PATH` 设为 `/trading-journal/`。
 
@@ -49,7 +50,7 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - `notes/<主题>/` 下用数字前缀控制顺序（`00-overview.md` 为目录页），第一行 `# 标题` 即导航名。
 - 笔记之间用相对路径链接（`./02-liquidity.md`、`../ict/checklist.md`）；仪表盘会在站内跳转，指向仓库其他文件的链接会打开 GitHub。
 - 笔记插图用相对路径引用（`![说明](./img/fvg.svg)`），仪表盘会自动解析。
-- K 线示意图由 `scripts/diagrams/` 生成：在对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`、`ema.ts`、`macd.ts`、`ntt.ts`（自然交易理论），在 `all.ts` 登记）里改 OHLC 和标注，然后运行 `pnpm diagrams`，不要手改生成的 SVG。RSI / VWAP / Volume Profile / EMA / MACD / Fib 回撤与趋势时间 / 多空量能曲线由 `calc.ts` 从 K 线 + 成交量计算，不要手填指标值。`diagrams.test.ts` 会检查 OHLC 是否合法并测试指标公式。
+- K 线示意图由 `scripts/diagrams/` 生成：在对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`、`ema.ts`、`macd.ts`、`ntt.ts`（自然交易理论），在 `all.ts` 登记）里改 OHLC 和标注，然后运行 `pnpm diagrams`，不要手改生成的 SVG。仪表盘里，笔记引用的这些 SVG 会自动换成 `DiagramChart` 交互图（`Notes.tsx` 按 `notes/<主题>/img/<file>.svg` 匹配定义），GitHub 上仍显示 SVG；所以新增标注类型时，`render.ts` 和 `DiagramChart.tsx` 要一起改。RSI / VWAP / Volume Profile / EMA / MACD / Fib 回撤与趋势时间 / 多空量能曲线由 `calc.ts` 从 K 线 + 成交量计算，不要手填指标值。`diagrams.test.ts` 会检查 OHLC 是否合法并测试指标公式。
 - 新主题目录需要在 `src/pages/Notes.tsx` 的 `CATEGORY_LABELS` 里加中文名。
 - `notes/psychology/course-notes.md` 是用户自己的课程笔记，不要代写课程内容；其余通用笔记不是课程摘录，不要声称出自该课程。
 

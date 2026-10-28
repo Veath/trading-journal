@@ -5,30 +5,21 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseTrade } from '../../src/lib/parse.ts'
-import { render, type Diagram, type Line, type Mark, type OHLC, type Zone } from '../diagrams/render.ts'
+import { render, type Diagram, type Line, type Mark, type Zone } from '../diagrams/render.ts'
+import {
+  DEFAULT_TIMEFRAMES,
+  binanceSymbol,
+  fetchKlines,
+  indexAt,
+  offsetMs,
+  parseTime,
+  tradeTz,
+  type Interval,
+  type Sidecar,
+} from '../../src/lib/market.ts'
 
 const ROOT = join(import.meta.dirname, '../..')
 
-interface Candle {
-  t: number // 开盘时间 ms
-  ohlc: OHLC
-}
-
-/** 旁注文件中的时间写成「YYYY-MM-DD HH:mm」，按 tz 解释 */
-interface Sidecar {
-  symbol?: string // 交易所代码，如 BTCUSDT；默认由交易的 symbol 推断
-  tz?: string // 交易时间与图表时间轴的时区偏移，如 "+08:00"；默认纽约时间（与模板约定一致）
-  exitTime?: string // 平仓时间，用于确定图表右边界
-  timeframes?: Interval[] // 要生成的周期，默认 1d / 4h / 1h
-  intervals?: Partial<Record<Interval, IntervalSpec>>
-}
-interface IntervalSpec {
-  zones?: (Omit<Zone, 'from' | 'to'> & { from: string; to?: string })[]
-  lines?: (Omit<Line, 'from' | 'to' | 'labelFrom'> & { from: string; to?: string })[]
-  marks?: (Omit<Mark, 'at'> & { at: string })[]
-}
-
-type Interval = '1d' | '4h' | '1h' | '15m'
 const SETTINGS: Record<Interval, { ms: number; before: number; after: number; step: number; label: string }> = {
   '1d': { ms: 864e5, before: 30, after: 3, step: 18, label: '日线' },
   '4h': { ms: 4 * 36e5, before: 42, after: 6, step: 14, label: '4H' },
@@ -51,37 +42,6 @@ function findTradeFile(id: string): string {
   return file
 }
 
-/** 纽约时区在某天的 UTC 偏移，如 "-04:00" */
-function newYorkOffset(date: string): string {
-  const name = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', timeZoneName: 'shortOffset' })
-    .formatToParts(new Date(`${date}T12:00:00Z`))
-    .find((p) => p.type === 'timeZoneName')!.value // "GMT-4"
-  const h = Number(name.replace('GMT', '') || 0)
-  return `${h < 0 ? '-' : '+'}${String(Math.abs(h)).padStart(2, '0')}:00`
-}
-
-const parseTime = (s: string, tz: string) => new Date(`${s.replace(' ', 'T')}:00${tz}`).getTime()
-
-function offsetMs(tz: string): number {
-  const m = /^([+-])(\d{2}):(\d{2})$/.exec(tz)!
-  return (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) * 6e4
-}
-
-async function fetchKlines(symbol: string, interval: Interval, start: number, end: number): Promise<Candle[]> {
-  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&startTime=${start}&endTime=${end}&limit=1000`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Binance 请求失败 ${res.status}：${await res.text()}`)
-  const rows = (await res.json()) as [number, string, string, string, string][]
-  return rows.map((r) => ({ t: r[0], ohlc: [Number(r[1]), Number(r[2]), Number(r[3]), Number(r[4])] }))
-}
-
-/** 时间 → 所在 K 线下标 */
-function indexAt(candles: Candle[], ms: number, intervalMs: number): number {
-  const i = candles.findIndex((c) => ms >= c.t && ms < c.t + intervalMs)
-  if (i >= 0) return i
-  return ms < candles[0].t ? 0 : candles.length - 1
-}
-
 async function main() {
   const id = process.argv[2]
   if (!id) {
@@ -94,8 +54,8 @@ async function main() {
   const sidecarFile = join(ROOT, 'journal/charts', `${id}.json`)
   const sidecar: Sidecar = existsSync(sidecarFile) ? JSON.parse(readFileSync(sidecarFile, 'utf8')) : {}
 
-  const symbol = sidecar.symbol ?? (trade.symbol.endsWith('USDT') ? trade.symbol : `${trade.symbol}USDT`)
-  const tz = sidecar.tz ?? newYorkOffset(trade.date)
+  const symbol = binanceSymbol(trade, sidecar)
+  const tz = tradeTz(trade, sidecar)
   if (!trade.time) throw new Error('交易缺少 time 字段，无法定位入场 K 线')
   const entryMs = parseTime(`${trade.date} ${trade.time}`, tz)
   const exitMs = sidecar.exitTime ? parseTime(sidecar.exitTime, tz) : undefined
@@ -105,7 +65,7 @@ async function main() {
   const dirLabel = trade.direction === 'long' ? '做多' : '做空'
 
   const files: string[] = []
-  for (const interval of sidecar.timeframes ?? (['1d', '4h', '1h'] as Interval[])) {
+  for (const interval of sidecar.timeframes ?? DEFAULT_TIMEFRAMES) {
     const cfg = SETTINGS[interval]
     const start = entryMs - cfg.before * cfg.ms
     const end = Math.min(Date.now(), (exitMs ?? Date.now()) + cfg.after * cfg.ms)
@@ -144,7 +104,7 @@ async function main() {
     const diagram: Diagram = {
       file: `${id}-${interval}`,
       title: `${symbol} ${cfg.label}  ${trade.date} ${dirLabel}（UTC${tz}）`,
-      candles: candles.map((c) => c.ohlc),
+      candles: candles.map((c) => [c.open, c.high, c.low, c.close]),
       zones,
       lines,
       marks,
