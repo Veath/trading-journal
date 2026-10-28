@@ -1,12 +1,14 @@
-// 用法：pnpm diagrams  → 生成 notes/ict/img/*.svg
+// 用法：pnpm diagrams  → 生成 notes/<主题>/img/*.svg
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { render } from './render.ts'
-import { ictDiagrams } from './ict.ts'
+import { allDiagrams } from './all.ts'
 
-const outDir = join(import.meta.dirname, '../../notes/ict/img')
-mkdirSync(outDir, { recursive: true })
-for (const d of ictDiagrams) {
-  writeFileSync(join(outDir, `${d.file}.svg`), render(d))
-  console.log(`notes/ict/img/${d.file}.svg`)
+for (const [topic, diagrams] of Object.entries(allDiagrams)) {
+  const outDir = join(import.meta.dirname, `../../notes/${topic}/img`)
+  mkdirSync(outDir, { recursive: true })
+  for (const d of diagrams) {
+    writeFileSync(join(outDir, `${d.file}.svg`), render(d))
+    console.log(`notes/${topic}/img/${d.file}.svg`)
+  }
 }

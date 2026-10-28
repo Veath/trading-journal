@@ -8,4 +8,6 @@
 | [psychology/](./psychology/00-overview.md) | Trade Psychology & Effective Journaling：过程与结果、情绪、日常流程、日志方法、错误分类、交易计划 |
 | [mentors/](./mentors/keyshotvv/00-profile.md) | 导师资料：从公开内容提炼的交易风格、规则、心态，配合 `keyshot-mentor` skill 使用 |
 | natural-trading-theory/ | 自然交易理论 |
-| rsi/ | RSI 等指标 |
+| [rsi/](./rsi/00-overview.md) | RSI：计算与 Wilder 平滑、超买超卖、区间切换、背离、Failure Swing、与 ICT 结合 |
+| [vwap/](./vwap/00-overview.md) | VWAP：计算、锚点（Session / RTH / Anchored）、标准差带、日型判断、与 ICT 结合 |
+| [frvp/](./frvp/00-overview.md) | FRVP（Fixed Range Volume Profile）：POC、Value Area、HVN / LVN、分布形态、区间选择、与 ICT 结合 |

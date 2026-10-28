@@ -3,6 +3,7 @@
 // 内嵌 prefers-color-scheme，浅色 / 深色模式都可读。
 // 延伸到右边缘的线 / 区域，标签画成右侧价格轴标签（按类型着色），并自动错开避免重叠；
 // 有终点（to）的线段和区域，标签放在起点上方。
+// 指标类示意图另有：价格区折线（VWAP 及其带）、两点连线（背离）、横向成交量分布（FRVP）、下方副图（RSI）。
 
 export type OHLC = [open: number, high: number, low: number, close: number]
 
@@ -36,6 +37,38 @@ export interface Span {
   label: string
 }
 
+export interface Series {
+  values: (number | null)[] // 与 candles 对齐，null = 不画
+  label?: string // 画成右侧价格轴标签，位置取最后一个值
+  kind: 'main' | 'band'
+}
+
+export interface Segment {
+  from: [at: number, value: number]
+  to: [at: number, value: number]
+  label?: string // 画在线段中点
+  labelPos?: 'above' | 'below' // 默认 above
+}
+
+export interface Profile {
+  from: number // 区间起止 K 线下标
+  to: number
+  rows: { lo: number; hi: number; volume: number }[]
+  poc: number // rows 下标
+  va: [lo: number, hi: number] // Value Area 覆盖的 rows 下标（含两端）
+}
+
+export interface Panel {
+  title: string
+  values: (number | null)[]
+  min: number
+  max: number
+  levels?: { y: number; label?: string }[]
+  band?: { top: number; bottom: number; label: string } // 底色区域，标签画成右侧标签
+  segments?: Segment[]
+  marks?: Mark[]
+}
+
 export interface Diagram {
   file: string // 输出文件名（不含扩展名）
   title: string
@@ -45,6 +78,10 @@ export interface Diagram {
   marks?: Mark[]
   spans?: Span[] // 顶部括号，用于标注阶段
   big?: { ohlc: OHLC; label: string } // 右侧放大的汇总 K 线（如日线）
+  series?: Series[]
+  segments?: Segment[]
+  profile?: Profile // 横向柱从区间左边缘向右画，最长占区间宽度的 60%
+  panel?: Panel // 价格区下方的副图
   // —— 以下用于真实行情图（交易复盘），示意图不需要 ——
   step?: number // 每根 K 线占宽，默认 26；K 线多时调小
   xLabels?: { at: number; text: string }[] // 底部时间轴标签
@@ -58,6 +95,8 @@ const GUTTER_GAP = 14 // K 线区与右侧标签栏的间距
 const LABEL_MIN_GAP = 20 // 右侧标签之间的最小纵向间距
 const TAG_PAD = 6 // 价格轴标签左右内边距
 const TAG_H = 18
+const PANEL_GAP = 34 // 价格区与副图的间距（含副图标题）
+const PANEL_H = 140
 
 /** 整齐的价格刻度 */
 function niceTicks(min: number, max: number, count = 5): number[] {
@@ -152,6 +191,25 @@ const STYLE = `
   }
 `
 
+// 指标元素（折线、连线、成交量分布、副图）的样式，只在用到时输出，保持普通示意图不变
+const INDICATOR_STYLE = `
+  .s-main { stroke: #c98500; stroke-width: 2; fill: none; }
+  .s-band { stroke: #717c8e; stroke-width: 1.2; stroke-dasharray: 5 3; fill: none; }
+  .s-osc { stroke: #475163; stroke-width: 1.6; fill: none; }
+  .seg { stroke: #c98500; stroke-width: 2; }
+  .p-row { fill: rgba(71, 81, 99, 0.16); }
+  .p-va { fill: rgba(42, 120, 214, 0.22); }
+  .p-poc { fill: rgba(212, 145, 34, 0.55); }
+  @media (prefers-color-scheme: dark) {
+    .s-main, .seg { stroke: #f0b44c; }
+    .s-band { stroke: #8293ab; }
+    .s-osc { stroke: #c5d0de; }
+    .p-row { fill: rgba(160, 176, 197, 0.14); }
+    .p-va { fill: rgba(61, 139, 255, 0.24); }
+    .p-poc { fill: rgba(240, 180, 76, 0.5); }
+  }
+`
+
 // 背景渐变、坐标纸网格、标题下发光线、K 线辉光（仅深色模式经 CSS 启用）
 const DEFS = `<defs>
 <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f6fa"/></linearGradient>
@@ -176,17 +234,28 @@ export function render(d: Diagram): string {
   const gutterLabels = [
     ...(d.zones ?? []).filter((z) => z.to == null && z.label).map((z) => ({ label: z.label!, price: (z.top + z.bottom) / 2, kind: z.kind as string })),
     ...(d.lines ?? []).filter((l) => l.to == null && l.label).map((l) => ({ label: l.label!, price: l.y, kind: l.kind ?? 'neutral' })),
+    ...(d.series ?? [])
+      .filter((s) => s.label)
+      .map((s) => ({ label: s.label!, price: s.values.filter((v) => v != null).at(-1)!, kind: s.kind === 'main' ? 'accent' : 'neutral' })),
   ]
-  const gutterW = gutterLabels.length ? GUTTER_GAP + Math.max(...gutterLabels.map((g) => textWidth(g.label))) + TAG_PAD * 2 : 0
+  const panelLabels = [
+    ...(d.panel?.levels ?? []).filter((l) => l.label).map((l) => ({ label: l.label!, price: l.y, kind: 'neutral' })),
+    ...(d.panel?.band ? [{ label: d.panel.band.label, price: (d.panel.band.top + d.panel.band.bottom) / 2, kind: 'bull' }] : []),
+  ]
+  const tagged = [...gutterLabels, ...panelLabels]
+  const gutterW = tagged.length ? GUTTER_GAP + Math.max(...tagged.map((g) => textWidth(g.label))) + TAG_PAD * 2 : 0
   const plotRight = PAD.left + n * STEP
   const width = Math.ceil(Math.max(plotRight + gutterW, DEFAULT_PAD.left + textWidth(d.title, 14)) + PAD.right)
-  const height = PAD.top + PLOT_H + PAD.bottom
+  const panelTop = PAD.top + PLOT_H + PANEL_GAP
+  const height = PAD.top + PLOT_H + (d.panel ? PANEL_GAP + PANEL_H : 0) + PAD.bottom
 
   const prices = [
     ...d.candles.flatMap((c) => (c ? [c[1], c[2]] : [])),
     ...(d.zones ?? []).flatMap((z) => [z.top, z.bottom]),
     ...(d.lines ?? []).map((l) => l.y),
     ...(d.big ? [d.big.ohlc[1], d.big.ohlc[2]] : []),
+    ...(d.series ?? []).flatMap((s) => s.values.filter((v): v is number => v != null)),
+    ...(d.segments ?? []).flatMap((s) => [s.from[1], s.to[1]]),
   ]
   const lo = Math.min(...prices)
   const hi = Math.max(...prices)
@@ -222,6 +291,18 @@ export function render(d: Diagram): string {
     )
   }
 
+  if (d.profile) {
+    const p = d.profile
+    const x1 = x(p.from) - STEP / 2
+    const maxW = (zoneX2(p.to) - x1) * 0.6
+    const maxV = Math.max(...p.rows.map((r) => r.volume))
+    p.rows.forEach((r, i) => {
+      const cls = i === p.poc ? 'p-poc' : i >= p.va[0] && i <= p.va[1] ? 'p-va' : 'p-row'
+      const top = y(r.hi)
+      out.push(`<rect class="${cls}" x="${x1}" y="${top}" width="${r1((r.volume / maxV) * maxW)}" height="${r1(Math.max(1, y(r.lo) - top - 1))}"/>`)
+    })
+  }
+
   for (const s of d.spans ?? []) {
     const x1 = x(s.from) - STEP / 2 + 3
     const x2 = x(s.to) + STEP / 2 - 3
@@ -247,6 +328,28 @@ export function render(d: Diagram): string {
     out.push(`<text class="muted" x="${cx}" y="${y(d.big.ohlc[2]) + 20}" text-anchor="middle">${esc(d.big.label)}</text>`)
   }
 
+  /** 折线，遇到 null 断开 */
+  const polyline = (values: (number | null)[], fy: (v: number) => number, cls: string) => {
+    let dPath = ''
+    let pen = false
+    values.forEach((v, i) => {
+      if (v == null || Number.isNaN(v)) return void (pen = false)
+      dPath += `${pen ? 'L' : 'M'}${x(i)},${fy(v)} `
+      pen = true
+    })
+    if (dPath) out.push(`<path class="${cls}" d="${dPath.trim()}"/>`)
+  }
+  const drawSegment = (s: Segment, fy: (v: number) => number) => {
+    const [x1, y1, x2, y2] = [x(s.from[0]), fy(s.from[1]), x(s.to[0]), fy(s.to[1])]
+    out.push(`<line class="seg" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`)
+    out.push(`<circle class="arrow" cx="${x1}" cy="${y1}" r="3"/><circle class="arrow" cx="${x2}" cy="${y2}" r="3"/>`)
+    const ly = s.labelPos === 'below' ? Math.max(y1, y2) + 18 : Math.min(y1, y2) - 8
+    if (s.label) out.push(`<text x="${r1((x1 + x2) / 2)}" y="${r1(ly)}" text-anchor="middle">${esc(s.label)}</text>`)
+  }
+
+  for (const s of d.series ?? []) polyline(s.values, y, `s-${s.kind}`)
+  for (const s of d.segments ?? []) drawSegment(s, y)
+
   for (const l of d.lines ?? []) {
     const x1 = x(l.from)
     const x2 = lineX2(l.to)
@@ -258,36 +361,64 @@ export function render(d: Diagram): string {
     if (z.label && z.to != null) out.push(`<text class="muted" x="${x(z.from) - STEP / 2 + 6}" y="${y(z.top) + 14}">${esc(z.label)}</text>`)
   }
 
-  const gutterYs = spreadLabels(gutterLabels.map((g) => y(g.price)))
-  gutterLabels.forEach((g, i) => {
-    const gy = gutterYs[i]
-    const lineY = y(g.price)
-    const gx = xEnd + GUTTER_GAP
-    if (Math.abs(gy - lineY) > 2) out.push(`<path class="bracket" d="M${xEnd + 2},${lineY} L${gx - 3},${gy}"/>`)
-    out.push(
-      `<g class="tag t-${g.kind}"><rect x="${gx}" y="${r1(gy - TAG_H / 2)}" width="${r1(textWidth(g.label) + TAG_PAD * 2)}" height="${TAG_H}" rx="3"/>` +
-        `<text x="${gx + TAG_PAD}" y="${gy}" dy="0.35em">${esc(g.label)}</text></g>`,
-    )
-  })
+  const drawTags = (labels: typeof gutterLabels, fy: (v: number) => number) => {
+    const gutterYs = spreadLabels(labels.map((g) => fy(g.price)))
+    labels.forEach((g, i) => {
+      const gy = gutterYs[i]
+      const lineY = fy(g.price)
+      const gx = xEnd + GUTTER_GAP
+      if (Math.abs(gy - lineY) > 2) out.push(`<path class="bracket" d="M${xEnd + 2},${lineY} L${gx - 3},${gy}"/>`)
+      out.push(
+        `<g class="tag t-${g.kind}"><rect x="${gx}" y="${r1(gy - TAG_H / 2)}" width="${r1(textWidth(g.label) + TAG_PAD * 2)}" height="${TAG_H}" rx="3"/>` +
+          `<text x="${gx + TAG_PAD}" y="${gy}" dy="0.35em">${esc(g.label)}</text></g>`,
+      )
+    })
+  }
+  drawTags(gutterLabels, y)
 
-  for (const m of d.marks ?? []) {
-    const c = d.candles[m.at]
-    if (!c) continue
+  /** 标注箭头：above 画在 top 上方，below 画在 bottom 下方 */
+  const drawMark = (m: Mark, top: number, bottom: number) => {
     const cx = x(m.at)
     if (m.pos === 'above') {
-      const ty = y(c[1]) - 6
+      const ty = top - 6
       out.push(`<path class="arrow" d="M${cx},${ty} l-4,-6 h8 z"/>`)
       out.push(`<text x="${cx}" y="${ty - 10}" text-anchor="middle">${esc(m.text)}</text>`)
     } else {
-      const ty = y(c[2]) + 6
+      const ty = bottom + 6
       out.push(`<path class="arrow" d="M${cx},${ty} l-4,6 h8 z"/>`)
       out.push(`<text x="${cx}" y="${ty + 20}" text-anchor="middle">${esc(m.text)}</text>`)
     }
   }
 
+  for (const m of d.marks ?? []) {
+    const c = d.candles[m.at]
+    if (c) drawMark(m, y(c[1]), y(c[2]))
+  }
+
+  if (d.panel) {
+    const p = d.panel
+    const py = (v: number) => r1(panelTop + ((p.max - v) / (p.max - p.min)) * PANEL_H)
+    const x0 = PAD.left
+    out.push(`<line class="grid" x1="${x0}" x2="${xEnd}" y1="${panelTop - PANEL_GAP + 6}" y2="${panelTop - PANEL_GAP + 6}"/>`)
+    out.push(`<text class="muted" x="${x0 + 4}" y="${panelTop - 8}">${esc(p.title)}</text>`)
+    if (p.band) {
+      out.push(`<rect class="z-bull" x="${x0}" y="${py(p.band.top)}" width="${xEnd - x0}" height="${r1(py(p.band.bottom) - py(p.band.top))}"/>`)
+    }
+    for (const l of p.levels ?? []) {
+      out.push(`<line class="l-neutral" x1="${x0}" x2="${xEnd}" y1="${py(l.y)}" y2="${py(l.y)}" stroke-width="1"/>`)
+    }
+    polyline(p.values, py, 's-osc')
+    for (const s of p.segments ?? []) drawSegment(s, py)
+    for (const m of p.marks ?? []) {
+      const v = p.values[m.at]
+      if (v != null) drawMark(m, py(v), py(v))
+    }
+    drawTags(panelLabels, py)
+  }
+
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(d.title)}">`,
-    `<style>${STYLE}</style>`,
+    `<style>${STYLE}${d.series || d.segments || d.profile || d.panel ? INDICATOR_STYLE : ''}</style>`,
     ...out,
     '</svg>',
     '',

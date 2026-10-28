@@ -10,6 +10,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   mentors: '导师',
   'natural-trading-theory': '自然交易理论',
   rsi: 'RSI',
+  vwap: 'VWAP',
+  frvp: 'FRVP',
 }
 
 export default function Notes({ path }: { path: string }) {
