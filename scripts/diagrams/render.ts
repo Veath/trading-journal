@@ -3,7 +3,8 @@
 // 内嵌 prefers-color-scheme，浅色 / 深色模式都可读。
 // 延伸到右边缘的线 / 区域，标签画成右侧价格轴标签（按类型着色），并自动错开避免重叠；
 // 有终点（to）的线段和区域，标签放在起点上方。
-// 指标类示意图另有：价格区折线（VWAP 及其带）、两点连线（背离）、横向成交量分布（FRVP）、下方副图（RSI）。
+// 指标类示意图另有：价格区折线（VWAP 及其带）、两点连线（背离 / 通道）、横向成交量分布（FRVP）、下方副图（RSI、成交量）、
+// 时间竖线（Fib 趋势时间）。
 
 export type OHLC = [open: number, high: number, low: number, close: number]
 
@@ -46,8 +47,15 @@ export interface Series {
 export interface Segment {
   from: [at: number, value: number]
   to: [at: number, value: number]
-  label?: string // 画在线段中点
+  label?: string // accent 画在线段中点；其他类型画在起点上方（同 Line）
   labelPos?: 'above' | 'below' // 默认 above
+  kind?: 'accent' | 'neutral' | 'bull' | 'bear' // 默认 accent（带端点圆点）；其他类型为细线，用于通道、量能趋势线
+}
+
+export interface VLine {
+  at: number // K 线下标，可为小数
+  label?: string // 画在图底部
+  kind?: 'neutral' | 'accent'
 }
 
 export interface Profile {
@@ -60,9 +68,11 @@ export interface Profile {
 
 export interface Panel {
   title: string
-  values: (number | null)[]
+  values?: (number | null)[]
   signal?: (number | null)[] // 第二条线（如 MACD 的 Signal）
   histogram?: (number | null)[] // 从 0 轴画柱，正蓝负红
+  volume?: number[] // 成交量柱，颜色跟随对应 K 线涨跌
+  curves?: { values: (number | null)[]; kind: 'bull' | 'bear' }[] // 量能曲线
   min: number
   max: number
   levels?: { y: number; label?: string }[]
@@ -84,6 +94,7 @@ export interface Diagram {
   segments?: Segment[]
   profile?: Profile // 横向柱从区间左边缘向右画，最长占区间宽度的 60%
   panel?: Panel // 价格区下方的副图
+  vlines?: VLine[] // 贯穿价格区和副图的时间竖线
   // —— 以下用于真实行情图（交易复盘），示意图不需要 ——
   step?: number // 每根 K 线占宽，默认 26；K 线多时调小
   xLabels?: { at: number; text: string }[] // 底部时间轴标签
@@ -215,6 +226,11 @@ const INDICATOR_STYLE = `
   .p-row { fill: rgba(71, 81, 99, 0.16); }
   .p-va { fill: rgba(42, 120, 214, 0.22); }
   .p-poc { fill: rgba(212, 145, 34, 0.55); }
+  .seg-neutral { stroke: #717c8e; stroke-width: 1.2; stroke-dasharray: 5 3; }
+  .seg-bull, .s-bull { stroke: #2a78d6; stroke-width: 1.8; fill: none; }
+  .seg-bear, .s-bear { stroke: #e34948; stroke-width: 1.8; fill: none; }
+  .vline { stroke: #717c8e; stroke-width: 1; stroke-dasharray: 3 3; }
+  .vline-accent { stroke: #c98500; stroke-width: 1.4; stroke-dasharray: 3 3; }
   @media (prefers-color-scheme: dark) {
     .s-main, .seg { stroke: #f0b44c; }
     .s-band { stroke: #8293ab; }
@@ -234,6 +250,10 @@ const INDICATOR_STYLE = `
     .p-row { fill: rgba(160, 176, 197, 0.14); }
     .p-va { fill: rgba(61, 139, 255, 0.24); }
     .p-poc { fill: rgba(240, 180, 76, 0.5); }
+    .seg-neutral, .vline { stroke: #8293ab; }
+    .seg-bull, .s-bull { stroke: #3d8bff; }
+    .seg-bear, .s-bear { stroke: #f2555f; }
+    .vline-accent { stroke: #f0b44c; }
   }
 `
 
@@ -330,6 +350,12 @@ export function render(d: Diagram): string {
     })
   }
 
+  const vlineBottom = d.panel ? panelTop + PANEL_H : PAD.top + PLOT_H
+  for (const v of d.vlines ?? []) {
+    out.push(`<line class="vline${v.kind === 'accent' ? '-accent' : ''}" x1="${x(v.at)}" x2="${x(v.at)}" y1="${PAD.top - 4}" y2="${vlineBottom}"/>`)
+    if (v.label) out.push(`<text class="tick" x="${x(v.at)}" y="${vlineBottom + 16}" text-anchor="middle">${esc(v.label)}</text>`)
+  }
+
   for (const s of d.spans ?? []) {
     const x1 = x(s.from) - STEP / 2 + 3
     const x2 = x(s.to) + STEP / 2 - 3
@@ -368,6 +394,11 @@ export function render(d: Diagram): string {
   }
   const drawSegment = (s: Segment, fy: (v: number) => number) => {
     const [x1, y1, x2, y2] = [x(s.from[0]), fy(s.from[1]), x(s.to[0]), fy(s.to[1])]
+    if (s.kind && s.kind !== 'accent') {
+      out.push(`<line class="seg-${s.kind}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`)
+      if (s.label) out.push(`<text class="muted" x="${x1 + 2}" y="${y1 - 5}">${esc(s.label)}</text>`)
+      return
+    }
     out.push(`<line class="seg" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`)
     out.push(`<circle class="arrow" cx="${x1}" cy="${y1}" r="3"/><circle class="arrow" cx="${x2}" cy="${y2}" r="3"/>`)
     const ly = s.labelPos === 'below' ? Math.max(y1, y2) + 18 : Math.min(y1, y2) - 8
@@ -440,11 +471,18 @@ export function render(d: Diagram): string {
       const w = Math.max(2, Math.round(STEP * 0.5))
       out.push(`<rect class="${v >= 0 ? 'h-pos' : 'h-neg'}" x="${r1(x(i) - w / 2)}" y="${top}" width="${w}" height="${r1(Math.max(0.5, bottom - top))}"/>`)
     })
-    polyline(p.values, py, 's-osc')
+    p.volume?.forEach((v, i) => {
+      const c = d.candles[i]
+      if (!c) return
+      const w = Math.max(2, Math.round(STEP * 0.5))
+      out.push(`<rect class="${c[3] >= c[0] ? 'h-pos' : 'h-neg'}" x="${r1(x(i) - w / 2)}" y="${py(v)}" width="${w}" height="${r1(Math.max(0.5, py(0) - py(v)))}"/>`)
+    })
+    for (const c of p.curves ?? []) polyline(c.values, py, `s-${c.kind}`)
+    if (p.values) polyline(p.values, py, 's-osc')
     if (p.signal) polyline(p.signal, py, 's-sig')
     for (const s of p.segments ?? []) drawSegment(s, py)
     for (const m of p.marks ?? []) {
-      const v = p.values[m.at]
+      const v = p.values?.[m.at] ?? p.volume?.[m.at]
       if (v != null) drawMark(m, py(v), py(v))
     }
     drawTags(panelLabels, py)
@@ -452,7 +490,7 @@ export function render(d: Diagram): string {
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(d.title)}">`,
-    `<style>${STYLE}${d.series || d.segments || d.profile || d.panel ? INDICATOR_STYLE : ''}</style>`,
+    `<style>${STYLE}${d.series || d.segments || d.profile || d.panel || d.vlines ? INDICATOR_STYLE : ''}</style>`,
     ...out,
     '</svg>',
     '',

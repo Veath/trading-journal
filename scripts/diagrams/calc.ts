@@ -137,3 +137,22 @@ export function candlesFromCloses(closes: number[], open: number, wick = 0.4): O
     return [o, r(Math.max(o, c) + body * wick), r(Math.min(o, c) - body * wick), c]
   })
 }
+
+/** Fib 回撤：0 = 价格出发的位置，1 = 价格要去的方向；返回各比例对应的价格 */
+export function fibLevels(p0: number, p1: number, ratios: readonly number[]): number[] {
+  return ratios.map((r) => Math.round((p0 + (p1 - p0) * r) * 100) / 100)
+}
+
+/** Fib 趋势时间：锚点 1→2 的时长为单位，从锚点 3 起按比例投射，返回 K 线下标（可为小数） */
+export function fibTime(t1: number, t2: number, t3: number, ratios: readonly number[]): number[] {
+  return ratios.map((r) => Math.round((t3 + (t2 - t1) * r) * 100) / 100)
+}
+
+/** 量能曲线：成交量按 K 线涨跌拆成多头 / 空头两组（另一方记 0），各自做 EMA 平滑 */
+export function energyCurves(candles: OHLC[], volumes: number[], period = 5): { bull: number[]; bear: number[] } {
+  const up = candles.map(([o, , , c]) => c >= o)
+  return {
+    bull: ema(volumes.map((v, i) => (up[i] ? v : 0)), period),
+    bear: ema(volumes.map((v, i) => (up[i] ? 0 : v)), period),
+  }
+}

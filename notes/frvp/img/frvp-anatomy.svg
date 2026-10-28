@@ -83,6 +83,11 @@
   .p-row { fill: rgba(71, 81, 99, 0.16); }
   .p-va { fill: rgba(42, 120, 214, 0.22); }
   .p-poc { fill: rgba(212, 145, 34, 0.55); }
+  .seg-neutral { stroke: #717c8e; stroke-width: 1.2; stroke-dasharray: 5 3; }
+  .seg-bull, .s-bull { stroke: #2a78d6; stroke-width: 1.8; fill: none; }
+  .seg-bear, .s-bear { stroke: #e34948; stroke-width: 1.8; fill: none; }
+  .vline { stroke: #717c8e; stroke-width: 1; stroke-dasharray: 3 3; }
+  .vline-accent { stroke: #c98500; stroke-width: 1.4; stroke-dasharray: 3 3; }
   @media (prefers-color-scheme: dark) {
     .s-main, .seg { stroke: #f0b44c; }
     .s-band { stroke: #8293ab; }
@@ -102,6 +107,10 @@
     .p-row { fill: rgba(160, 176, 197, 0.14); }
     .p-va { fill: rgba(61, 139, 255, 0.24); }
     .p-poc { fill: rgba(240, 180, 76, 0.5); }
+    .seg-neutral, .vline { stroke: #8293ab; }
+    .seg-bull, .s-bull { stroke: #3d8bff; }
+    .seg-bear, .s-bear { stroke: #f2555f; }
+    .vline-accent { stroke: #f0b44c; }
   }
 </style>
 <defs>

@@ -6,6 +6,7 @@ import { vwapDiagrams } from './vwap.ts'
 import { frvpDiagrams } from './frvp.ts'
 import { emaDiagrams } from './ema.ts'
 import { macdDiagrams } from './macd.ts'
+import { nttDiagrams } from './ntt.ts'
 
 export const allDiagrams: Record<string, Diagram[]> = {
   ict: ictDiagrams,
@@ -14,4 +15,5 @@ export const allDiagrams: Record<string, Diagram[]> = {
   frvp: frvpDiagrams,
   ema: emaDiagrams,
   macd: macdDiagrams,
+  'natural-trading-theory': nttDiagrams,
 }

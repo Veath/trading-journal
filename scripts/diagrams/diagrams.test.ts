@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { allDiagrams } from './all.ts'
-import { candlesFromCloses, closesFromPath, ema, macd, profileLevels, rsi, volumeProfile, vwap } from './calc.ts'
+import { candlesFromCloses, closesFromPath, ema, energyCurves, fibLevels, fibTime, macd, profileLevels, rsi, volumeProfile, vwap } from './calc.ts'
 import type { OHLC } from './render.ts'
 
 const diagrams = Object.values(allDiagrams).flat()
@@ -26,6 +26,7 @@ describe('示意图数据', () => {
         ...[...(d.segments ?? []), ...(d.panel?.segments ?? [])].flatMap((s) => [s.from[0], s.to[0]]),
         ...(d.panel?.marks ?? []).map((m) => m.at),
         ...(d.profile ? [d.profile.from, d.profile.to] : []),
+        ...(d.vlines ?? []).map((v) => v.at),
       ].filter((i): i is number => i != null)
       for (const i of refs) expect(i, d.file).toBeLessThan(n)
     }
@@ -34,7 +35,9 @@ describe('示意图数据', () => {
   it('指标序列与 K 线等长', () => {
     for (const d of diagrams) {
       for (const s of d.series ?? []) expect(s.values.length, d.file).toBe(d.candles.length)
-      if (d.panel) expect(d.panel.values.length, d.file).toBe(d.candles.length)
+      for (const v of [d.panel?.values, d.panel?.volume, ...(d.panel?.curves ?? []).map((c) => c.values)]) {
+        if (v) expect(v.length, d.file).toBe(d.candles.length)
+      }
     }
   })
 })
@@ -98,5 +101,26 @@ describe('指标计算', () => {
     const mu = macd(up)
     expect(mu.macd[49]).toBeGreaterThan(0)
     mu.histogram.forEach((h, i) => Number.isNaN(h) || expect(h).toBeCloseTo(mu.macd[i] - mu.signal[i]))
+  })
+
+  it('Fib 回撤：0 = 起点，1 = 终点，上涨和下跌方向都成立', () => {
+    expect(fibLevels(50, 60, [0, 0.382, 0.5, 0.618, 1])).toEqual([50, 53.82, 55, 56.18, 60])
+    expect(fibLevels(70, 50, [0, 0.618, 1])).toEqual([70, 57.64, 50])
+  })
+
+  it('Fib 趋势时间：以锚点 1→2 的时长为单位，从锚点 3 起投射', () => {
+    expect(fibTime(0, 10, 14, [0, 0.382, 0.618, 1, 1.618])).toEqual([14, 17.82, 20.18, 24, 30.18])
+  })
+
+  it('量能曲线：成交量按 K 线涨跌拆成多空两组后分别平滑', () => {
+    const c: OHLC[] = [
+      [10, 11, 9, 11], // 涨
+      [11, 12, 10, 10], // 跌
+      [10, 11, 9, 10], // 平收算多头
+    ]
+    expect(energyCurves(c, [4, 6, 2], 1)).toEqual({ bull: [4, 0, 2], bear: [0, 6, 0] })
+    const e = energyCurves(c, [4, 6, 2], 2)
+    expect(e.bull).toEqual([NaN, 2, 2]) // 初值 (4 + 0) / 2，之后 α = 2/3：2/3 × 2 + 1/3 × 2
+    expect(e.bear[1]).toBe(3)
   })
 })
