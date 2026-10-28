@@ -11,7 +11,7 @@ export default function GroupTable({ rows, label }: { rows: GroupRow[]; label: s
         <thead>
           <tr>
             <th>{label}</th>
-            <th className="num">笔数</th>
+            <th className="num" title="括号内为 胜 / 负 / 保本">笔数</th>
             <th className="num">胜率</th>
             <th className="num">盈亏比</th>
             <th className="num">利润因子</th>

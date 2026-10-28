@@ -6,6 +6,7 @@ import Kpi from '../components/Kpi'
 import EquityChart from '../components/EquityChart'
 import RHistogram from '../components/RHistogram'
 import GroupTable from '../components/GroupTable'
+import Select from '../components/Select'
 
 const DIMENSIONS: { key: string; label: string; fn: (t: Trade) => string | string[] | undefined }[] = [
   { key: 'setup', label: 'Setup', fn: (t) => t.setup },
@@ -42,18 +43,18 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
     <div className="stack">
       <section className="kpis">
         <Kpi label="总 R" value={fmtR(s.totalR, 1)} tone={signClass(s.totalR)} hint={s.totalPnl != null ? `盈亏 ${fmtMoney(s.totalPnl)}` : `${s.trades} 笔已平仓`} />
-        <Kpi label="胜率" value={fmtPct(s.winRate)} hint={`${s.wins} 胜 / ${s.losses} 负 / ${s.breakevens} 保本`} title="盈 / (盈 + 亏)，保本单不计入" />
-        <Kpi label="盈亏比" value={fmtNum(s.payoffRatio)} hint={`均盈 ${fmtR(s.avgWinR)} / 均亏 ${fmtR(s.avgLossR)}`} title="平均盈利 R / |平均亏损 R|" />
-        <Kpi label="期望值" value={fmtR(s.expectancyR)} tone={signClass(s.expectancyR)} hint="平均每笔交易的 R" />
-        <Kpi label="利润因子" value={fmtNum(s.profitFactor)} hint="总盈利 R / 总亏损 R" />
+        <Kpi label="胜率" value={fmtPct(s.winRate)} hint={`${s.wins} 胜 ${s.losses} 负 ${s.breakevens} 平`} title="盈 / (盈 + 亏)，保本单不计入" />
+        <Kpi label="盈亏比" value={fmtNum(s.payoffRatio)} hint={`${fmtR(s.avgWinR, 1)} / ${fmtR(s.avgLossR, 1)}`} title="平均盈利 R / |平均亏损 R|" />
+        <Kpi label="期望值" value={fmtR(s.expectancyR)} tone={signClass(s.expectancyR)} hint="平均每笔" />
+        <Kpi label="利润因子" value={fmtNum(s.profitFactor)} hint="盈利 R ÷ 亏损 R" />
         <Kpi
           label="胜率优势"
           value={edge == null ? '—' : `${edge > 0 ? '+' : ''}${(edge * 100).toFixed(1)}%`}
           tone={signClass(edge)}
-          hint={`保本所需胜率 ${fmtPct(s.breakevenWinRate)}`}
+          hint={`保本线 ${fmtPct(s.breakevenWinRate)}`}
           title="实际胜率 − 当前盈亏比下的保本胜率"
         />
-        <Kpi label="最大回撤" value={fmtR(s.maxDrawdownR, 1)} tone={signClass(s.maxDrawdownR)} hint={`最长连亏 ${s.maxLossStreak} · 连胜 ${s.maxWinStreak}`} />
+        <Kpi label="最大回撤" value={fmtR(s.maxDrawdownR, 1)} tone={signClass(s.maxDrawdownR)} hint={`连亏 ${s.maxLossStreak} 连胜 ${s.maxWinStreak}`} />
         <Kpi label="SQN" value={fmtNum(s.sqn)} hint={sqnLabel(s.sqn)} title="√N × 期望 / R 标准差；样本 < 30 时参考意义有限" />
       </section>
 
@@ -117,15 +118,9 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
         <div className="card-head">
           <div>
             <h2>分维度统计</h2>
-            <p className="sub">找到你真正赚钱的 setup / 时段 / 状态；括号内为 胜/负/保本</p>
+            <p className="sub">找出真正赚钱的 setup、时段和状态</p>
           </div>
-          <select value={dim} onChange={(e) => setDim(e.target.value)}>
-            {DIMENSIONS.map((d) => (
-              <option key={d.key} value={d.key}>
-                {d.label}
-              </option>
-            ))}
-          </select>
+          <Select label="统计维度" value={dim} onChange={setDim} options={DIMENSIONS.map((d) => ({ value: d.key, label: d.label }))} />
         </div>
         <GroupTable rows={groups} label={dimension.label} />
       </section>
