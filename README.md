@@ -22,8 +22,6 @@ pnpm test             # 单元测试
 pnpm build            # 类型检查 + 打包
 ```
 
-> `journal/trades/_example/` 和 `journal/days/2026-10-26.md` 是示例数据，看懂结构后删除，以免混入真实统计。
-
 ## 部署
 
 推送到 `main` 后，GitHub Actions（`.github/workflows/deploy.yml`）会自动跑测试、打包并部署到 GitHub Pages：
@@ -45,7 +43,6 @@ pnpm build            # 类型检查 + 打包
 ```
 journal/
   trades/YYYY/        每笔交易一个 .md
-  trades/_example/    示例数据（可删除）
   days/               每日日志
   screenshots/        图表截图，以及 trade:chart 生成的复盘图
   charts/             复盘图的旁注（<id>.json：时区、EQH、信号 K 等手动标注）

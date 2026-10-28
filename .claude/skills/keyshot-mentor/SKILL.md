@@ -37,7 +37,7 @@ description: 以 @Keyshotvv 公开分享的「ICT + PA 流动性策略」为标�
 - 单笔：读 `journal/trades/**/<id>.md`
 - 某天：读 `journal/days/<date>.md` 和当天所有交易
 - 一段时间：读该区间的所有交易，按 `src/lib/stats.ts` 的口径算出胜率、盈亏比、期望值、按计划执行率、错误标签分布（可以用 `pnpm test` 之外的临时脚本计算，但不要修改日志文件）
-- 跳过 `journal/trades/_example/` 的示例数据，除非用户要求
+- 只统计 `status: closed` 的交易；持仓中（`open`）的单只点评过程，不计入胜率等统计
 - 有截图（`screenshots`）就看截图
 
 ### 2. 用他的规则逐项检查

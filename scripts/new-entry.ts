@@ -17,6 +17,7 @@ let template = readFileSync(join(root, 'journal/templates', `${kind}.md`), 'utf8
 let file: string
 
 if (kind === 'day') {
+  mkdirSync(join(root, 'journal/days'), { recursive: true })
   file = join(root, 'journal/days', `${date}.md`)
 } else {
   template = template.replace(/^symbol: .*$/m, `symbol: ${symbol}`)
