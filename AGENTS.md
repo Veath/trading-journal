@@ -59,8 +59,8 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - 导师资料只保存转述和原帖链接，不存档原文；新增的引用必须来自 `data/mentors/*/posts.json` 或 digest 中的真实链接，不要编造对方观点。
 - 不以第一人称冒充被引用的交易员。
 - 同步流程：`pnpm mentor:collect` → 用户在已登录 X 的浏览器的「帖子」页（`x.com/<handle>`）和「回复」页（`/with_replies`）分别运行脚本并下载 JSON（两页内容不重叠，只采回复页会漏掉全部原创推文） → `pnpm mentor:ingest` → 按 skill 的「更新导师资料」提炼，并在 `00-profile.md` 的「更新记录」追加一行。
-- `scripts/mentor-sync/`：`collector.js` 是浏览器端模板（`__HANDLE__` 等占位符由 `collect.ts` 替换），依赖 X 的 DOM（`article[data-testid="tweet"]`、`time`、`tweetText`）；采集为 0 条时优先检查这些选择器。长帖在时间线上会被截断（`tweet-text-show-more-link`，记为 `truncated`），需要打开原帖补全。`store.ts` 存储与 `nextSince`，`ingest.ts` 合并、去重并生成 `digest-YYYYMMDD-HHMM.md`。
-- 代用户操作浏览器采集时，下载文件前先征得同意。
+- `scripts/mentor-sync/`：`collector.js` 是浏览器端模板（`__HANDLE__` 等占位符由 `collect.ts` 替换），依赖 X 的 DOM（`article[data-testid="tweet"]`、`time`、`tweetText`）；采集为 0 条时优先检查这些选择器。长帖在时间线上会被截断（`tweet-text-show-more-link`），脚本滚动结束后会用 `history.pushState` 站内跳到原帖页按开头文字匹配补全，失败的仍记为 `truncated`。`store.ts` 存储与 `nextSince`，`ingest.ts` 合并、去重并生成 `digest-YYYYMMDD-HHMM.md`。
+- 用户已授权：说「更新导师资料」时，由 AI 用浏览器工具完成采集 + 下载 + 同步全流程，下载采集脚本生成的 `<handle>-posts/replies-YYYY-MM-DD.json` 不需要再询问。授权只覆盖这类采集结果文件，下载其他文件仍要先问。
 
 ## 边界
 

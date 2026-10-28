@@ -33,6 +33,11 @@
     }
   }
 
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+  // 页面之前滚动过时高度不会再增长，只有到底了高度还不变才算加载不出新内容
+  const atBottom = () => window.innerHeight + window.scrollY >= document.body.scrollHeight - 200
+
+  window.scrollTo(0, 0)
   let idle = 0
   let lastCount = 0
   let lastHeight = 0
@@ -40,15 +45,40 @@
   while (idle < MAX_IDLE && stuck < 6) {
     collect()
     window.scrollBy(0, 2500)
-    await new Promise((r) => setTimeout(r, 1800))
+    await sleep(1800)
     const count = Object.keys(posts).length
     idle = count === lastCount ? idle + 1 : 0
-    stuck = document.body.scrollHeight === lastHeight ? stuck + 1 : 0
+    stuck = atBottom() && document.body.scrollHeight === lastHeight ? stuck + 1 : 0
     lastCount = count
     lastHeight = document.body.scrollHeight
     console.log(`[mentor-sync] 已收集 ${count} 条`)
   }
   collect()
+
+  // 长帖在时间线上只显示前半段：站内跳到原帖页读全文，再回到时间线。
+  // 原帖页的时间链接格式不固定，用开头文字匹配；时间线上那条带「显示更多」，不会被误认
+  const go = (path) => {
+    history.pushState({}, '', path)
+    dispatchEvent(new PopStateEvent('popstate', { state: {} }))
+  }
+  const startPath = location.pathname
+  const truncatedPosts = Object.values(posts).filter((p) => p.truncated && p.text)
+  for (const [i, p] of truncatedPosts.entries()) {
+    go(`/${HANDLE}/status/${p.id}`)
+    const head = p.text.slice(0, 20)
+    for (let t = 0; t < 20; t++) {
+      await sleep(500)
+      const art = [...document.querySelectorAll('article[data-testid="tweet"]')].find((a) =>
+        (a.querySelector('[data-testid="tweetText"]')?.innerText ?? '').startsWith(head),
+      )
+      if (!art || art.querySelector('[data-testid="tweet-text-show-more-link"]')) continue
+      const text = art.querySelector('[data-testid="tweetText"]').innerText
+      if (text.length > p.text.length) Object.assign(p, { text, truncated: false })
+      break
+    }
+    console.log(`[mentor-sync] 补全长帖 ${i + 1}/${truncatedPosts.length}${p.truncated ? '（失败）' : ''}`)
+  }
+  if (truncatedPosts.length) go(startPath)
 
   const result = {
     handle: HANDLE,
@@ -59,7 +89,7 @@
   }
   window.__mentorSync = result
   const truncated = result.posts.filter((p) => p.truncated).length
-  console.log(`[mentor-sync] 完成（${SOURCE}）：${result.posts.length} 条新内容，其中 ${truncated} 条长帖被截断`)
+  console.log(`[mentor-sync] 完成（${SOURCE}）：${result.posts.length} 条新内容` + (truncated ? `，${truncated} 条长帖未能补全，需要手动打开原帖` : ''))
   if (DOWNLOAD && result.posts.length) {
     const a = document.createElement('a')
     a.href = URL.createObjectURL(new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' }))
