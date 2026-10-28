@@ -1,0 +1,210 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="388" viewBox="0 0 900 388" role="img" aria-label="XAUUSDT 1H  2026-10-28 做空（UTC+08:00）">
+<style>
+  .bg { fill: #fcfcfb; }
+  .title { fill: #0b0b0b; font-weight: 600; font-size: 14px; }
+  text { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 12px; fill: #0b0b0b; paint-order: stroke; stroke: #fcfcfb; stroke-width: 3px; stroke-linejoin: round; }
+  .muted { fill: #52514e; }
+  .wick { stroke-width: 1.5; }
+  .up { fill: #2a78d6; stroke: #2a78d6; }
+  .down { fill: #e34948; stroke: #e34948; }
+  .z-bull { fill: rgba(42, 120, 214, 0.14); stroke: rgba(42, 120, 214, 0.5); }
+  .z-bear { fill: rgba(227, 73, 72, 0.12); stroke: rgba(227, 73, 72, 0.5); }
+  .z-neutral { fill: rgba(120, 120, 115, 0.10); stroke: none; }
+  .z-accent { fill: rgba(237, 161, 0, 0.22); stroke: rgba(201, 133, 0, 0.8); }
+  .l-neutral { stroke: #52514e; stroke-dasharray: 4 3; }
+  .l-stop { stroke: #e34948; stroke-dasharray: 6 3; }
+  .l-target { stroke: #2a78d6; stroke-dasharray: 6 3; }
+  .l-entry { stroke: #0b0b0b; }
+  .bracket { stroke: #52514e; fill: none; }
+  .grid { stroke: #ecebe7; }
+  .tick { font-size: 11px; fill: #8a8984; stroke: none; }
+  .arrow { fill: #52514e; stroke: none; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #1a1a19; }
+    .title, text { fill: #f0efec; }
+    text { stroke: #1a1a19; }
+    .muted { fill: #c3c2b7; }
+    .up { fill: #3987e5; stroke: #3987e5; }
+    .down { fill: #e66767; stroke: #e66767; }
+    .l-neutral, .bracket { stroke: #c3c2b7; }
+    .grid { stroke: #2a2a28; }
+    .tick { fill: #8a8984; }
+    .l-entry { stroke: #f0efec; }
+    .arrow { fill: #c3c2b7; }
+  }
+</style>
+<rect class="bg" width="900" height="388" rx="10"/>
+<text class="title" x="16" y="26">XAUUSDT 1H  2026-10-28 做空（UTC+08:00）</text>
+<line class="grid" x1="60" x2="790" y1="275.9" y2="275.9"/>
+<text class="tick" x="54" y="275.9" dy="0.35em" text-anchor="end">4000</text>
+<line class="grid" x1="60" x2="790" y1="211.6" y2="211.6"/>
+<text class="tick" x="54" y="211.6" dy="0.35em" text-anchor="end">4025</text>
+<line class="grid" x1="60" x2="790" y1="147.2" y2="147.2"/>
+<text class="tick" x="54" y="147.2" dy="0.35em" text-anchor="end">4050</text>
+<line class="grid" x1="60" x2="790" y1="82.9" y2="82.9"/>
+<text class="tick" x="54" y="82.9" dy="0.35em" text-anchor="end">4075</text>
+<text class="tick" x="165" y="378" text-anchor="middle">10-26</text>
+<text class="tick" x="405" y="378" text-anchor="middle">10-27</text>
+<text class="tick" x="645" y="378" text-anchor="middle">10-28</text>
+<rect class="z-bear" x="630" y="86.5" width="100" height="4.1"/>
+<line class="wick down" x1="65" x2="65" y1="286.1" y2="295.8"/>
+<rect class="down" x="62.5" y="286.1" width="5" height="7.9" rx="1.5"/>
+<line class="wick up" x1="75" x2="75" y1="282.3" y2="294.1"/>
+<rect class="up" x="72.5" y="285" width="5" height="9" rx="1.5"/>
+<line class="wick down" x1="85" x2="85" y1="285" y2="294.4"/>
+<rect class="down" x="82.5" y="285.1" width="5" height="7.3" rx="1.5"/>
+<line class="wick up" x1="95" x2="95" y1="289.5" y2="302.2"/>
+<rect class="up" x="92.5" y="291.1" width="5" height="1.5" rx="1.5"/>
+<line class="wick down" x1="105" x2="105" y1="291" y2="294.2"/>
+<rect class="down" x="102.5" y="291.1" width="5" height="1.6" rx="1.5"/>
+<line class="wick up" x1="115" x2="115" y1="288.1" y2="293.3"/>
+<rect class="up" x="112.5" y="292.3" width="5" height="1.5" rx="1.5"/>
+<line class="wick up" x1="125" x2="125" y1="290.4" y2="293.6"/>
+<rect class="up" x="122.5" y="291.1" width="5" height="1.5" rx="1.5"/>
+<line class="wick up" x1="135" x2="135" y1="280.4" y2="291.7"/>
+<rect class="up" x="132.5" y="282.3" width="5" height="8.8" rx="1.5"/>
+<line class="wick up" x1="145" x2="145" y1="278.1" y2="282.3"/>
+<rect class="up" x="142.5" y="278.1" width="5" height="4.1" rx="1.5"/>
+<line class="wick down" x1="155" x2="155" y1="275.3" y2="281.3"/>
+<rect class="down" x="152.5" y="278.1" width="5" height="1.8" rx="1.5"/>
+<line class="wick up" x1="165" x2="165" y1="267" y2="281"/>
+<rect class="up" x="162.5" y="267.2" width="5" height="12.7" rx="1.5"/>
+<line class="wick down" x1="175" x2="175" y1="265.9" y2="271.5"/>
+<rect class="down" x="172.5" y="267.2" width="5" height="1.5" rx="1.5"/>
+<line class="wick up" x1="185" x2="185" y1="267.2" y2="273.4"/>
+<rect class="up" x="182.5" y="268" width="5" height="1.5" rx="1.5"/>
+<line class="wick down" x1="195" x2="195" y1="266.8" y2="270.9"/>
+<rect class="down" x="192.5" y="268" width="5" height="1.5" rx="1.5"/>
+<line class="wick up" x1="205" x2="205" y1="263.1" y2="269.2"/>
+<rect class="up" x="202.5" y="263.7" width="5" height="4.9" rx="1.5"/>
+<line class="wick up" x1="215" x2="215" y1="253" y2="264"/>
+<rect class="up" x="212.5" y="259" width="5" height="4.7" rx="1.5"/>
+<line class="wick up" x1="225" x2="225" y1="245.2" y2="281.6"/>
+<rect class="up" x="222.5" y="253.8" width="5" height="5.2" rx="1.5"/>
+<line class="wick down" x1="235" x2="235" y1="246.7" y2="281.3"/>
+<rect class="down" x="232.5" y="253.8" width="5" height="8.5" rx="1.5"/>
+<line class="wick down" x1="245" x2="245" y1="262.3" y2="297.8"/>
+<rect class="down" x="242.5" y="262.3" width="5" height="31.1" rx="1.5"/>
+<line class="wick up" x1="255" x2="255" y1="254.8" y2="311.6"/>
+<rect class="up" x="252.5" y="283.9" width="5" height="9.5" rx="1.5"/>
+<line class="wick up" x1="265" x2="265" y1="250.7" y2="290.2"/>
+<rect class="up" x="262.5" y="256.4" width="5" height="27.5" rx="1.5"/>
+<line class="wick up" x1="275" x2="275" y1="213.5" y2="259"/>
+<rect class="up" x="272.5" y="236.8" width="5" height="19.6" rx="1.5"/>
+<line class="wick up" x1="285" x2="285" y1="213.6" y2="236.8"/>
+<rect class="up" x="282.5" y="214.8" width="5" height="22" rx="1.5"/>
+<line class="wick down" x1="295" x2="295" y1="205.6" y2="230.1"/>
+<rect class="down" x="292.5" y="214.8" width="5" height="4.6" rx="1.5"/>
+<line class="wick down" x1="305" x2="305" y1="216.1" y2="244.9"/>
+<rect class="down" x="302.5" y="219.4" width="5" height="18.6" rx="1.5"/>
+<line class="wick up" x1="315" x2="315" y1="226.3" y2="245.4"/>
+<rect class="up" x="312.5" y="229.6" width="5" height="8.7" rx="1.5"/>
+<line class="wick up" x1="325" x2="325" y1="197.7" y2="229.7"/>
+<rect class="up" x="322.5" y="211" width="5" height="18.7" rx="1.5"/>
+<line class="wick up" x1="335" x2="335" y1="202.3" y2="219.1"/>
+<rect class="up" x="332.5" y="210" width="5" height="1.5" rx="1.5"/>
+<line class="wick down" x1="345" x2="345" y1="205.7" y2="225.7"/>
+<rect class="down" x="342.5" y="210" width="5" height="4.7" rx="1.5"/>
+<line class="wick up" x1="355" x2="355" y1="202.2" y2="227"/>
+<rect class="up" x="352.5" y="212.2" width="5" height="2.7" rx="1.5"/>
+<line class="wick down" x1="365" x2="365" y1="188.4" y2="215.4"/>
+<rect class="down" x="362.5" y="212.3" width="5" height="2.2" rx="1.5"/>
+<line class="wick down" x1="375" x2="375" y1="207" y2="282.4"/>
+<rect class="down" x="372.5" y="214.5" width="5" height="56.4" rx="1.5"/>
+<line class="wick up" x1="385" x2="385" y1="183.3" y2="270.9"/>
+<rect class="up" x="382.5" y="192.9" width="5" height="78" rx="1.5"/>
+<line class="wick down" x1="395" x2="395" y1="186.9" y2="214.6"/>
+<rect class="down" x="392.5" y="192.9" width="5" height="19.3" rx="1.5"/>
+<line class="wick up" x1="405" x2="405" y1="198.8" y2="212.2"/>
+<rect class="up" x="402.5" y="200.3" width="5" height="11.9" rx="1.5"/>
+<line class="wick up" x1="415" x2="415" y1="177.6" y2="208"/>
+<rect class="up" x="412.5" y="200.1" width="5" height="1.5" rx="1.5"/>
+<line class="wick down" x1="425" x2="425" y1="198.2" y2="221.6"/>
+<rect class="down" x="422.5" y="200.1" width="5" height="20.9" rx="1.5"/>
+<line class="wick up" x1="435" x2="435" y1="215.4" y2="230.6"/>
+<rect class="up" x="432.5" y="218.7" width="5" height="2.3" rx="1.5"/>
+<line class="wick up" x1="445" x2="445" y1="207.1" y2="222.3"/>
+<rect class="up" x="442.5" y="208.8" width="5" height="9.9" rx="1.5"/>
+<line class="wick down" x1="455" x2="455" y1="207.5" y2="214.9"/>
+<rect class="down" x="452.5" y="208.8" width="5" height="1.5" rx="1.5"/>
+<line class="wick down" x1="465" x2="465" y1="205.6" y2="222.5"/>
+<rect class="down" x="462.5" y="209.9" width="5" height="9" rx="1.5"/>
+<line class="wick down" x1="475" x2="475" y1="216.4" y2="241"/>
+<rect class="down" x="472.5" y="218.6" width="5" height="19.8" rx="1.5"/>
+<line class="wick up" x1="485" x2="485" y1="199.7" y2="241.3"/>
+<rect class="up" x="482.5" y="227.3" width="5" height="10.8" rx="1.5"/>
+<line class="wick up" x1="495" x2="495" y1="203.6" y2="241.4"/>
+<rect class="up" x="492.5" y="223.8" width="5" height="3.5" rx="1.5"/>
+<line class="wick down" x1="505" x2="505" y1="204.5" y2="233.9"/>
+<rect class="down" x="502.5" y="223.8" width="5" height="4.5" rx="1.5"/>
+<line class="wick up" x1="515" x2="515" y1="199.5" y2="237.9"/>
+<rect class="up" x="512.5" y="208.7" width="5" height="19.8" rx="1.5"/>
+<line class="wick down" x1="525" x2="525" y1="188.7" y2="225.3"/>
+<rect class="down" x="522.5" y="208.7" width="5" height="15.7" rx="1.5"/>
+<line class="wick down" x1="535" x2="535" y1="222.4" y2="252"/>
+<rect class="down" x="532.5" y="224.4" width="5" height="4.8" rx="1.5"/>
+<line class="wick down" x1="545" x2="545" y1="222.8" y2="258.2"/>
+<rect class="down" x="542.5" y="229.2" width="5" height="20.7" rx="1.5"/>
+<line class="wick down" x1="555" x2="555" y1="232.9" y2="257.9"/>
+<rect class="down" x="552.5" y="249.9" width="5" height="6.5" rx="1.5"/>
+<line class="wick down" x1="565" x2="565" y1="247.2" y2="278.1"/>
+<rect class="down" x="562.5" y="256.4" width="5" height="7.6" rx="1.5"/>
+<line class="wick up" x1="575" x2="575" y1="244.3" y2="267.8"/>
+<rect class="up" x="572.5" y="244.9" width="5" height="19.2" rx="1.5"/>
+<line class="wick up" x1="585" x2="585" y1="211.6" y2="268.1"/>
+<rect class="up" x="582.5" y="229.7" width="5" height="15.2" rx="1.5"/>
+<line class="wick up" x1="595" x2="595" y1="216.6" y2="232.5"/>
+<rect class="up" x="592.5" y="220.5" width="5" height="9.2" rx="1.5"/>
+<line class="wick up" x1="605" x2="605" y1="180" y2="223.5"/>
+<rect class="up" x="602.5" y="192.8" width="5" height="27.7" rx="1.5"/>
+<line class="wick up" x1="615" x2="615" y1="170.8" y2="199.2"/>
+<rect class="up" x="612.5" y="176.7" width="5" height="16" rx="1.5"/>
+<line class="wick up" x1="625" x2="625" y1="113.8" y2="188.9"/>
+<rect class="up" x="622.5" y="119.2" width="5" height="57.5" rx="1.5"/>
+<line class="wick up" x1="635" x2="635" y1="86.8" y2="119.2"/>
+<rect class="up" x="632.5" y="90.6" width="5" height="28.6" rx="1.5"/>
+<line class="wick down" x1="645" x2="645" y1="88" y2="109.6"/>
+<rect class="down" x="642.5" y="90.6" width="5" height="12.8" rx="1.5"/>
+<line class="wick down" x1="655" x2="655" y1="86.6" y2="110"/>
+<rect class="down" x="652.5" y="103.4" width="5" height="5.9" rx="1.5"/>
+<line class="wick down" x1="665" x2="665" y1="104.6" y2="118.4"/>
+<rect class="down" x="662.5" y="109.3" width="5" height="1.5" rx="1.5"/>
+<line class="wick up" x1="675" x2="675" y1="90.7" y2="110.1"/>
+<rect class="up" x="672.5" y="97.4" width="5" height="12.7" rx="1.5"/>
+<line class="wick down" x1="685" x2="685" y1="95.8" y2="104"/>
+<rect class="down" x="682.5" y="97.4" width="5" height="2.4" rx="1.5"/>
+<line class="wick up" x1="695" x2="695" y1="94.2" y2="102"/>
+<rect class="up" x="692.5" y="97.1" width="5" height="2.7" rx="1.5"/>
+<line class="wick up" x1="705" x2="705" y1="90.1" y2="102.2"/>
+<rect class="up" x="702.5" y="92.9" width="5" height="4.2" rx="1.5"/>
+<line class="wick down" x1="715" x2="715" y1="92.2" y2="107.5"/>
+<rect class="down" x="712.5" y="92.9" width="5" height="2" rx="1.5"/>
+<line class="wick down" x1="725" x2="725" y1="73.8" y2="102.9"/>
+<rect class="down" x="722.5" y="94.9" width="5" height="1.5" rx="1.5"/>
+<line class="wick down" x1="735" x2="735" y1="91.5" y2="138.3"/>
+<rect class="down" x="732.5" y="96.4" width="5" height="33.7" rx="1.5"/>
+<line class="wick down" x1="745" x2="745" y1="123.2" y2="139.7"/>
+<rect class="down" x="742.5" y="130.1" width="5" height="5.6" rx="1.5"/>
+<line class="wick down" x1="755" x2="755" y1="127.7" y2="144.4"/>
+<rect class="down" x="752.5" y="135.7" width="5" height="8.2" rx="1.5"/>
+<line class="wick down" x1="765" x2="765" y1="142.2" y2="161.2"/>
+<rect class="down" x="762.5" y="143.9" width="5" height="15.3" rx="1.5"/>
+<line class="wick down" x1="775" x2="775" y1="157.6" y2="175.8"/>
+<rect class="down" x="772.5" y="159.2" width="5" height="16.3" rx="1.5"/>
+<line class="wick down" x1="785" x2="785" y1="172" y2="178.7"/>
+<rect class="down" x="782.5" y="175.5" width="5" height="2.2" rx="1.5"/>
+<line class="l-target" x1="775" x2="790" y1="330" y2="330" stroke-width="1.5"/>
+<line class="l-stop" x1="775" x2="790" y1="70" y2="70" stroke-width="1.5"/>
+<line class="l-entry" x1="775" x2="790" y1="159.7" y2="159.7" stroke-width="1.5"/>
+<line class="l-neutral" x1="665" x2="735" y1="118.4" y2="118.4" stroke-width="1.5"/>
+<text class="muted" x="636" y="100.5">EQH</text>
+<text x="804" y="330" dy="0.35em">目标 3979</text>
+<text x="804" y="70" dy="0.35em">止损 4080</text>
+<text x="804" y="159.7" dy="0.35em">入场 4045.15</text>
+<path class="arrow" d="M775,181.8 l-4,6 h8 z"/>
+<text x="775" y="201.8" text-anchor="middle">入场</text>
+<path class="arrow" d="M725,67.8 l-4,-6 h8 z"/>
+<text x="725" y="57.8" text-anchor="middle">扫 EQH · 信号 K</text>
+<path class="arrow" d="M735,144.3 l-4,6 h8 z"/>
+<text x="735" y="164.3" text-anchor="middle">CHOCH + CISD</text>
+</svg>
