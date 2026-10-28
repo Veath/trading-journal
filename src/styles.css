@@ -205,6 +205,10 @@ tr.clickable a { color: var(--text); }
 a.tag:hover { color: var(--text); border-color: var(--accent-ring); }
 .tags { margin-top: 12px; }
 
+.onboarding h3 { font-size: 13px; font-weight: 600; color: var(--text-2); margin: 20px 0 6px; }
+.onboarding .trade-cards { display: block; margin: 0; }
+.steps { margin: 0; padding-left: 20px; color: var(--text-2); line-height: 1.9; }
+
 /* 交易卡片（窄屏） */
 .trade-cards { display: none; list-style: none; margin: 8px 0 0; padding: 0; }
 .trade-cards li + li { border-top: 1px solid var(--grid); }

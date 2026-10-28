@@ -3,6 +3,7 @@ import { closedTrades } from '../lib/stats'
 import { fmtR, signClass } from '../lib/format'
 import { href } from '../lib/router'
 import Markdown from '../components/Markdown'
+import { handleRepoLinkClick } from '../lib/links'
 
 export default function Days() {
   if (days.length === 0) {
@@ -14,7 +15,7 @@ export default function Days() {
         const dayTrades = trades.filter((t) => t.date === d.date)
         const dayR = closedTrades(dayTrades).reduce((a, t) => a + t.rMultiple, 0)
         return (
-          <section key={d.id} className="card">
+          <section key={d.id} className="card" onClick={(e) => handleRepoLinkClick(e, `journal/days/${d.id}.md`)}>
             <div className="detail-head">
               <h2>{d.date}</h2>
               <div className={`big-r ${signClass(dayR)}`}>{dayTrades.length ? fmtR(dayR, 1) : '无交易'}</div>

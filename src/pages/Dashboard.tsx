@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Trade } from '../types'
 import { computeStats, equityCurve, groupStats, mistakeCosts, rDistribution } from '../lib/stats'
 import { fmtMoney, fmtNum, fmtPct, fmtR, signClass, WEEKDAYS } from '../lib/format'
+import { href } from '../lib/router'
 import Kpi from '../components/Kpi'
 import EquityChart from '../components/EquityChart'
 import RHistogram from '../components/RHistogram'
@@ -38,6 +39,8 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
   const missedR = trades.filter((t) => t.status === 'missed').reduce((a, t) => a + (t.rMultiple ?? 0), 0)
 
   const edge = s.winRate != null && s.breakevenWinRate != null ? s.winRate - s.breakevenWinRate : null
+
+  if (s.trades === 0) return <NoClosedTrades trades={trades} />
 
   return (
     <div className="stack">
@@ -135,4 +138,51 @@ function sqnLabel(sqn: number | null): string {
   if (sqn < 2.5) return '良好'
   if (sqn < 3) return '优秀'
   return '极佳'
+}
+
+/** 当前范围内还没有已平仓交易时，用说明代替一整页空图表 */
+function NoClosedTrades({ trades }: { trades: Trade[] }) {
+  const open = trades.filter((t) => t.status === 'open')
+  return (
+    <section className="card onboarding">
+      <h2>当前范围内还没有已平仓的交易</h2>
+      <p className="sub">胜率、盈亏比、权益曲线等统计从第一笔平仓交易开始计算。</p>
+      {open.length > 0 && (
+        <>
+          <h3>持仓中 {open.length} 笔</h3>
+          <ul className="trade-cards">
+            {open.map((t) => (
+              <li key={t.id}>
+                <a href={href('trades', t.id)}>
+                  <div className="tc-main">
+                    <span className="tc-symbol">
+                      {t.symbol}
+                      <span className={`dir ${t.direction}`}>{t.direction === 'long' ? '多' : '空'}</span>
+                    </span>
+                    <span className="tc-setup">{t.setup ?? t.strategy}</span>
+                  </div>
+                  <div className="tc-r muted">计划 {fmtNum(t.plannedRR, 1)}R</div>
+                  <div className="tc-meta">
+                    {t.date} {t.time} · 入场 {t.entry} · 止损 {t.stop} · 目标 {t.target}
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <h3>开始记录</h3>
+      <ol className="steps">
+        <li>
+          盘前运行 <code>pnpm new:day</code>，写下当天的 bias、关键流动性和风控上限
+        </li>
+        <li>
+          入场后运行 <code>pnpm new:trade 品种</code>，填写入场、止损、目标和交易理由
+        </li>
+        <li>
+          平仓后把 <code>status</code> 改为 <code>closed</code> 并填写 <code>exit</code>（分批出场直接填 <code>r</code>），统计会自动更新
+        </li>
+      </ol>
+    </section>
+  )
 }
