@@ -98,6 +98,7 @@ pnpm trade:chart 2026-10-28-btc-01
 
 - 从 Binance USDT 永续拉取公开 K 线，生成 `journal/screenshots/<id>-1d.svg`、`-4h.svg`、`-1h.svg`，并自动写入交易的 `screenshots`
 - 入场、止损、目标、出场自动标注；EQH、信号 K、震荡区间等写在 `journal/charts/<id>.json`（时间按其中的 `tz` 解释，默认纽约时间）
+- 默认生成日线 / 4H / 1H；旁注里写 `"timeframes": ["1d", "4h", "1h", "15m"]` 可加上 15m
 - 平仓后在旁注里填 `exitTime` 再运行一次，图会延伸到出场位置
 
 每日日志模板见 [`journal/templates/day.md`](journal/templates/day.md)：`mood` `sleep` `dailyBias` `news` `maxTrades` `maxLossR` `rulesFollowed`。

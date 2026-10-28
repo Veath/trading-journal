@@ -1,6 +1,6 @@
 // 用法：pnpm trade:chart <交易 id>
 // 读取 journal/trades/**/<id>.md，从 Binance USDT 永续拉取公开 K 线，
-// 生成日线 / 4H / 1H 复盘图到 journal/screenshots/<id>-<周期>.svg，并写入交易的 screenshots 字段。
+// 生成日线 / 4H / 1H（可选 15m）复盘图到 journal/screenshots/<id>-<周期>.svg，并写入交易的 screenshots 字段。
 // 入场 / 止损 / 目标 / 出场自动标注；EQH、信号 K 等需要判断的标注写在 journal/charts/<id>.json（可选）。
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -19,6 +19,7 @@ interface Sidecar {
   symbol?: string // 交易所代码，如 BTCUSDT；默认由交易的 symbol 推断
   tz?: string // 交易时间与图表时间轴的时区偏移，如 "+08:00"；默认纽约时间（与模板约定一致）
   exitTime?: string // 平仓时间，用于确定图表右边界
+  timeframes?: Interval[] // 要生成的周期，默认 1d / 4h / 1h
   intervals?: Partial<Record<Interval, IntervalSpec>>
 }
 interface IntervalSpec {
@@ -27,11 +28,12 @@ interface IntervalSpec {
   marks?: (Omit<Mark, 'at'> & { at: string })[]
 }
 
-type Interval = '1d' | '4h' | '1h'
+type Interval = '1d' | '4h' | '1h' | '15m'
 const SETTINGS: Record<Interval, { ms: number; before: number; after: number; step: number; label: string }> = {
   '1d': { ms: 864e5, before: 30, after: 3, step: 18, label: '日线' },
   '4h': { ms: 4 * 36e5, before: 42, after: 6, step: 14, label: '4H' },
   '1h': { ms: 36e5, before: 72, after: 12, step: 10, label: '1H' },
+  '15m': { ms: 15 * 6e4, before: 32, after: 32, step: 10, label: '15m' },
 }
 
 function findTradeFile(id: string): string {
@@ -103,7 +105,7 @@ async function main() {
   const dirLabel = trade.direction === 'long' ? '做多' : '做空'
 
   const files: string[] = []
-  for (const interval of ['1d', '4h', '1h'] as Interval[]) {
+  for (const interval of sidecar.timeframes ?? (['1d', '4h', '1h'] as Interval[])) {
     const cfg = SETTINGS[interval]
     const start = entryMs - cfg.before * cfg.ms
     const end = Math.min(Date.now(), (exitMs ?? Date.now()) + cfg.after * cfg.ms)
@@ -128,10 +130,14 @@ async function main() {
 
     const zones: Zone[] = (spec.zones ?? []).map((z) => ({ ...z, from: at(z.from), to: z.to ? at(z.to) : undefined }))
 
-    // 时间轴：日线每 5 根一个标签，其余在每天 0 点
+    // 时间轴：日线每 5 根一个标签，15m 每 2 小时，其余在每天 0 点
     const xLabels = candles.flatMap((c, i) => {
       const d = local(c.t)
       if (interval === '1d') return i % 5 === 0 ? [{ at: i, text: md(d) }] : []
+      if (interval === '15m') {
+        if (d.getUTCMinutes() !== 0 || d.getUTCHours() % 2 !== 0) return []
+        return [{ at: i, text: d.getUTCHours() === 0 ? md(d) : `${String(d.getUTCHours()).padStart(2, '0')}:00` }]
+      }
       return d.getUTCHours() === 0 ? [{ at: i, text: md(d) }] : []
     })
 
