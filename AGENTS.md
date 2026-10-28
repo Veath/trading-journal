@@ -17,6 +17,7 @@ pnpm typecheck       # tsc --noEmit
 pnpm build           # 类型检查 + vite build
 pnpm new:trade NQ    # 按模板新建交易
 pnpm new:day         # 按模板新建当日日志
+pnpm trade:chart <id># 用 Binance 公开 K 线生成交易复盘图到 journal/screenshots/
 pnpm diagrams        # 由 scripts/diagrams/ict.ts 生成 notes/ict/img/*.svg
 pnpm mentor:collect  # 生成 X 采集脚本（会覆盖用户剪贴板）
 pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
@@ -40,6 +41,7 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - 胜率**不含保本单**；只有 `status: closed` 进入统计；`missed` 单独统计；`open` 忽略。
 - 交易文件名：`journal/trades/YYYY/YYYY-MM-DD-<symbol小写>-NN.md`，文件名（不含扩展名）即交易 id。
 - 新增或修改指标时，同步更新 `docs/STATS.md` 的公式和解读，并在 `stats.test.ts` 补测试。
+- 交易复盘图：`scripts/trade-chart/build.ts` 复用 `scripts/diagrams/render.ts`（`step`、`xLabels`、`yAxis` 选项）。需要判断的标注写在 `journal/charts/<id>.json`，标注必须基于实际拉取的 K 线数据，不要凭印象画；生成的 SVG 不要手改。行情数据只用公开接口，不涉及任何账户或密钥。
 - `mistakes` 标签和 `emotions` 情绪词以 `notes/psychology/05-mistakes.md`、`02-emotions.md` 为准，分析或补录日志时使用这些统一名称。
 
 ## 笔记约定

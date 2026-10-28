@@ -13,7 +13,8 @@
     "new:day": "node scripts/new-entry.ts day",
     "diagrams": "node scripts/diagrams/build.ts",
     "mentor:collect": "node scripts/mentor-sync/collect.ts",
-    "mentor:ingest": "node scripts/mentor-sync/ingest.ts"
+    "mentor:ingest": "node scripts/mentor-sync/ingest.ts",
+    "trade:chart": "node scripts/trade-chart/build.ts"
   },
   "dependencies": {
     "marked": "^18.1.2",

@@ -5,7 +5,7 @@ const tradeFiles = import.meta.glob('/journal/trades/**/*.md', { query: '?raw', 
 const dayFiles = import.meta.glob('/journal/days/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const noteFiles = import.meta.glob('/notes/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const noteAssets = import.meta.glob('/notes/**/*.{svg,png,jpg,jpeg,webp,gif}', { query: '?url', import: 'default', eager: true }) as Record<string, string>
-const screenshotFiles = import.meta.glob('/journal/screenshots/**/*.{png,jpg,jpeg,webp,gif}', { query: '?url', import: 'default', eager: true }) as Record<string, string>
+const screenshotFiles = import.meta.glob('/journal/screenshots/**/*.{png,jpg,jpeg,webp,gif,svg}', { query: '?url', import: 'default', eager: true }) as Record<string, string>
 
 const baseName = (path: string) => path.split('/').pop()!.replace(/\.md$/, '')
 

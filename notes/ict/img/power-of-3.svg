@@ -16,6 +16,8 @@
   .l-target { stroke: #2a78d6; stroke-dasharray: 6 3; }
   .l-entry { stroke: #0b0b0b; }
   .bracket { stroke: #52514e; fill: none; }
+  .grid { stroke: #ecebe7; }
+  .tick { font-size: 11px; fill: #8a8984; stroke: none; }
   .arrow { fill: #52514e; stroke: none; }
   @media (prefers-color-scheme: dark) {
     .bg { fill: #1a1a19; }
@@ -25,6 +27,8 @@
     .up { fill: #3987e5; stroke: #3987e5; }
     .down { fill: #e66767; stroke: #e66767; }
     .l-neutral, .bracket { stroke: #c3c2b7; }
+    .grid { stroke: #2a2a28; }
+    .tick { fill: #8a8984; }
     .l-entry { stroke: #f0efec; }
     .arrow { fill: #c3c2b7; }
   }

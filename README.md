@@ -14,6 +14,7 @@ pnpm install
 pnpm dev              # 启动仪表盘 http://localhost:5173
 pnpm new:trade NQ     # 新建交易 → journal/trades/YYYY/YYYY-MM-DD-nq-01.md
 pnpm new:day          # 新建今天的日志 → journal/days/YYYY-MM-DD.md
+pnpm trade:chart <id> # 用真实 K 线生成交易复盘图（日线 / 4H / 1H，目前支持 Binance 永续）
 pnpm diagrams         # 重新生成笔记中的 K 线示意图（notes/ict/img/*.svg）
 pnpm mentor:collect   # 生成导师内容采集脚本（复制到剪贴板，在 X 页面控制台运行）
 pnpm mentor:ingest    # 合并下载的采集结果，生成待提炼清单
@@ -46,7 +47,8 @@ journal/
   trades/YYYY/        每笔交易一个 .md
   trades/_example/    示例数据（可删除）
   days/               每日日志
-  screenshots/        图表截图
+  screenshots/        图表截图，以及 trade:chart 生成的复盘图
+  charts/             复盘图的旁注（<id>.json：时区、EQH、信号 K 等手动标注）
   templates/          trade.md / day.md 模板
 notes/                学习资料
   ict/                ICT 概念、模型、检查清单、术语表；img/ 为生成的 K 线示意图
@@ -57,6 +59,7 @@ notes/                学习资料
 docs/STATS.md         统计指标定义与解读
 scripts/
   new-entry.ts        新建交易 / 日志
+  trade-chart/        交易复盘图生成器
   diagrams/           K 线示意图生成器（数据在 ict.ts）
   mentor-sync/        导师内容同步：采集 → 合并 → 待提炼清单
 .claude/skills/
@@ -87,6 +90,18 @@ src/
 - 分批止盈、移动止损等无法用单一出场价表达时，直接写 `r:`（优先级最高）
 - `status: missed`：符合计划但没做的机会，用「如果做了」的 exit 计算潜在 R，不计入正式统计
 - 正文按模板写：交易前计划 → 交易中执行 → 交易后复盘 → 一句话教训
+
+### 复盘图
+
+加密货币交易可以用真实行情生成复盘图：
+
+```bash
+pnpm trade:chart 2026-10-28-btc-01
+```
+
+- 从 Binance USDT 永续拉取公开 K 线，生成 `journal/screenshots/<id>-1d.svg`、`-4h.svg`、`-1h.svg`，并自动写入交易的 `screenshots`
+- 入场、止损、目标、出场自动标注；EQH、信号 K、震荡区间等写在 `journal/charts/<id>.json`（时间按其中的 `tz` 解释，默认纽约时间）
+- 平仓后在旁注里填 `exitTime` 再运行一次，图会延伸到出场位置
 
 每日日志模板见 [`journal/templates/day.md`](journal/templates/day.md)：`mood` `sleep` `dailyBias` `news` `maxTrades` `maxLossR` `rulesFollowed`。
 

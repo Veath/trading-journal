@@ -44,14 +44,27 @@ export interface Diagram {
   marks?: Mark[]
   spans?: Span[] // 顶部括号，用于标注阶段
   big?: { ohlc: OHLC; label: string } // 右侧放大的汇总 K 线（如日线）
+  // —— 以下用于真实行情图（交易复盘），示意图不需要 ——
+  step?: number // 每根 K 线占宽，默认 26；K 线多时调小
+  xLabels?: { at: number; text: string }[] // 底部时间轴标签
+  yAxis?: boolean // 左侧价格刻度
 }
 
-const STEP = 26 // 每根 K 线占宽
-const BODY = 14
-const PAD = { left: 16, right: 16, top: 70, bottom: 40 }
+const DEFAULT_STEP = 26 // 每根 K 线占宽
+const DEFAULT_PAD = { left: 16, right: 16, top: 70, bottom: 40 }
 const PLOT_H = 260
 const GUTTER_GAP = 14 // K 线区与右侧标签栏的间距
 const LABEL_MIN_GAP = 16 // 右侧标签之间的最小纵向间距
+
+/** 整齐的价格刻度 */
+function niceTicks(min: number, max: number, count = 5): number[] {
+  const raw = (max - min) / count
+  const mag = 10 ** Math.floor(Math.log10(raw))
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((v) => v >= raw)!
+  const ticks: number[] = []
+  for (let v = Math.ceil(min / step) * step; v <= max; v += step) ticks.push(v)
+  return ticks
+}
 
 /** 估算 12px 文本宽度：全角字符 12px，其余 7px */
 function textWidth(s: string, size = 12): number {
@@ -88,6 +101,8 @@ const STYLE = `
   .l-target { stroke: #2a78d6; stroke-dasharray: 6 3; }
   .l-entry { stroke: #0b0b0b; }
   .bracket { stroke: #52514e; fill: none; }
+  .grid { stroke: #ecebe7; }
+  .tick { font-size: 11px; fill: #8a8984; stroke: none; }
   .arrow { fill: #52514e; stroke: none; }
   @media (prefers-color-scheme: dark) {
     .bg { fill: #1a1a19; }
@@ -97,6 +112,8 @@ const STYLE = `
     .up { fill: #3987e5; stroke: #3987e5; }
     .down { fill: #e66767; stroke: #e66767; }
     .l-neutral, .bracket { stroke: #c3c2b7; }
+    .grid { stroke: #2a2a28; }
+    .tick { fill: #8a8984; }
     .l-entry { stroke: #f0efec; }
     .arrow { fill: #c3c2b7; }
   }
@@ -106,6 +123,13 @@ const r1 = (n: number) => Math.round(n * 10) / 10
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 
 export function render(d: Diagram): string {
+  const STEP = d.step ?? DEFAULT_STEP
+  const BODY = Math.max(3, Math.round(STEP * 0.54))
+  const PAD = {
+    ...DEFAULT_PAD,
+    left: d.yAxis ? 60 : DEFAULT_PAD.left,
+    bottom: d.xLabels ? DEFAULT_PAD.bottom + 18 : DEFAULT_PAD.bottom,
+  }
   const n = d.candles.length + (d.big ? 3 : 0)
   const gutterLabels = [
     ...(d.zones ?? []).filter((z) => z.to == null && z.label).map((z) => ({ label: z.label!, price: (z.top + z.bottom) / 2 })),
@@ -113,7 +137,7 @@ export function render(d: Diagram): string {
   ]
   const gutterW = gutterLabels.length ? GUTTER_GAP + Math.max(...gutterLabels.map((g) => textWidth(g.label))) : 0
   const plotRight = PAD.left + n * STEP
-  const width = Math.ceil(Math.max(plotRight + gutterW, PAD.left + textWidth(d.title, 14)) + PAD.right)
+  const width = Math.ceil(Math.max(plotRight + gutterW, DEFAULT_PAD.left + textWidth(d.title, 14)) + PAD.right)
   const height = PAD.top + PLOT_H + PAD.bottom
 
   const prices = [
@@ -132,7 +156,17 @@ export function render(d: Diagram): string {
 
   const out: string[] = []
   out.push(`<rect class="bg" width="${width}" height="${height}" rx="10"/>`)
-  out.push(`<text class="title" x="${PAD.left}" y="26">${esc(d.title)}</text>`)
+  out.push(`<text class="title" x="${DEFAULT_PAD.left}" y="26">${esc(d.title)}</text>`)
+
+  if (d.yAxis) {
+    for (const t of niceTicks(lo, hi)) {
+      out.push(`<line class="grid" x1="${PAD.left}" x2="${xEnd}" y1="${y(t)}" y2="${y(t)}"/>`)
+      out.push(`<text class="tick" x="${PAD.left - 6}" y="${y(t)}" dy="0.35em" text-anchor="end">${t}</text>`)
+    }
+  }
+  for (const xl of d.xLabels ?? []) {
+    out.push(`<text class="tick" x="${x(xl.at)}" y="${height - 10}" text-anchor="middle">${esc(xl.text)}</text>`)
+  }
 
   for (const z of d.zones ?? []) {
     const x1 = x(z.from) - STEP / 2
