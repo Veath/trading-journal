@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="784" height="388" viewBox="0 0 784 388" role="img" aria-label="XAUUSDT 4H  2026-10-28 做空（UTC+08:00）">
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="388" viewBox="0 0 840 388" role="img" aria-label="XAUUSDT 4H  2026-10-28 做空（UTC+08:00）">
 <style>
   .bg { fill: url(#bg); }
   .bg-grid { stroke: rgba(28, 60, 110, 0.06); }
@@ -70,17 +70,17 @@
 <filter id="glow" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <style>@media (prefers-color-scheme: dark) { #bg stop:first-child { stop-color: #0f1828; } #bg stop:last-child { stop-color: #070c16; } }</style>
 </defs>
-<rect class="bg" width="784" height="388" rx="10"/>
-<rect width="784" height="388" rx="10" fill="url(#paper)"/>
-<rect class="frame" x="0.5" y="0.5" width="783" height="387" rx="9.5"/>
-<rect fill="url(#edge)" x="0" y="40" width="784" height="1"/>
+<rect class="bg" width="840" height="388" rx="10"/>
+<rect width="840" height="388" rx="10" fill="url(#paper)"/>
+<rect class="frame" x="0.5" y="0.5" width="839" height="387" rx="9.5"/>
+<rect fill="url(#edge)" x="0" y="40" width="840" height="1"/>
 <rect class="title-mark" x="16" y="15" width="3" height="14" rx="1.5"/>
 <text class="title" x="26" y="26">XAUUSDT 4H  2026-10-28 做空（UTC+08:00）</text>
-<line class="grid" x1="60" x2="662" y1="297.9" y2="297.9"/>
+<line class="grid" x1="60" x2="718" y1="297.9" y2="297.9"/>
 <text class="tick" x="54" y="297.9" dy="0.35em" text-anchor="end">4000</text>
-<line class="grid" x1="60" x2="662" y1="221.4" y2="221.4"/>
+<line class="grid" x1="60" x2="718" y1="221.4" y2="221.4"/>
 <text class="tick" x="54" y="221.4" dy="0.35em" text-anchor="end">4050</text>
-<line class="grid" x1="60" x2="662" y1="144.9" y2="144.9"/>
+<line class="grid" x1="60" x2="718" y1="144.9" y2="144.9"/>
 <text class="tick" x="54" y="144.9" dy="0.35em" text-anchor="end">4100</text>
 <text class="tick" x="95" y="378" text-anchor="middle">10-22</text>
 <text class="tick" x="179" y="378" text-anchor="middle">10-23</text>
@@ -89,6 +89,7 @@
 <text class="tick" x="431" y="378" text-anchor="middle">10-26</text>
 <text class="tick" x="515" y="378" text-anchor="middle">10-27</text>
 <text class="tick" x="599" y="378" text-anchor="middle">10-28</text>
+<text class="tick" x="683" y="378" text-anchor="middle">10-29</text>
 <rect class="z-bear" x="578" y="185.3" width="56" height="2.5"/>
 <g class="candles">
 <line class="wick up" x1="67" x2="67" y1="71.2" y2="114.1"/>
@@ -176,17 +177,28 @@
 <line class="wick up" x1="641" x2="641" y1="217.3" y2="241.2"/>
 <rect class="up" x="637" y="217.5" width="8" height="1.9" rx="1.5"/>
 <line class="wick up" x1="655" x2="655" y1="197.1" y2="219.6"/>
-<rect class="up" x="651" y="213.2" width="8" height="4.3" rx="1.5"/>
+<rect class="up" x="651" y="215.6" width="8" height="1.9" rx="1.5"/>
+<line class="wick down" x1="669" x2="669" y1="193.1" y2="228.7"/>
+<rect class="down" x="665" y="215.6" width="8" height="6.1" rx="1.5"/>
+<line class="wick up" x1="683" x2="683" y1="173.3" y2="248.8"/>
+<rect class="up" x="679" y="174" width="8" height="47.7" rx="1.5"/>
+<line class="wick down" x1="697" x2="697" y1="161.7" y2="210.1"/>
+<rect class="down" x="693" y="174" width="8" height="30.6" rx="1.5"/>
+<line class="wick down" x1="711" x2="711" y1="183.1" y2="231.9"/>
+<rect class="down" x="707" y="204.6" width="8" height="3.3" rx="1.5"/>
 </g>
-<line class="l-target" x1="641" x2="662" y1="330" y2="330" stroke-width="1.5"/>
-<line class="l-stop" x1="641" x2="662" y1="175.5" y2="175.5" stroke-width="1.5"/>
-<line class="l-entry" x1="641" x2="662" y1="221.4" y2="221.4" stroke-width="1.5"/>
+<line class="l-target" x1="641" x2="718" y1="330" y2="330" stroke-width="1.5"/>
+<line class="l-stop" x1="641" x2="718" y1="175.5" y2="175.5" stroke-width="1.5"/>
+<line class="l-entry" x1="641" x2="718" y1="213.5" y2="213.5" stroke-width="1.5"/>
+<line class="l-neutral" x1="697" x2="718" y1="168.1" y2="168.1" stroke-width="1.5"/>
 <line class="l-neutral" x1="501" x2="585" y1="239.5" y2="239.5" stroke-width="1.5"/>
 <text x="503" y="234.5">震荡上沿</text>
 <text class="muted" x="584" y="199.3">EQH</text>
-<g class="tag t-target"><rect x="676" y="321" width="70.8" height="18" rx="3"/><text x="682" y="330" dy="0.35em">目标 3979</text></g>
-<g class="tag t-stop"><rect x="676" y="166.5" width="70.8" height="18" rx="3"/><text x="682" y="175.5" dy="0.35em">止损 4080</text></g>
-<g class="tag t-entry"><rect x="676" y="212.4" width="91.7" height="18" rx="3"/><text x="682" y="221.4" dy="0.35em">入场 4050.01</text></g>
+<g class="tag t-target"><rect x="732" y="321" width="70.8" height="18" rx="3"/><text x="738" y="330" dy="0.35em">目标 3979</text></g>
+<path class="bracket" d="M720,175.5 L729,188.1"/>
+<g class="tag t-stop"><rect x="732" y="179.1" width="70.8" height="18" rx="3"/><text x="738" y="188.1" dy="0.35em">止损 4080</text></g>
+<g class="tag t-entry"><rect x="732" y="204.5" width="91.7" height="18" rx="3"/><text x="738" y="213.5" dy="0.35em">入场 4055.14</text></g>
+<g class="tag t-neutral"><rect x="732" y="159.1" width="91.7" height="18" rx="3"/><text x="738" y="168.1" dy="0.35em">出场 4084.88</text></g>
 <path class="arrow" d="M641,247.2 l-4,6 h8 z"/>
 <text x="641" y="267.2" text-anchor="middle">入场</text>
 <path class="arrow" d="M585,272.7 l-4,6 h8 z"/>
