@@ -57,7 +57,7 @@ docs/STATS.md         统计指标定义与解读
 scripts/
   new-entry.ts        新建交易 / 日志
   trade-chart/        交易复盘图生成器
-  diagrams/           K 线示意图生成器（数据在 ict.ts / rsi.ts / vwap.ts / frvp.ts / ema.ts / macd.ts / ntt.ts）
+  diagrams/           K 线示意图生成器（数据在 ict.ts / rsi.ts / vwap.ts / frvp.ts / ema.ts / macd.ts / ntt.ts / pa.ts）
   mentor-sync/        导师内容同步：采集 → 合并 → 待提炼清单
 .claude/skills/
   keyshot-mentor/     导师 skill：点评日志、分析行情、布置练习、更新导师资料
@@ -127,7 +127,8 @@ pnpm trade:chart 2026-10-28-btc-01
 
 - **ICT**：从 [学习路线](notes/ict/00-overview.md) 开始，依次是市场结构、流动性、PD Arrays、时间、HTF Bias、交易模型、风险执行；FVG、Order Block、Breaker、Unicorn、Power of 3、2022 Model 等配有 K 线示意图
 - **交易心理 & 日志**：从 [目录](notes/psychology/00-overview.md) 开始；[情绪词汇表](notes/psychology/02-emotions.md) 和 [错误分类](notes/psychology/05-mistakes.md) 定义了日志中 `emotions`、`mistakes` 的统一用词
-- **示意图**：改 `scripts/diagrams/` 下对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`、`ema.ts`、`macd.ts`、`ntt.ts`）中的 K 线数据和标注，运行 `pnpm diagrams` 重新生成，不要手改 SVG。仪表盘里这些图显示为可拖动、缩放、悬停看价格的交互图（同一份数据，用 `lightweight-charts` 绘制），GitHub 上显示 SVG；RSI、VWAP、成交量分布、EMA、MACD、Fib 回撤 / 趋势时间、量能曲线由 `calc.ts` 从 K 线算出
+- **PA（价格行为）**：从 [学习路线](notes/pa/00-overview.md) 开始，依次是 K 线解读、信号 K 与入场、结构、趋势与通道、区间、常见形态、突破与失败突破、与 ICT 结合；信号 K、H2、Spike + 通道、区间 MM、三推楔形、失败突破等配有 K 线示意图
+- **示意图**：改 `scripts/diagrams/` 下对应主题文件（`ict.ts`、`rsi.ts`、`vwap.ts`、`frvp.ts`、`ema.ts`、`macd.ts`、`ntt.ts`、`pa.ts`）中的 K 线数据和标注，运行 `pnpm diagrams` 重新生成，不要手改 SVG。仪表盘里这些图显示为可拖动、缩放、悬停看价格的交互图（同一份数据，用 `lightweight-charts` 绘制），GitHub 上显示 SVG；RSI、VWAP、成交量分布、EMA、MACD、Fib 回撤 / 趋势时间、量能曲线由 `calc.ts` 从 K 线算出
 
 ## AI 导师
 

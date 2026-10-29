@@ -19,6 +19,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   psychology: '交易心理 & 日志',
   mentors: '导师',
   'natural-trading-theory': '自然交易理论',
+  pa: 'PA',
   rsi: 'RSI',
   vwap: 'VWAP',
   frvp: 'FRVP',
