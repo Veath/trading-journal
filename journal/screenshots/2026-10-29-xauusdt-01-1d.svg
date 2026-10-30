@@ -18,6 +18,7 @@
   .l-stop { stroke: #c0504d; stroke-dasharray: 6 3; }
   .l-target { stroke: #3e8e41; stroke-dasharray: 6 3; }
   .l-entry { stroke: #2f5fd0; }
+  .l-poc { stroke: #7b3fa0; }
   .bracket { stroke: #8a8278; fill: none; }
   .grid { stroke: rgba(94, 86, 75, 0.12); stroke-dasharray: 2 4; }
   .tick { font-family: 'DIN Alternate', 'Bahnschrift', 'Roboto Condensed', sans-serif; font-size: 11px; fill: #665e53; stroke: none; }
@@ -34,6 +35,8 @@
   .t-entry text, .t-accent text { fill: #24489e; }
   .t-key rect { fill: rgba(212, 160, 60, 0.14); stroke: #d4a03c; }
   .t-key text { fill: #8a5a0e; }
+  .t-poc rect { fill: rgba(123, 63, 160, 0.1); stroke: #7b3fa0; }
+  .t-poc text { fill: #5e2d7d; }
   @media (prefers-color-scheme: dark) {
     .bg-grid { stroke: rgba(110, 160, 230, 0.06); }
     .frame { stroke: #1c2839; }
@@ -51,6 +54,7 @@
     .l-stop { stroke: #f2555f; }
     .l-target { stroke: #5cbf60; }
     .l-entry { stroke: #6c9cff; }
+    .l-poc { stroke: #b58ce8; }
     .grid { stroke: #182334; }
     .tick { fill: #70829b; }
     .arrow { fill: #6c9cff; }
@@ -64,6 +68,8 @@
     .t-entry text, .t-accent text { fill: #b3ccff; }
     .t-key rect { fill: rgba(224, 180, 90, 0.16); stroke: #e0b45a; }
     .t-key text { fill: #ffd38a; }
+    .t-poc rect { fill: rgba(181, 140, 232, 0.16); stroke: #b58ce8; }
+    .t-poc text { fill: #dcc6ff; }
   }
 </style>
 <defs>
@@ -79,16 +85,12 @@
 <rect fill="url(#edge)" x="0" y="40" width="740" height="1"/>
 <rect class="title-mark" x="16" y="15" width="3" height="14" rx="1.5"/>
 <text class="title" x="26" y="26">XAUUSDT 日线  2026-10-29 做空（UTC+08:00）</text>
-<line class="grid" x1="60" x2="618" y1="308.3" y2="308.3"/>
-<text class="tick" x="54" y="308.3" dy="0.35em" text-anchor="end">4000</text>
-<line class="grid" x1="60" x2="618" y1="256.2" y2="256.2"/>
-<text class="tick" x="54" y="256.2" dy="0.35em" text-anchor="end">4050</text>
-<line class="grid" x1="60" x2="618" y1="204.1" y2="204.1"/>
-<text class="tick" x="54" y="204.1" dy="0.35em" text-anchor="end">4100</text>
-<line class="grid" x1="60" x2="618" y1="152" y2="152"/>
-<text class="tick" x="54" y="152" dy="0.35em" text-anchor="end">4150</text>
-<line class="grid" x1="60" x2="618" y1="99.9" y2="99.9"/>
-<text class="tick" x="54" y="99.9" dy="0.35em" text-anchor="end">4200</text>
+<line class="grid" x1="60" x2="618" y1="305.6" y2="305.6"/>
+<text class="tick" x="54" y="305.6" dy="0.35em" text-anchor="end">4000</text>
+<line class="grid" x1="60" x2="618" y1="202.6" y2="202.6"/>
+<text class="tick" x="54" y="202.6" dy="0.35em" text-anchor="end">4100</text>
+<line class="grid" x1="60" x2="618" y1="99.6" y2="99.6"/>
+<text class="tick" x="54" y="99.6" dy="0.35em" text-anchor="end">4200</text>
 <text class="tick" x="69" y="378" text-anchor="middle">09-30</text>
 <text class="tick" x="159" y="378" text-anchor="middle">10-05</text>
 <text class="tick" x="249" y="378" text-anchor="middle">10-10</text>
@@ -97,106 +99,109 @@
 <text class="tick" x="519" y="378" text-anchor="middle">10-25</text>
 <text class="tick" x="609" y="378" text-anchor="middle">10-30</text>
 <g class="candles">
-<line class="wick down" x1="69" x2="69" y1="72" y2="111.7"/>
-<line class="wick down" x1="69" x2="69" y1="140.4" y2="148.5"/>
-<rect class="down" x="64" y="111.7" width="10" height="28.7" rx="1.5"/>
-<line class="wick up" x1="87" x2="87" y1="103.4" y2="114.5"/>
-<line class="wick up" x1="87" x2="87" y1="140.5" y2="157.7"/>
-<rect class="up" x="82" y="114.5" width="10" height="26" rx="1.5"/>
-<line class="wick down" x1="105" x2="105" y1="70" y2="114.5"/>
-<line class="wick down" x1="105" x2="105" y1="152.7" y2="172.1"/>
-<rect class="down" x="100" y="114.5" width="10" height="38.2" rx="1.5"/>
-<line class="wick down" x1="123" x2="123" y1="151.8" y2="152.7"/>
-<line class="wick down" x1="123" x2="123" y1="157" y2="162.7"/>
-<rect class="down" x="118" y="152.7" width="10" height="4.3" rx="1.5"/>
-<line class="wick up" x1="141" x2="141" y1="149.3" y2="155.2"/>
-<line class="wick up" x1="141" x2="141" y1="157" y2="164.6"/>
-<rect class="up" x="136" y="155.2" width="10" height="1.8" rx="1.5"/>
-<line class="wick down" x1="159" x2="159" y1="127.2" y2="155.2"/>
-<line class="wick down" x1="159" x2="159" y1="164.7" y2="174.9"/>
-<rect class="down" x="154" y="155.2" width="10" height="9.5" rx="1.5"/>
-<line class="wick up" x1="177" x2="177" y1="113" y2="131.9"/>
-<line class="wick up" x1="177" x2="177" y1="164.7" y2="195"/>
-<rect class="up" x="172" y="131.9" width="10" height="32.8" rx="1.5"/>
-<line class="wick down" x1="195" x2="195" y1="128.6" y2="131.9"/>
-<line class="wick down" x1="195" x2="195" y1="190.8" y2="232.2"/>
-<rect class="down" x="190" y="131.9" width="10" height="58.9" rx="1.5"/>
-<line class="wick up" x1="213" x2="213" y1="149.7" y2="152.4"/>
-<line class="wick up" x1="213" x2="213" y1="190.8" y2="193.7"/>
-<rect class="up" x="208" y="152.4" width="10" height="38.4" rx="1.5"/>
-<line class="wick up" x1="231" x2="231" y1="87" y2="104.3"/>
-<line class="wick up" x1="231" x2="231" y1="152.4" y2="155"/>
-<rect class="up" x="226" y="104.3" width="10" height="48.1" rx="1.5"/>
-<line class="wick up" x1="249" x2="249" y1="101.1" y2="104"/>
-<line class="wick up" x1="249" x2="249" y1="105.5" y2="108.9"/>
-<rect class="up" x="244" y="104" width="10" height="1.5" rx="1.5"/>
-<line class="wick up" x1="267" x2="267" y1="86.7" y2="103.9"/>
-<line class="wick up" x1="267" x2="267" y1="105.4" y2="110.4"/>
-<rect class="up" x="262" y="103.9" width="10" height="1.5" rx="1.5"/>
-<line class="wick down" x1="285" x2="285" y1="76.4" y2="103.9"/>
-<line class="wick down" x1="285" x2="285" y1="124.6" y2="141.2"/>
-<rect class="down" x="280" y="103.9" width="10" height="20.7" rx="1.5"/>
-<line class="wick down" x1="303" x2="303" y1="93.4" y2="124.6"/>
-<line class="wick down" x1="303" x2="303" y1="140.3" y2="148"/>
-<rect class="down" x="298" y="124.6" width="10" height="15.7" rx="1.5"/>
-<line class="wick down" x1="321" x2="321" y1="124.3" y2="140.3"/>
-<line class="wick down" x1="321" x2="321" y1="184.4" y2="223.8"/>
-<rect class="down" x="316" y="140.3" width="10" height="44.1" rx="1.5"/>
-<line class="wick up" x1="339" x2="339" y1="117.1" y2="138.8"/>
-<line class="wick up" x1="339" x2="339" y1="184.4" y2="184.9"/>
-<rect class="up" x="334" y="138.8" width="10" height="45.6" rx="1.5"/>
-<line class="wick up" x1="357" x2="357" y1="93.8" y2="130.9"/>
-<line class="wick up" x1="357" x2="357" y1="138.8" y2="147.8"/>
-<rect class="up" x="352" y="130.9" width="10" height="7.9" rx="1.5"/>
-<line class="wick down" x1="375" x2="375" y1="128" y2="130.9"/>
-<line class="wick down" x1="375" x2="375" y1="137.2" y2="145"/>
-<rect class="down" x="370" y="130.9" width="10" height="6.3" rx="1.5"/>
-<line class="wick up" x1="393" x2="393" y1="107.8" y2="108.7"/>
-<line class="wick up" x1="393" x2="393" y1="137.2" y2="146.6"/>
-<rect class="up" x="388" y="108.7" width="10" height="28.5" rx="1.5"/>
-<line class="wick down" x1="411" x2="411" y1="103.3" y2="108.7"/>
-<line class="wick down" x1="411" x2="411" y1="162.7" y2="163.4"/>
-<rect class="down" x="406" y="108.7" width="10" height="54" rx="1.5"/>
-<line class="wick down" x1="429" x2="429" y1="138.8" y2="162.7"/>
-<line class="wick down" x1="429" x2="429" y1="181.5" y2="182.8"/>
-<rect class="down" x="424" y="162.7" width="10" height="18.8" rx="1.5"/>
-<line class="wick up" x1="447" x2="447" y1="153.1" y2="171"/>
-<line class="wick up" x1="447" x2="447" y1="181.5" y2="190.7"/>
-<rect class="up" x="442" y="171" width="10" height="10.5" rx="1.5"/>
-<line class="wick down" x1="465" x2="465" y1="170" y2="171"/>
-<line class="wick down" x1="465" x2="465" y1="275.6" y2="280"/>
-<rect class="down" x="460" y="171" width="10" height="104.6" rx="1.5"/>
-<line class="wick down" x1="483" x2="483" y1="263.6" y2="275.6"/>
-<line class="wick down" x1="483" x2="483" y1="307.4" y2="323.9"/>
-<rect class="down" x="478" y="275.6" width="10" height="31.8" rx="1.5"/>
-<line class="wick down" x1="501" x2="501" y1="302.6" y2="307.4"/>
-<line class="wick down" x1="501" x2="501" y1="312.2" y2="330"/>
-<rect class="down" x="496" y="307.4" width="10" height="4.8" rx="1.5"/>
-<line class="wick up" x1="519" x2="519" y1="295.9" y2="302.8"/>
-<line class="wick up" x1="519" x2="519" y1="312.2" y2="319"/>
-<rect class="up" x="514" y="302.8" width="10" height="9.4" rx="1.5"/>
-<line class="wick up" x1="537" x2="537" y1="268.5" y2="293.1"/>
-<line class="wick up" x1="537" x2="537" y1="302.8" y2="322.8"/>
-<rect class="up" x="532" y="293.1" width="10" height="9.7" rx="1.5"/>
-<line class="wick up" x1="555" x2="555" y1="231.7" y2="235"/>
-<line class="wick up" x1="555" x2="555" y1="293" y2="309.2"/>
-<rect class="up" x="550" y="235" width="10" height="58" rx="1.5"/>
-<line class="wick down" x1="573" x2="573" y1="215.5" y2="235.1"/>
-<line class="wick down" x1="573" x2="573" y1="244.8" y2="274.9"/>
-<rect class="down" x="568" y="235.1" width="10" height="9.7" rx="1.5"/>
-<line class="wick down" x1="591" x2="591" y1="230.1" y2="244.8"/>
-<line class="wick down" x1="591" x2="591" y1="289.9" y2="294.8"/>
-<rect class="down" x="586" y="244.8" width="10" height="45.1" rx="1.5"/>
-<line class="wick down" x1="609" x2="609" y1="279" y2="289.9"/>
-<line class="wick down" x1="609" x2="609" y1="316.5" y2="318.3"/>
-<rect class="down" x="604" y="289.9" width="10" height="26.6" rx="1.5"/>
+<line class="wick down" x1="69" x2="69" y1="71.9" y2="111.3"/>
+<line class="wick down" x1="69" x2="69" y1="139.6" y2="147.6"/>
+<rect class="down" x="64" y="111.3" width="10" height="28.3" rx="1.5"/>
+<line class="wick up" x1="87" x2="87" y1="103" y2="114"/>
+<line class="wick up" x1="87" x2="87" y1="139.7" y2="156.7"/>
+<rect class="up" x="82" y="114" width="10" height="25.7" rx="1.5"/>
+<line class="wick down" x1="105" x2="105" y1="70" y2="114"/>
+<line class="wick down" x1="105" x2="105" y1="151.8" y2="170.9"/>
+<rect class="down" x="100" y="114" width="10" height="37.8" rx="1.5"/>
+<line class="wick down" x1="123" x2="123" y1="150.9" y2="151.8"/>
+<line class="wick down" x1="123" x2="123" y1="156" y2="161.6"/>
+<rect class="down" x="118" y="151.8" width="10" height="4.2" rx="1.5"/>
+<line class="wick up" x1="141" x2="141" y1="148.4" y2="154.3"/>
+<line class="wick up" x1="141" x2="141" y1="156" y2="163.5"/>
+<rect class="up" x="136" y="154.3" width="10" height="1.7" rx="1.5"/>
+<line class="wick down" x1="159" x2="159" y1="126.6" y2="154.3"/>
+<line class="wick down" x1="159" x2="159" y1="163.7" y2="173.7"/>
+<rect class="down" x="154" y="154.3" width="10" height="9.4" rx="1.5"/>
+<line class="wick up" x1="177" x2="177" y1="112.6" y2="131.2"/>
+<line class="wick up" x1="177" x2="177" y1="163.7" y2="193.5"/>
+<rect class="up" x="172" y="131.2" width="10" height="32.5" rx="1.5"/>
+<line class="wick down" x1="195" x2="195" y1="127.9" y2="131.2"/>
+<line class="wick down" x1="195" x2="195" y1="189.4" y2="230.4"/>
+<rect class="down" x="190" y="131.2" width="10" height="58.2" rx="1.5"/>
+<line class="wick up" x1="213" x2="213" y1="148.8" y2="151.4"/>
+<line class="wick up" x1="213" x2="213" y1="189.4" y2="192.3"/>
+<rect class="up" x="208" y="151.4" width="10" height="38" rx="1.5"/>
+<line class="wick up" x1="231" x2="231" y1="86.8" y2="103.9"/>
+<line class="wick up" x1="231" x2="231" y1="151.4" y2="154"/>
+<rect class="up" x="226" y="103.9" width="10" height="47.5" rx="1.5"/>
+<line class="wick up" x1="249" x2="249" y1="100.8" y2="103.6"/>
+<line class="wick up" x1="249" x2="249" y1="105.1" y2="108.4"/>
+<rect class="up" x="244" y="103.6" width="10" height="1.5" rx="1.5"/>
+<line class="wick up" x1="267" x2="267" y1="86.5" y2="103.5"/>
+<line class="wick up" x1="267" x2="267" y1="105" y2="109.9"/>
+<rect class="up" x="262" y="103.5" width="10" height="1.5" rx="1.5"/>
+<line class="wick down" x1="285" x2="285" y1="76.3" y2="103.5"/>
+<line class="wick down" x1="285" x2="285" y1="124" y2="140.4"/>
+<rect class="down" x="280" y="103.5" width="10" height="20.5" rx="1.5"/>
+<line class="wick down" x1="303" x2="303" y1="93.2" y2="124"/>
+<line class="wick down" x1="303" x2="303" y1="139.5" y2="147.1"/>
+<rect class="down" x="298" y="124" width="10" height="15.5" rx="1.5"/>
+<line class="wick down" x1="321" x2="321" y1="123.7" y2="139.5"/>
+<line class="wick down" x1="321" x2="321" y1="183.1" y2="222.1"/>
+<rect class="down" x="316" y="139.5" width="10" height="43.6" rx="1.5"/>
+<line class="wick up" x1="339" x2="339" y1="116.5" y2="138"/>
+<line class="wick up" x1="339" x2="339" y1="183.1" y2="183.6"/>
+<rect class="up" x="334" y="138" width="10" height="45.1" rx="1.5"/>
+<line class="wick up" x1="357" x2="357" y1="93.5" y2="130.2"/>
+<line class="wick up" x1="357" x2="357" y1="138" y2="146.9"/>
+<rect class="up" x="352" y="130.2" width="10" height="7.8" rx="1.5"/>
+<line class="wick down" x1="375" x2="375" y1="127.4" y2="130.2"/>
+<line class="wick down" x1="375" x2="375" y1="136.5" y2="144.2"/>
+<rect class="down" x="370" y="130.2" width="10" height="6.3" rx="1.5"/>
+<line class="wick up" x1="393" x2="393" y1="107.3" y2="108.2"/>
+<line class="wick up" x1="393" x2="393" y1="136.5" y2="145.7"/>
+<rect class="up" x="388" y="108.2" width="10" height="28.3" rx="1.5"/>
+<line class="wick down" x1="411" x2="411" y1="102.9" y2="108.2"/>
+<line class="wick down" x1="411" x2="411" y1="161.7" y2="162.3"/>
+<rect class="down" x="406" y="108.2" width="10" height="53.5" rx="1.5"/>
+<line class="wick down" x1="429" x2="429" y1="138.1" y2="161.7"/>
+<line class="wick down" x1="429" x2="429" y1="180.2" y2="181.5"/>
+<rect class="down" x="424" y="161.7" width="10" height="18.5" rx="1.5"/>
+<line class="wick up" x1="447" x2="447" y1="152.1" y2="169.8"/>
+<line class="wick up" x1="447" x2="447" y1="180.2" y2="189.4"/>
+<rect class="up" x="442" y="169.8" width="10" height="10.4" rx="1.5"/>
+<line class="wick down" x1="465" x2="465" y1="168.9" y2="169.8"/>
+<line class="wick down" x1="465" x2="465" y1="273.3" y2="277.6"/>
+<rect class="down" x="460" y="169.8" width="10" height="103.5" rx="1.5"/>
+<line class="wick down" x1="483" x2="483" y1="261.4" y2="273.3"/>
+<line class="wick down" x1="483" x2="483" y1="304.7" y2="321.1"/>
+<rect class="down" x="478" y="273.3" width="10" height="31.4" rx="1.5"/>
+<line class="wick down" x1="501" x2="501" y1="300" y2="304.7"/>
+<line class="wick down" x1="501" x2="501" y1="309.4" y2="327.1"/>
+<rect class="down" x="496" y="304.7" width="10" height="4.7" rx="1.5"/>
+<line class="wick up" x1="519" x2="519" y1="293.3" y2="300.2"/>
+<line class="wick up" x1="519" x2="519" y1="309.4" y2="316.2"/>
+<rect class="up" x="514" y="300.2" width="10" height="9.2" rx="1.5"/>
+<line class="wick up" x1="537" x2="537" y1="266.3" y2="290.6"/>
+<line class="wick up" x1="537" x2="537" y1="300.2" y2="319.9"/>
+<rect class="up" x="532" y="290.6" width="10" height="9.6" rx="1.5"/>
+<line class="wick up" x1="555" x2="555" y1="229.8" y2="233.2"/>
+<line class="wick up" x1="555" x2="555" y1="290.5" y2="306.5"/>
+<rect class="up" x="550" y="233.2" width="10" height="57.3" rx="1.5"/>
+<line class="wick down" x1="573" x2="573" y1="213.9" y2="233.2"/>
+<line class="wick down" x1="573" x2="573" y1="242.8" y2="272.6"/>
+<rect class="down" x="568" y="233.2" width="10" height="9.6" rx="1.5"/>
+<line class="wick down" x1="591" x2="591" y1="228.3" y2="242.8"/>
+<line class="wick down" x1="591" x2="591" y1="287.4" y2="292.2"/>
+<rect class="down" x="586" y="242.8" width="10" height="44.6" rx="1.5"/>
+<line class="wick down" x1="609" x2="609" y1="276.6" y2="287.4"/>
+<line class="wick down" x1="609" x2="609" y1="307.3" y2="330"/>
+<rect class="down" x="604" y="287.4" width="10" height="19.9" rx="1.5"/>
 </g>
-<line class="l-target" x1="591" x2="618" y1="308.3" y2="308.3" stroke-width="1.5"/>
-<line class="l-stop" x1="591" x2="618" y1="258.3" y2="258.3" stroke-width="1.5"/>
-<line class="l-entry" x1="591" x2="618" y1="277.8" y2="277.8" stroke-width="1.5"/>
-<g class="tag t-target"><rect x="632" y="299.3" width="70.8" height="18" rx="3"/><text x="638" y="308.3" dy="0.35em">目标 4000</text></g>
-<g class="tag t-stop"><rect x="632" y="249.3" width="70.8" height="18" rx="3"/><text x="638" y="258.3" dy="0.35em">止损 4048</text></g>
-<g class="tag t-entry"><rect x="632" y="269.3" width="91.7" height="18" rx="3"/><text x="638" y="278.3" dy="0.35em">入场 4029.28</text></g>
-<path class="arrow" d="M591,300.8 l-4,6 h8 z"/>
-<text x="591" y="320.8" text-anchor="middle">入场</text>
+<line class="l-target" x1="591" x2="618" y1="305.6" y2="305.6" stroke-width="1.5"/>
+<line class="l-stop" x1="591" x2="618" y1="256.2" y2="256.2" stroke-width="1.5"/>
+<line class="l-entry" x1="591" x2="618" y1="275.5" y2="275.5" stroke-width="1.5"/>
+<line class="l-neutral" x1="609" x2="618" y1="307.7" y2="307.7" stroke-width="1.5"/>
+<g class="tag t-target"><rect x="632" y="296.6" width="70.8" height="18" rx="3"/><text x="638" y="305.6" dy="0.35em">目标 4000</text></g>
+<g class="tag t-stop"><rect x="632" y="247.2" width="70.8" height="18" rx="3"/><text x="638" y="256.2" dy="0.35em">止损 4048</text></g>
+<g class="tag t-entry"><rect x="632" y="267.2" width="91.7" height="18" rx="3"/><text x="638" y="276.2" dy="0.35em">入场 4029.28</text></g>
+<path class="bracket" d="M620,307.7 L629,325.6"/>
+<g class="tag t-neutral"><rect x="632" y="316.6" width="70.8" height="18" rx="3"/><text x="638" y="325.6" dy="0.35em">出场 3998</text></g>
+<path class="arrow" d="M591,298.2 l-4,6 h8 z"/>
+<text x="591" y="318.2" text-anchor="middle">入场</text>
 </svg>
