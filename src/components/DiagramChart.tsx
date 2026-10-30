@@ -35,9 +35,9 @@ const textWidth = (s: string) => [...s].reduce((w, ch) => w + (/[\u2E80-\uFFEF]/
 /** 与 render.ts 的配色对应 */
 function palette(c: ChartColors) {
   return {
-    line: { neutral: c.muted, stop: c.bear, target: c.bull, entry: c.accent },
-    lineDash: { neutral: [4, 3], stop: [6, 3], target: [6, 3], entry: [] as number[] },
-    zone: { bull: c.bull, bear: c.bear, neutral: c.text2, accent: c.accent },
+    line: { neutral: c.muted, stop: c.bear, target: c.bull, entry: c.accent, poc: c.poc },
+    lineDash: { neutral: [4, 3], stop: [6, 3], target: [6, 3], entry: [] as number[], poc: [] as number[] },
+    zone: { bull: c.bull, bear: c.bear, neutral: c.text2, accent: c.key },
     series: { main: c.accent, band: c.muted, ema1: c.accent, ema2: c.ema2, ema3: c.ema3, ema4: c.text2 },
     seg: { accent: c.accent, neutral: c.muted, bull: c.bull, bear: c.bear },
   }
@@ -167,7 +167,7 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
           vlines: (d.vlines ?? []).map((v) => ({ at: v.at, label: d.panel ? undefined : v.label, color: v.kind === 'accent' ? c.accent : c.muted, width: v.kind === 'accent' ? 1.4 : 1 })),
           profile: d.profile && {
             ...d.profile,
-            colors: { row: alpha(c.text2, 0.18), va: alpha(c.text2, 0.38), poc: alpha(c.bear, 0.7) },
+            colors: { row: alpha(c.text2, 0.18), va: alpha(c.text2, 0.38), poc: alpha(c.poc, 0.75) },
           },
         },
         style,

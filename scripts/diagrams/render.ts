@@ -22,7 +22,7 @@ export interface Line {
   to?: number
   y: number
   label?: string
-  kind?: 'neutral' | 'stop' | 'target' | 'entry'
+  kind?: 'neutral' | 'stop' | 'target' | 'entry' | 'poc'
   labelFrom?: number // 线段标签的起始 K 线下标，默认为 from（避开 K 线遮挡时使用）
 }
 
@@ -148,19 +148,20 @@ const STYLE = `
   text { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 12px; fill: #1a1a1a; paint-order: stroke; stroke: #e8e0d3; stroke-width: 3px; stroke-linejoin: round; }
   .muted { fill: #5e564b; }
   .wick { stroke-width: 1.5; }
-  .up { fill: #e8e0d3; stroke: #1a1a1a; }
+  .up { fill: none; stroke: #1a1a1a; }
   .down { fill: #1a1a1a; stroke: #1a1a1a; }
   .z-bull { fill: rgba(62, 142, 65, 0.24); stroke: none; }
   .z-bear { fill: rgba(192, 80, 77, 0.24); stroke: none; }
   .z-neutral { fill: rgba(94, 86, 75, 0.08); stroke: rgba(94, 86, 75, 0.3); stroke-dasharray: 2 3; }
-  .z-accent { fill: rgba(47, 95, 208, 0.24); stroke: none; }
+  .z-accent { fill: rgba(212, 160, 60, 0.24); stroke: none; }
   .l-neutral { stroke: #8a8278; stroke-dasharray: 4 3; }
   .l-stop { stroke: #c0504d; stroke-dasharray: 6 3; }
   .l-target { stroke: #3e8e41; stroke-dasharray: 6 3; }
   .l-entry { stroke: #2f5fd0; }
+  .l-poc { stroke: #7b3fa0; }
   .bracket { stroke: #8a8278; fill: none; }
   .grid { stroke: rgba(94, 86, 75, 0.12); stroke-dasharray: 2 4; }
-  .tick { font-family: 'DIN Alternate', 'Bahnschrift', 'Roboto Condensed', sans-serif; font-size: 11px; fill: #8a8278; stroke: none; }
+  .tick { font-family: 'DIN Alternate', 'Bahnschrift', 'Roboto Condensed', sans-serif; font-size: 11px; fill: #665e53; stroke: none; }
   .arrow { fill: #2f5fd0; stroke: none; }
   .tag rect { stroke-width: 1; }
   .tag text { stroke: none; font-weight: 600; }
@@ -172,34 +173,43 @@ const STYLE = `
   .t-target text, .t-bull text { fill: #2e7d32; }
   .t-entry rect, .t-accent rect { fill: rgba(47, 95, 208, 0.1); stroke: #2f5fd0; }
   .t-entry text, .t-accent text { fill: #24489e; }
+  .t-key rect { fill: rgba(212, 160, 60, 0.14); stroke: #d4a03c; }
+  .t-key text { fill: #8a5a0e; }
+  .t-poc rect { fill: rgba(123, 63, 160, 0.1); stroke: #7b3fa0; }
+  .t-poc text { fill: #5e2d7d; }
   @media (prefers-color-scheme: dark) {
     .bg-grid { stroke: rgba(110, 160, 230, 0.06); }
     .frame { stroke: #1c2839; }
-    .title-mark { fill: #f0b44c; }
+    .title-mark { fill: #6c9cff; }
     .title, text { fill: #e3eaf4; }
     text { stroke: #0a111d; }
     .muted { fill: #a0b0c5; }
-    .up { fill: #0b1220; stroke: #c5d0de; }
+    .up { fill: none; stroke: #c5d0de; }
     .down { fill: #8a96a8; stroke: #8a96a8; }
     .z-bull { fill: rgba(92, 191, 96, 0.24); }
     .z-bear { fill: rgba(242, 85, 95, 0.24); }
     .z-neutral { fill: rgba(160, 176, 197, 0.08); stroke: rgba(160, 176, 197, 0.25); }
-    .z-accent { fill: rgba(240, 180, 76, 0.24); }
+    .z-accent { fill: rgba(224, 180, 90, 0.24); }
     .l-neutral, .bracket { stroke: #8293ab; }
     .l-stop { stroke: #f2555f; }
     .l-target { stroke: #5cbf60; }
-    .l-entry { stroke: #f0b44c; }
+    .l-entry { stroke: #6c9cff; }
+    .l-poc { stroke: #b58ce8; }
     .grid { stroke: #182334; }
     .tick { fill: #70829b; }
-    .arrow { fill: #f0b44c; }
+    .arrow { fill: #6c9cff; }
     .t-neutral rect { fill: rgba(160, 176, 197, 0.1); stroke: rgba(160, 176, 197, 0.45); }
     .t-neutral text { fill: #c5d0de; }
     .t-stop rect, .t-bear rect { fill: rgba(242, 85, 95, 0.16); stroke: #f2555f; }
     .t-stop text, .t-bear text { fill: #ff8f98; }
     .t-target rect, .t-bull rect { fill: rgba(92, 191, 96, 0.16); stroke: #5cbf60; }
     .t-target text, .t-bull text { fill: #9fe0a2; }
-    .t-entry rect, .t-accent rect { fill: rgba(240, 180, 76, 0.16); stroke: #f0b44c; }
-    .t-entry text, .t-accent text { fill: #ffd38a; }
+    .t-entry rect, .t-accent rect { fill: rgba(108, 156, 255, 0.16); stroke: #6c9cff; }
+    .t-entry text, .t-accent text { fill: #b3ccff; }
+    .t-key rect { fill: rgba(224, 180, 90, 0.16); stroke: #e0b45a; }
+    .t-key text { fill: #ffd38a; }
+    .t-poc rect { fill: rgba(181, 140, 232, 0.16); stroke: #b58ce8; }
+    .t-poc text { fill: #dcc6ff; }
   }
 `
 
@@ -226,17 +236,17 @@ const INDICATOR_STYLE = `
   .t-ema4 text { fill: #3a342c; }
   .p-row { fill: rgba(94, 86, 75, 0.18); }
   .p-va { fill: rgba(94, 86, 75, 0.38); }
-  .p-poc { fill: rgba(192, 80, 77, 0.7); }
+  .p-poc { fill: rgba(123, 63, 160, 0.75); }
   .seg-neutral { stroke: #8a8278; stroke-width: 1.2; stroke-dasharray: 5 3; }
   .seg-bull, .s-bull { stroke: #3e8e41; stroke-width: 1.8; fill: none; }
   .seg-bear, .s-bear { stroke: #c0504d; stroke-width: 1.8; fill: none; }
   .vline { stroke: #8a8278; stroke-width: 1; stroke-dasharray: 3 3; }
   .vline-accent { stroke: #2f5fd0; stroke-width: 1.4; stroke-dasharray: 3 3; }
   @media (prefers-color-scheme: dark) {
-    .s-main, .seg { stroke: #f0b44c; }
+    .s-main, .seg { stroke: #6c9cff; }
     .s-band { stroke: #8293ab; }
     .s-osc { stroke: #c5d0de; }
-    .s-ema1, .s-sig { stroke: #f0b44c; }
+    .s-ema1, .s-sig { stroke: #6c9cff; }
     .s-ema2 { stroke: #a98bf0; }
     .s-ema3 { stroke: #3cc4ae; }
     .s-ema4 { stroke: #c5d0de; }
@@ -252,11 +262,11 @@ const INDICATOR_STYLE = `
     .t-ema4 text { fill: #e3eaf4; }
     .p-row { fill: rgba(160, 176, 197, 0.18); }
     .p-va { fill: rgba(160, 176, 197, 0.38); }
-    .p-poc { fill: rgba(242, 85, 95, 0.7); }
+    .p-poc { fill: rgba(181, 140, 232, 0.75); }
     .seg-neutral, .vline { stroke: #8293ab; }
     .seg-bull, .s-bull { stroke: #5cbf60; }
     .seg-bear, .s-bear { stroke: #f2555f; }
-    .vline-accent { stroke: #f0b44c; }
+    .vline-accent { stroke: #6c9cff; }
   }
 `
 
@@ -282,7 +292,7 @@ export function render(d: Diagram): string {
   }
   const n = d.candles.length + (d.big ? 3 : 0)
   const gutterLabels = [
-    ...(d.zones ?? []).filter((z) => z.to == null && z.label).map((z) => ({ label: z.label!, price: (z.top + z.bottom) / 2, kind: z.kind as string })),
+    ...(d.zones ?? []).filter((z) => z.to == null && z.label).map((z) => ({ label: z.label!, price: (z.top + z.bottom) / 2, kind: z.kind === 'accent' ? 'key' : z.kind })),
     ...(d.lines ?? []).filter((l) => l.to == null && l.label).map((l) => ({ label: l.label!, price: l.y, kind: l.kind ?? 'neutral' })),
     ...(d.series ?? [])
       .filter((s) => s.label)
@@ -371,7 +381,9 @@ export function render(d: Diagram): string {
     const cls = c >= o ? 'up' : 'down'
     const top = y(Math.max(o, c))
     const bh = Math.max(1.5, y(Math.min(o, c)) - top)
-    out.push(`<line class="wick ${cls}" x1="${cx}" x2="${cx}" y1="${y(h)}" y2="${y(l)}"/>`)
+    // 影线分上下两段，不穿过空心的阳线实体
+    out.push(`<line class="wick ${cls}" x1="${cx}" x2="${cx}" y1="${y(h)}" y2="${top}"/>`)
+    out.push(`<line class="wick ${cls}" x1="${cx}" x2="${cx}" y1="${r1(top + bh)}" y2="${y(l)}"/>`)
     out.push(`<rect class="${cls}" x="${r1(cx - bodyW / 2)}" y="${top}" width="${bodyW}" height="${r1(bh)}" rx="1.5"/>`)
   }
 

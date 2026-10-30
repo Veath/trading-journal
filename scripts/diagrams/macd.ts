@@ -9,7 +9,7 @@ function macdPanel(m: ReturnType<typeof macd>, extra: Partial<Panel>): Panel {
   const all = [...m.macd, ...m.signal, ...m.histogram].filter((v) => !Number.isNaN(v))
   const pad = 0.2
   return {
-    title: 'MACD(12, 26, 9)：MACD 线（灰）· Signal（橙）· 柱状图',
+    title: 'MACD(12, 26, 9)：MACD 线（灰）· Signal（蓝）· 柱状图',
     values: m.macd,
     signal: m.signal,
     histogram: m.histogram,

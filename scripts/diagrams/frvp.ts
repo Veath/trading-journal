@@ -62,7 +62,7 @@ export const frvpDiagrams: Diagram[] = [
     ],
     lines: [
       { from: 0, y: dd.vah, label: 'VAH' },
-      { from: 0, y: dd.poc, label: 'POC', kind: 'entry' },
+      { from: 0, y: dd.poc, label: 'POC', kind: 'poc' },
       { from: 0, y: dd.val, label: 'VAL' },
     ],
     spans: [
@@ -80,7 +80,7 @@ export const frvpDiagrams: Diagram[] = [
       { from: 0, to: 12, top: 57, bottom: 49, kind: 'neutral', label: 'LVN' },
       { from: 6, top: 53.5, bottom: 49.2, kind: 'bull', label: 'FVG' },
     ],
-    lines: [{ from: 0, y: lvn.poc, label: 'POC', kind: 'entry' }],
+    lines: [{ from: 0, y: lvn.poc, label: 'POC', kind: 'poc' }],
     spans: [{ from: 0, to: 12, label: 'FRVP 区间' }],
     marks: [
       { at: 7, text: '位移', pos: 'above' },

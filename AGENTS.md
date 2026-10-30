@@ -32,8 +32,8 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - 路由是 `src/lib/router.ts` 里的极简 hash 路由（`#/trades/:id`、`#/notes/...`），不要引入 react-router。
 - 统计图表用手写 SVG（`EquityChart`、`RHistogram`），不要引入图表库。K 线类图表例外，统一用 TradingView 的 `lightweight-charts`：交易详情的行情图 `TradeChart`，以及笔记里的交互示意图 `DiagramChart`。两者共用 `src/lib/chartTheme.ts`（配色）和 `src/lib/chartOverlay.ts`（区域、线段、括号、竖线、成交量分布、右侧标签等标注，横坐标用 K 线下标）。lightweight-charts 内部用 `<table>` 排版，`styles.css` 里有对应的样式隔离，改表格样式时注意不要影响它。
 - 行情数据：`src/lib/market.ts` 在浏览器里直接请求 Binance USDT 永续公开 K 线（`fapi.binance.com`，无需密钥）；`scripts/trade-chart` 也复用它。持仓中的交易每 30 秒刷新最新 K 线。目前只支持 Binance 上有的品种。
-- 样式集中在 `src/styles.css`，颜色用 CSS 变量，同时支持浅色和深色模式。盈利 = 蓝色（`--pos`），亏损 = 红色（`--neg`），数字始终带 +/- 号。
-- K 线类图表（`TradeChart`、`DiagramChart`、`scripts/diagrams` 生成的 SVG、交易复盘图）另用 `--chart-*` 变量，与用户的 TradingView 布局保持一致：浅色为米色纸面（`#e8e0d3`）+ 黑白 K 线（阳线空心、阴线实心），深色沿用站点配色、K 线为灰白；看涨 / 看跌标注 = 绿 / 红（`--chart-bull` / `--chart-bear`），这是行情方向，不是盈亏，不要和 `--pos` / `--neg` 混用。区域标注只填充、不画边框（中性区保留虚线边）。改配色时 `styles.css`、`render.ts` 的 `STYLE` 两处同步。
+- 样式集中在 `src/styles.css`，颜色用 CSS 变量，同时支持浅色和深色模式。盈利 = 绿色（`--pos`），亏损 = 红色（`--neg`），与 K 线图的看涨 / 看跌同色；数字始终带 +/- 号。
+- K 线类图表（`TradeChart`、`DiagramChart`、`scripts/diagrams` 生成的 SVG、交易复盘图）另用 `--chart-*` 变量，与用户的 TradingView 布局保持一致：浅色为米色纸面（`#e8e0d3`）+ 黑白 K 线（阳线空心、实体透明，阴线实心），深色沿用站点底色、K 线为灰白。颜色语义：看涨 / 看跌 = 绿 / 红（`--chart-bull` / `--chart-bear`，与盈亏色一致）；入场 = 蓝（`--chart-accent`）；关键区 / HTF 区 = 赭黄（`--chart-key`）；FRVP POC = 紫（`--chart-poc`）；红色不要用于方向和亏损以外的含义。区域标注只填充、不画边框（中性区保留虚线边）。改配色时 `styles.css` 和 `render.ts` 的 `STYLE` / `INDICATOR_STYLE` 要同步。
 - 部署：push 到 `main` 触发 `.github/workflows/deploy.yml`，测试 + 构建后发布到 GitHub Pages；`vite.config.ts` 的 `base` 由 CI 的 `BASE_PATH` 设为 `/trading-journal/`。
 
 ## 数据约定

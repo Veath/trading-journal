@@ -171,7 +171,7 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       }
       createSeriesMarkers(series, markers.sort((a, b) => (a.time as number) - (b.time as number)))
 
-      const zoneColor = { bull: c.bull, bear: c.bear, neutral: c.muted, accent: c.accent }
+      const zoneColor = { bull: c.bull, bear: c.bear, neutral: c.muted, accent: c.key }
       const lineColor = { neutral: c.text2, stop: c.bear, target: c.bull, entry: c.accent }
       series.attachPrimitive(
         new Overlay(

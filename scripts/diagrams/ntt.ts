@@ -7,7 +7,7 @@ const RETRACE = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1] as const
 // 书中 Fib 趋势时间的节奏：长短长（0–0.382 长、0.382–0.618 短、0.618–1 长），之后重复
 const TIME = [0, 0.382, 0.618, 1, 1.382, 1.618, 2, 2.382, 2.618, 3] as const
 
-/** Fib 回撤水平线：0 / 0.382 / 0.5 / 0.618 / 1 带右侧标签，0.618 用琥珀色强调 */
+/** Fib 回撤水平线：0 / 0.382 / 0.5 / 0.618 / 1 带右侧标签，0.618 用蓝色强调 */
 function fibLines(p0: number, p1: number, from = 0): Line[] {
   const prices = fibLevels(p0, p1, RETRACE)
   return RETRACE.map((r, i) => ({

@@ -5,7 +5,7 @@ import { useWidth } from './useWidth'
 const H = 200
 const PAD = { top: 12, right: 8, bottom: 28, left: 32 }
 
-/** 单笔 R 分布直方图：负 R 红、正 R 蓝、保本灰 */
+/** 单笔 R 分布直方图：负 R 红、正 R 绿、保本灰 */
 export default function RHistogram({ buckets }: { buckets: Bucket[] }) {
   const [ref, width] = useWidth<HTMLDivElement>()
   const [hover, setHover] = useState<number | null>(null)

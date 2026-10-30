@@ -2,7 +2,7 @@
  * 设计令牌：交易终端仪表舱
  * - 底色：蓝墨色 + 坐标纸网格 + 冷光晕；浅色模式为冷灰白
  * - 面板：半透明 + 顶边发光线；数字用 DIN 仪表字体（系统自带，不依赖外部字体）
- * - 强调色：琥珀（关键位、选中、焦点），与数据色（盈 = 蓝，亏 = 红）严格分开
+ * - 强调色：琥珀（关键位、选中、焦点），与数据色（盈 = 绿，亏 = 红，与 K 线图的看涨 / 看跌同色）严格分开
  */
 :root {
   color-scheme: light;
@@ -23,27 +23,27 @@
   --accent: #a86b12;
   --accent-soft: rgba(212, 145, 34, 0.14);
   --accent-ring: rgba(212, 145, 34, 0.55);
-  --pos: #1c5cab;
+  --pos: #2e7d32;
   --neg: #c23a3a;
-  --pos-mark: #2a78d6;
+  --pos-mark: #3e8e41;
   --neg-mark: #e34948;
   --dd-fill: rgba(227, 73, 72, 0.14);
-  --area-top: rgba(42, 120, 214, 0.2);
+  --area-top: rgba(62, 142, 65, 0.2);
   --pos-glow: none;
   --neg-glow: none;
-  --line-glow: drop-shadow(0 1px 2px rgba(42, 120, 214, 0.35));
+  --line-glow: drop-shadow(0 1px 2px rgba(62, 142, 65, 0.35));
   --bar-glow: 0 0 0 transparent;
   --warn-bg: #fdf0e6;
   --warn-text: #a8461c;
   /* K 线图（lightweight-charts）：米色纸面 + 黑白 K 线，与 TradingView 布局一致；
-     看涨 / 看跌标注用绿 / 红，与统计里的盈 = 蓝、亏 = 红分开 */
+     看涨 / 看跌 = 绿 / 红（与盈亏同色）；入场 = 蓝；关键区 / HTF 区 = 赭黄；POC = 紫 */
   --chart-bg: #e8e0d3;
   --chart-text: #1a1a1a;
   --chart-text-2: #5e564b;
-  --chart-muted: #8a8278;
+  --chart-muted: #665e53;
   --chart-border: #d2c7b5;
   --chart-grid: rgba(0, 0, 0, 0);
-  --chart-candle-up: #e8e0d3;
+  --chart-candle-up: rgba(0, 0, 0, 0);
   --chart-candle-up-line: #1a1a1a;
   --chart-candle-down: #1a1a1a;
   --chart-vol-up: #bfb4a2;
@@ -51,6 +51,10 @@
   --chart-bull: #3e8e41;
   --chart-bear: #c0504d;
   --chart-accent: #2f5fd0;
+  --chart-key: #d4a03c;
+  --chart-poc: #7b3fa0;
+  --chart-ema2: #b5651d;
+  --chart-ema3: #16917f;
   --shadow-pop: 0 10px 30px rgba(19, 24, 32, 0.14), 0 2px 6px rgba(19, 24, 32, 0.08);
   --radius: 10px;
   --radius-sm: 7px;
@@ -78,16 +82,16 @@
     --accent: #f0b44c;
     --accent-soft: rgba(240, 180, 76, 0.13);
     --accent-ring: rgba(240, 180, 76, 0.6);
-    --pos: #6cb2ff;
+    --pos: #7fd383;
     --neg: #ff7a85;
-    --pos-mark: #3d8bff;
+    --pos-mark: #5cbf60;
     --neg-mark: #f2555f;
     --dd-fill: rgba(242, 85, 95, 0.16);
-    --area-top: rgba(61, 139, 255, 0.3);
-    --pos-glow: 0 0 18px rgba(61, 139, 255, 0.5);
+    --area-top: rgba(92, 191, 96, 0.3);
+    --pos-glow: 0 0 18px rgba(92, 191, 96, 0.5);
     --neg-glow: 0 0 18px rgba(242, 85, 95, 0.45);
-    --line-glow: drop-shadow(0 0 6px rgba(61, 139, 255, 0.7));
-    --bar-glow: 0 0 10px rgba(61, 139, 255, 0.45);
+    --line-glow: drop-shadow(0 0 6px rgba(92, 191, 96, 0.7));
+    --bar-glow: 0 0 10px rgba(92, 191, 96, 0.45);
     --warn-bg: #3a2418;
     --warn-text: #f1a07c;
     --chart-bg: #0d1420;
@@ -96,14 +100,18 @@
     --chart-muted: #70829b;
     --chart-border: #1c2839;
     --chart-grid: #182334;
-    --chart-candle-up: #0d1420;
+    --chart-candle-up: rgba(0, 0, 0, 0);
     --chart-candle-up-line: #c5d0de;
     --chart-candle-down: #8a96a8;
     --chart-vol-up: #3a4658;
     --chart-vol-down: #6b7a90;
     --chart-bull: #5cbf60;
     --chart-bear: #f2555f;
-    --chart-accent: #f0b44c;
+    --chart-accent: #6c9cff;
+    --chart-key: #e0b45a;
+    --chart-poc: #b58ce8;
+    --chart-ema2: #a98bf0;
+    --chart-ema3: #3cc4ae;
     --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
   }
 }
