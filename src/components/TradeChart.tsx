@@ -11,7 +11,7 @@ import {
 } from 'lightweight-charts'
 import type { Trade } from '../types'
 import { chartSidecar } from '../lib/load'
-import { baseChartOptions, themeColors, usePrefersDark } from '../lib/chartTheme'
+import { baseChartOptions, candleColors, themeColors, usePrefersDark } from '../lib/chartTheme'
 import { Overlay } from '../lib/chartOverlay'
 import {
   DEFAULT_TIMEFRAMES,
@@ -112,12 +112,7 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       localization: { locale: 'zh-CN', dateFormat: 'yyyy-MM-dd' },
     })
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: c.up,
-      downColor: c.down,
-      borderUpColor: c.up,
-      borderDownColor: c.down,
-      wickUpColor: c.up,
-      wickDownColor: c.down,
+      ...candleColors(c),
       // 最新价线和止损 / 目标线同色，已平仓的交易不显示，免得混淆
       priceLineVisible: trade.status === 'open',
       // 纵轴始终包含入场 / 止损 / 目标，方便看 R:R
@@ -153,8 +148,8 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       // 入场 / 止损 / 目标 / 出场：横贯全图的价格线，右侧坐标轴有价格标签
       const priceLine = (price: number | undefined, title: string, color: string, lineStyle: LineStyle) =>
         price != null && series.createPriceLine({ price, title, color, lineStyle, lineWidth: 1, axisLabelVisible: true })
-      priceLine(trade.target, '目标', c.up, LineStyle.Dashed)
-      priceLine(trade.stop, '止损', c.down, LineStyle.Dashed)
+      priceLine(trade.target, '目标', c.bull, LineStyle.Dashed)
+      priceLine(trade.stop, '止损', c.bear, LineStyle.Dashed)
       priceLine(trade.entry, '入场', c.accent, LineStyle.Solid)
       priceLine(trade.exit, '出场', c.text2, LineStyle.Dotted)
 
@@ -176,15 +171,15 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       }
       createSeriesMarkers(series, markers.sort((a, b) => (a.time as number) - (b.time as number)))
 
-      const zoneColor = { bull: c.up, bear: c.down, neutral: c.muted, accent: c.accent }
-      const lineColor = { neutral: c.text2, stop: c.down, target: c.up, entry: c.accent }
+      const zoneColor = { bull: c.bull, bear: c.bear, neutral: c.muted, accent: c.accent }
+      const lineColor = { neutral: c.text2, stop: c.bear, target: c.bull, entry: c.accent }
       series.attachPrimitive(
         new Overlay(
           {
             zones: (spec.zones ?? []).map((z) => ({ ...z, from: idx(z.from), to: z.to ? idx(z.to) : undefined, color: zoneColor[z.kind] })),
             lines: (spec.lines ?? []).map((l) => ({ ...l, from: idx(l.from), to: l.to ? idx(l.to) : undefined, color: lineColor[l.kind ?? 'neutral'], dash: [4, 3], width: 1 })),
           },
-          { font: c.font, text: c.text, muted: c.text2, halo: c.surface },
+          { font: c.font, text: c.text, muted: c.text2, halo: c.bg },
         ),
       )
 

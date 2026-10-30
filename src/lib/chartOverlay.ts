@@ -199,11 +199,14 @@ export class Overlay implements ISeriesPrimitive<Time> {
         const y2 = this.y(z.bottom)
         if (x1 == null || y1 == null || y2 == null) continue
         const x2 = z.to == null ? right : (this.x(z.to) ?? right) + half
-        ctx.fillStyle = alpha(z.color, 0.13)
+        // 与 TradingView 的矩形模板一致：实色填充、不画边框；虚线区域（中性参考区）保留虚线边
+        ctx.fillStyle = alpha(z.color, z.dashed ? 0.1 : 0.24)
         ctx.fillRect(x1 - half, y1, x2 - x1 + half, Math.max(y2 - y1, 2))
-        ctx.strokeStyle = alpha(z.color, 0.55)
-        ctx.setLineDash(z.dashed ? [2, 3] : [])
-        ctx.strokeRect(x1 - half + 0.5, y1 + 0.5, x2 - x1 + half - 1, Math.max(y2 - y1, 2) - 1)
+        if (z.dashed) {
+          ctx.strokeStyle = alpha(z.color, 0.4)
+          ctx.setLineDash([2, 3])
+          ctx.strokeRect(x1 - half + 0.5, y1 + 0.5, x2 - x1 + half - 1, Math.max(y2 - y1, 2) - 1)
+        }
       }
       ctx.setLineDash([])
 

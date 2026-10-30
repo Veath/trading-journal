@@ -35,6 +35,22 @@
   --bar-glow: 0 0 0 transparent;
   --warn-bg: #fdf0e6;
   --warn-text: #a8461c;
+  /* K 线图（lightweight-charts）：米色纸面 + 黑白 K 线，与 TradingView 布局一致；
+     看涨 / 看跌标注用绿 / 红，与统计里的盈 = 蓝、亏 = 红分开 */
+  --chart-bg: #e8e0d3;
+  --chart-text: #1a1a1a;
+  --chart-text-2: #5e564b;
+  --chart-muted: #8a8278;
+  --chart-border: #d2c7b5;
+  --chart-grid: rgba(0, 0, 0, 0);
+  --chart-candle-up: #e8e0d3;
+  --chart-candle-up-line: #1a1a1a;
+  --chart-candle-down: #1a1a1a;
+  --chart-vol-up: #bfb4a2;
+  --chart-vol-down: #5e564b;
+  --chart-bull: #3e8e41;
+  --chart-bear: #c0504d;
+  --chart-accent: #2f5fd0;
   --shadow-pop: 0 10px 30px rgba(19, 24, 32, 0.14), 0 2px 6px rgba(19, 24, 32, 0.08);
   --radius: 10px;
   --radius-sm: 7px;
@@ -74,6 +90,20 @@
     --bar-glow: 0 0 10px rgba(61, 139, 255, 0.45);
     --warn-bg: #3a2418;
     --warn-text: #f1a07c;
+    --chart-bg: #0d1420;
+    --chart-text: #e3eaf4;
+    --chart-text-2: #a0b0c5;
+    --chart-muted: #70829b;
+    --chart-border: #1c2839;
+    --chart-grid: #182334;
+    --chart-candle-up: #0d1420;
+    --chart-candle-up-line: #c5d0de;
+    --chart-candle-down: #8a96a8;
+    --chart-vol-up: #3a4658;
+    --chart-vol-down: #6b7a90;
+    --chart-bull: #5cbf60;
+    --chart-bear: #f2555f;
+    --chart-accent: #f0b44c;
     --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
   }
 }

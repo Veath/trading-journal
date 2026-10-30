@@ -15,7 +15,7 @@ import {
   type UTCTimestamp,
 } from 'lightweight-charts'
 import type { Diagram, Mark, Segment } from '../../scripts/diagrams/render.ts'
-import { alpha, baseChartOptions, themeColors, usePrefersDark, type ChartColors } from '../lib/chartTheme'
+import { alpha, baseChartOptions, candleColors, themeColors, usePrefersDark, type ChartColors } from '../lib/chartTheme'
 import { Overlay, type OverlaySegment, type OverlayStyle, type OverlayTag } from '../lib/chartOverlay'
 
 // 示意图没有真实时间：第 i 根 K 线放在 BASE + i 天，时间轴隐藏，十字光标显示「第 n 根」
@@ -35,11 +35,11 @@ const textWidth = (s: string) => [...s].reduce((w, ch) => w + (/[\u2E80-\uFFEF]/
 /** 与 render.ts 的配色对应 */
 function palette(c: ChartColors) {
   return {
-    line: { neutral: c.muted, stop: c.down, target: c.up, entry: c.accent },
+    line: { neutral: c.muted, stop: c.bear, target: c.bull, entry: c.accent },
     lineDash: { neutral: [4, 3], stop: [6, 3], target: [6, 3], entry: [] as number[] },
-    zone: { bull: c.up, bear: c.down, neutral: c.text2, accent: c.accent },
+    zone: { bull: c.bull, bear: c.bear, neutral: c.text2, accent: c.accent },
     series: { main: c.accent, band: c.muted, ema1: c.accent, ema2: c.ema2, ema3: c.ema3, ema4: c.text2 },
-    seg: { accent: c.accent, neutral: c.muted, bull: c.up, bear: c.down },
+    seg: { accent: c.accent, neutral: c.muted, bull: c.bull, bear: c.bear },
   }
 }
 
@@ -83,7 +83,7 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
     const c = themeColors()
     const p = palette(c)
     const n = d.candles.length
-    const style: OverlayStyle = { font: c.font, text: c.text, muted: c.text2, halo: c.surface, end: n - 1 }
+    const style: OverlayStyle = { font: c.font, text: c.text, muted: c.text2, halo: c.bg, end: n - 1 }
     const base = baseChartOptions(c)
 
     const chart = createChart(el, {
@@ -106,12 +106,7 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
     const allPrices = [...d.candles.flatMap((k) => (k ? [k[1], k[2]] : [])), ...extra]
     const precision = Math.min(4, Math.max(0, ...allPrices.map(decimals)))
     const candles = chart.addSeries(CandlestickSeries, {
-      upColor: c.up,
-      downColor: c.down,
-      borderUpColor: c.up,
-      borderDownColor: c.down,
-      wickUpColor: c.up,
-      wickDownColor: c.down,
+      ...candleColors(c),
       priceLineVisible: false,
       lastValueVisible: false,
       priceFormat: { type: 'price', precision, minMove: 10 ** -precision },
@@ -138,7 +133,7 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
 
     // 延伸到右边缘的线 / 区域：名称画成右侧标签，价格显示在坐标轴上
     const axisPrice = (series: ISeriesApi<SeriesType>, price: number, color: string) =>
-      series.createPriceLine({ price, color, lineVisible: false, axisLabelVisible: true, axisLabelColor: color, axisLabelTextColor: c.surface })
+      series.createPriceLine({ price, color, lineVisible: false, axisLabelVisible: true, axisLabelColor: color, axisLabelTextColor: c.bg })
     const tags: OverlayTag[] = []
     for (const z of d.zones ?? []) if (z.to == null && z.label) tags.push({ price: (z.top + z.bottom) / 2, label: z.label, color: p.zone[z.kind] })
     for (const l of d.lines ?? []) if (l.to == null && l.label) tags.push({ price: l.y, label: l.label, color: p.line[l.kind ?? 'neutral'] })
@@ -172,7 +167,7 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
           vlines: (d.vlines ?? []).map((v) => ({ at: v.at, label: d.panel ? undefined : v.label, color: v.kind === 'accent' ? c.accent : c.muted, width: v.kind === 'accent' ? 1.4 : 1 })),
           profile: d.profile && {
             ...d.profile,
-            colors: { row: alpha(c.text2, 0.16), va: alpha(c.up, 0.24), poc: alpha(c.accent, 0.55) },
+            colors: { row: alpha(c.text2, 0.18), va: alpha(c.text2, 0.38), poc: alpha(c.bear, 0.7) },
           },
         },
         style,
@@ -182,26 +177,26 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
     // —— 副图（RSI / MACD / 成交量 / 量能曲线） ——
     const panel = d.panel
     const panelTags: OverlayTag[] = (panel?.levels ?? []).flatMap((l) => (l.label ? [{ price: l.y, label: l.label, color: c.muted }] : []))
-    if (panel?.band) panelTags.push({ price: (panel.band.top + panel.band.bottom) / 2, label: panel.band.label, color: c.up })
+    if (panel?.band) panelTags.push({ price: (panel.band.top + panel.band.bottom) / 2, label: panel.band.label, color: c.bull })
     if (panel) {
       const fixed = (): AutoscaleInfo => ({ priceRange: { minValue: panel.min, maxValue: panel.max } })
       const common = { priceLineVisible: false, lastValueVisible: false, autoscaleInfoProvider: fixed }
       const added: ISeriesApi<SeriesType>[] = []
       if (panel.histogram) {
         const h = chart.addSeries(HistogramSeries, { ...common, base: 0 }, 1)
-        h.setData(panel.histogram.map((v, i) => (v == null || Number.isNaN(v) ? { time: toTime(i) } : { time: toTime(i), value: v, color: alpha(v >= 0 ? c.up : c.down, 0.45) })))
+        h.setData(panel.histogram.map((v, i) => (v == null || Number.isNaN(v) ? { time: toTime(i) } : { time: toTime(i), value: v, color: alpha(v >= 0 ? c.bull : c.bear, 0.45) })))
         added.push(h)
       }
       if (panel.volume) {
         const h = chart.addSeries(HistogramSeries, { ...common, base: 0 }, 1)
         h.setData(panel.volume.map((v, i) => {
           const k = d.candles[i]
-          return k ? { time: toTime(i), value: v, color: alpha(k[3] >= k[0] ? c.up : c.down, 0.45) } : { time: toTime(i) }
+          return k ? { time: toTime(i), value: v, color: alpha(k[3] >= k[0] ? c.volUp : c.volDown, 0.8) } : { time: toTime(i) }
         }))
         added.push(h)
       }
       for (const cv of panel.curves ?? []) {
-        const l = chart.addSeries(LineSeries, { ...common, color: cv.kind === 'bull' ? c.up : c.down, lineWidth: 2, crosshairMarkerVisible: false }, 1)
+        const l = chart.addSeries(LineSeries, { ...common, color: cv.kind === 'bull' ? c.bull : c.bear, lineWidth: 2, crosshairMarkerVisible: false }, 1)
         l.setData(points(cv.values))
         added.push(l)
       }
@@ -226,7 +221,7 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
             {
               tags: panelTags,
               caption: panel.title,
-              zones: panel.band ? [{ from: 0, top: panel.band.top, bottom: panel.band.bottom, color: c.up }] : undefined,
+              zones: panel.band ? [{ from: 0, top: panel.band.top, bottom: panel.band.bottom, color: c.bull }] : undefined,
               segments: (panel.segments ?? []).map((s) => toSegment(s, p)),
               vlines: (d.vlines ?? []).map((v) => ({ at: v.at, label: v.label, color: v.kind === 'accent' ? c.accent : c.muted, width: v.kind === 'accent' ? 1.4 : 1 })),
             },
