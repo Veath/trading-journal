@@ -12,7 +12,7 @@ import {
 import type { Trade } from '../types'
 import { chartSidecar } from '../lib/load'
 import { baseChartOptions, candleColors, themeColors, usePrefersDark } from '../lib/chartTheme'
-import { Overlay } from '../lib/chartOverlay'
+import { Overlay, sidecarOverlayItems } from '../lib/chartOverlay'
 import {
   DEFAULT_TIMEFRAMES,
   INTERVALS,
@@ -171,17 +171,7 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       }
       createSeriesMarkers(series, markers.sort((a, b) => (a.time as number) - (b.time as number)))
 
-      const zoneColor = { bull: c.bull, bear: c.bear, neutral: c.muted, accent: c.key }
-      const lineColor = { neutral: c.text2, stop: c.bear, target: c.bull, entry: c.accent }
-      series.attachPrimitive(
-        new Overlay(
-          {
-            zones: (spec.zones ?? []).map((z) => ({ ...z, from: idx(z.from), to: z.to ? idx(z.to) : undefined, color: zoneColor[z.kind] })),
-            lines: (spec.lines ?? []).map((l) => ({ ...l, from: idx(l.from), to: l.to ? idx(l.to) : undefined, color: lineColor[l.kind ?? 'neutral'], dash: [4, 3], width: 1 })),
-          },
-          { font: c.font, text: c.text, muted: c.text2, halo: c.bg },
-        ),
-      )
+      series.attachPrimitive(new Overlay(sidecarOverlayItems(spec, idx, c), { font: c.font, text: c.text, muted: c.text2, halo: c.bg }))
 
       // 按下标设可见范围：出场后的 K 线不够时右侧留空，标注文字和价格标签不会挤在边缘
       const view = VIEW[interval]

@@ -1,9 +1,10 @@
-import type { DayEntry, Trade } from '../types'
+import type { AgentBiasDay, DayEntry, Trade } from '../types'
 import type { Sidecar } from './market'
-import { parseDay, parseTrade, sortByDate } from './parse'
+import { parseAgentBias, parseDay, parseTrade, sortByDate } from './parse'
 
 const tradeFiles = import.meta.glob('/journal/trades/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const dayFiles = import.meta.glob('/journal/days/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+const agentBiasFiles = import.meta.glob('/journal/agent-bias/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const noteFiles = import.meta.glob('/notes/**/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const noteAssets = import.meta.glob('/notes/**/*.{svg,png,jpg,jpeg,webp,gif}', { query: '?url', import: 'default', eager: true }) as Record<string, string>
 const chartFiles = import.meta.glob('/journal/charts/*.json', { import: 'default', eager: true }) as Record<string, Sidecar>
@@ -14,6 +15,8 @@ const baseName = (path: string) => path.split('/').pop()!.replace(/\.md$/, '')
 export const trades: Trade[] = sortByDate(Object.entries(tradeFiles).map(([path, raw]) => parseTrade(baseName(path), raw)))
 
 export const days: DayEntry[] = sortByDate(Object.entries(dayFiles).map(([path, raw]) => parseDay(baseName(path), raw)))
+
+export const agentBias: AgentBiasDay[] = sortByDate(Object.entries(agentBiasFiles).map(([path, raw]) => parseAgentBias(baseName(path), raw)))
 
 export interface Note {
   path: string // 相对 notes/ 的路径，如 ict/README.md

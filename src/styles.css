@@ -552,3 +552,13 @@ div.tv-lightweight-charts td, div.tv-lightweight-charts th { padding: 0; border:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* Agent偏见 */
+.bias-days { list-style: none; margin: 12px 0 0; padding: 0; }
+.bias-days li + li { border-top: 1px solid var(--grid); }
+.bias-days a { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 14px 0; color: inherit; }
+.bias-symbols { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.bias-symbol { display: inline-flex; align-items: center; gap: 6px; }
+.bias-fields { display: grid; gap: 12px; margin: 14px 0 0; }
+.bias-fields dt { color: var(--muted); font-size: 12px; }
+.bias-fields dd { margin: 2px 0 0; overflow-wrap: anywhere; }

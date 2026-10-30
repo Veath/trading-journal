@@ -100,3 +100,46 @@ export interface DayEntry extends DayEntryFrontmatter {
   id: string
   body: string
 }
+
+/**
+ * Agent 偏见：AI 基于行情数据给出的看法和建议，不是用户自己的交易计划，也不进入任何统计。
+ * 每天一个文件 journal/agent-bias/YYYY-MM-DD.md，frontmatter 的 watch 列出当天要关注的标的。
+ */
+export type BiasDirection = 'bullish' | 'bearish' | 'neutral'
+
+/** watching = 等待触发；triggered = 条件已出现；invalidated = 判断失效；expired = 没等到，已过期 */
+export type WatchStatus = 'watching' | 'triggered' | 'invalidated' | 'expired'
+
+export interface BiasLevel {
+  price: number
+  label: string
+  kind?: 'key' | 'neutral'
+}
+
+export interface BiasWatch {
+  symbol: string // Binance 代码，如 CLUSDT
+  bias: BiasDirection
+  status?: WatchStatus // 默认 watching
+  setup?: string
+  reason?: string // 为什么值得关注
+  trigger?: string // 等什么条件
+  invalidation?: string // 什么情况放弃
+  // 示例价格，用于估算 R；条件未出现时可以不填
+  entry?: number
+  stop?: number
+  targets?: number[]
+  levels?: BiasLevel[] // 画成价格线的关键点位
+}
+
+export interface AgentBiasFrontmatter {
+  date: string
+  time?: string // 分析时间 HH:mm
+  tz?: string // time 的时区偏移，默认 +08:00
+  watch?: BiasWatch[]
+}
+
+export interface AgentBiasDay extends AgentBiasFrontmatter {
+  id: string
+  body: string
+  watch: (BiasWatch & { status: WatchStatus })[]
+}

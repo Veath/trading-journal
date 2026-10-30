@@ -17,6 +17,7 @@ pnpm typecheck       # tsc --noEmit
 pnpm build           # 类型检查 + vite build
 pnpm new:trade NQ    # 按模板新建交易
 pnpm new:day         # 按模板新建当日日志
+pnpm new:bias        # 按模板新建当日 Agent偏见
 pnpm trade:chart <id># 用 Binance 公开 K 线生成交易复盘图到 journal/screenshots/
 pnpm diagrams        # 由 scripts/diagrams/*.ts 生成 notes/<主题>/img/*.svg
 pnpm mentor:collect  # 生成 X 采集脚本（会覆盖用户剪贴板）
@@ -45,6 +46,13 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - 新增或修改指标时，同步更新 `docs/STATS.md` 的公式和解读，并在 `stats.test.ts` 补测试。
 - 交易复盘图：`scripts/trade-chart/build.ts` 复用 `scripts/diagrams/render.ts`（`step`、`xLabels`、`yAxis` 选项）。需要判断的标注写在 `journal/charts/<id>.json`，标注必须基于实际拉取的 K 线数据，不要凭印象画；生成的 SVG 不要手改。行情数据只用公开接口，不涉及任何账户或密钥。
 - `mistakes` 标签和 `emotions` 情绪词以 `notes/psychology/05-mistakes.md`、`02-emotions.md` 为准，分析或补录日志时使用这些统一名称。
+
+## Agent偏见
+
+- `journal/agent-bias/YYYY-MM-DD.md` 每天一个文件，`watch` 列出当天关注的标的，数据模型见 `src/types.ts` 的 `AgentBiasFrontmatter`。页面 `#/bias`（按天列表）、`#/bias/<日期>`（当天标的和行情图）。
+- 这里是 AI 的看法和建议，**不是用户的交易计划**：不进入统计，点评交易时也不能拿它当用户自己的规则。示例进场 / 止损只用于估算 R，不是交易指令。
+- 用户要求时才新增；状态变化（`status`）也按用户要求或核对实际 K 线后更新，不要事后改写当时的判断。
+- 标注写在 `journal/charts/bias-<日期>-<symbol小写>.json`，格式与交易旁注相同，必须基于实际拉取的 K 线数据。
 
 ## 笔记约定
 

@@ -12,7 +12,8 @@ import type {
   SeriesType,
   Time,
 } from 'lightweight-charts'
-import { alpha } from './chartTheme'
+import { alpha, type ChartColors } from './chartTheme'
+import type { IntervalSpec } from './market'
 
 type Target = Parameters<IPrimitivePaneRenderer['draw']>[0]
 
@@ -330,5 +331,15 @@ export class Overlay implements ISeriesPrimitive<Time> {
       this.drawTags(ctx, mediaSize.width)
       if (this.items.caption) this.text(ctx, this.items.caption, 8, 16, this.style.muted)
     })
+  }
+}
+
+/** 旁注 journal/charts/<id>.json 里的区域和线段 → 图层；idx 把旁注时间换算成 K 线下标 */
+export function sidecarOverlayItems(spec: IntervalSpec, idx: (s: string) => number, c: ChartColors): OverlayItems {
+  const zoneColor = { bull: c.bull, bear: c.bear, neutral: c.muted, accent: c.key }
+  const lineColor = { neutral: c.text2, stop: c.bear, target: c.bull, entry: c.accent }
+  return {
+    zones: (spec.zones ?? []).map((z) => ({ ...z, from: idx(z.from), to: z.to ? idx(z.to) : undefined, color: zoneColor[z.kind] })),
+    lines: (spec.lines ?? []).map((l) => ({ ...l, from: idx(l.from), to: l.to ? idx(l.to) : undefined, color: lineColor[l.kind ?? 'neutral'], dash: [4, 3], width: 1 })),
   }
 }

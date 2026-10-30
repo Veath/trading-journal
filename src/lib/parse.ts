@@ -1,5 +1,5 @@
 import { parse as parseYaml } from 'yaml'
-import type { DayEntry, DayEntryFrontmatter, Outcome, Trade, TradeFrontmatter } from '../types'
+import type { AgentBiasDay, AgentBiasFrontmatter, DayEntry, DayEntryFrontmatter, Outcome, Trade, TradeFrontmatter } from '../types'
 
 /** |R| 小于该值视为保本（breakeven），不计入胜负 */
 export const BREAKEVEN_THRESHOLD = 0.1
@@ -30,7 +30,10 @@ export function computeRMultiple(t: TradeFrontmatter): number | null {
 }
 
 export function computePlannedRR(t: TradeFrontmatter): number | null {
-  const { entry, stop, target } = t
+  return plannedRR(t.entry, t.stop, t.target)
+}
+
+export function plannedRR(entry?: number, stop?: number, target?: number): number | null {
   if (entry == null || stop == null || target == null) return null
   const risk = Math.abs(entry - stop)
   if (risk === 0) return null
@@ -65,6 +68,12 @@ export function parseDay(id: string, raw: string): DayEntry {
   const { data, body } = splitFrontmatter(raw)
   const fm = { ...data, date: normalizeDate(data.date ?? id) } as unknown as DayEntryFrontmatter
   return { ...fm, id, body }
+}
+
+export function parseAgentBias(id: string, raw: string): AgentBiasDay {
+  const { data, body } = splitFrontmatter(raw)
+  const fm = { ...data, date: normalizeDate(data.date ?? id) } as unknown as AgentBiasFrontmatter
+  return { ...fm, id, body, watch: (fm.watch ?? []).map((w) => ({ ...w, status: w.status ?? 'watching' })) }
 }
 
 export function sortByDate<T extends { date: string; time?: string; id: string }>(items: T[]): T[] {

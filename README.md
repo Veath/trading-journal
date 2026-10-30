@@ -14,6 +14,7 @@ pnpm install
 pnpm dev              # 启动仪表盘 http://localhost:5173
 pnpm new:trade NQ     # 新建交易 → journal/trades/YYYY/YYYY-MM-DD-nq-01.md
 pnpm new:day          # 新建今天的日志 → journal/days/YYYY-MM-DD.md
+pnpm new:bias         # 新建今天的 Agent偏见 → journal/agent-bias/YYYY-MM-DD.md
 pnpm trade:chart <id> # 用真实 K 线生成交易复盘图（日线 / 4H / 1H，目前支持 Binance 永续）
 pnpm diagrams         # 重新生成笔记中的 K 线示意图（notes/<主题>/img/*.svg）
 pnpm mentor:collect   # 生成导师内容采集脚本（复制到剪贴板，在 X 页面控制台运行）
@@ -36,6 +37,7 @@ pnpm build            # 类型检查 + 打包
 | 概览 | 核心指标、权益曲线（累计 R + 回撤）、R 分布、执行质量、错误的代价、分维度统计；可按时间 / 策略 / 品种筛选 |
 | 交易 | 交易列表，点击查看详情（字段、行情图、截图、复盘正文），支持上一笔 / 下一笔 |
 | 每日日志 | 盘前计划、心理检查、盘后复盘，并汇总当天交易的 R |
+| Agent偏见 | AI 给出的看法和建议（不是你自己的计划），按天归类；详情页是当天要关注的标的，带行情图和点位标注，不进入统计 |
 | 学习笔记 | 渲染 `notes/` 下的 Markdown 和插图，按主题分组：ICT、交易心理 & 日志、导师、自然交易理论、RSI |
 
 ## 目录结构
@@ -44,9 +46,10 @@ pnpm build            # 类型检查 + 打包
 journal/
   trades/YYYY/        每笔交易一个 .md
   days/               每日日志
+  agent-bias/         Agent偏见：每天一个 .md，AI 的看法和建议
   screenshots/        图表截图，以及 trade:chart 生成的复盘图
-  charts/             复盘图的旁注（<id>.json：时区、EQH、信号 K 等手动标注）
-  templates/          trade.md / day.md 模板
+  charts/             复盘图的旁注（<id>.json：时区、EQH、信号 K 等手动标注）；Agent偏见的标注是 bias-<日期>-<symbol小写>.json
+  templates/          trade.md / day.md / agent-bias.md 模板
 notes/                学习资料
   ict/                ICT 概念、模型、检查清单、术语表；img/ 为生成的 K 线示意图
   psychology/         交易心理与日志方法、情绪词汇表、错误分类、交易计划模板、课程笔记

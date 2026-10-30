@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard'
 import TradeList from './pages/TradeList'
 import TradeDetail from './pages/TradeDetail'
 import Days from './pages/Days'
+import AgentBiasList from './pages/AgentBiasList'
+import AgentBiasDetail from './pages/AgentBiasDetail'
 import Notes from './pages/Notes'
 
 // 图标为 24×24 描边路径；窄屏时导航移到底部标签栏
@@ -14,6 +16,7 @@ const NAV = [
   { path: '', label: '概览', icon: 'M4 19V11M10 19V5M16 19v-6M22 19H2' },
   { path: 'trades', label: '交易', icon: 'M4 6h16M4 12h16M4 18h10' },
   { path: 'days', label: '每日日志', icon: 'M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z' },
+  { path: 'bias', label: 'Agent偏见', icon: 'M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z' },
   { path: 'notes', label: '学习笔记', icon: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7' },
 ]
 
@@ -62,6 +65,8 @@ export default function App() {
         {page === 'trades' && !param && <TradeList trades={filtered} />}
         {page === 'trades' && param && <TradeDetail id={param} />}
         {page === 'days' && <Days />}
+        {page === 'bias' && !param && <AgentBiasList />}
+        {page === 'bias' && param && <AgentBiasDetail id={param} />}
         {page === 'notes' && <Notes path={route.slice(1).join('/')} />}
       </main>
     </div>

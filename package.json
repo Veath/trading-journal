@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "new:trade": "node scripts/new-entry.ts trade",
     "new:day": "node scripts/new-entry.ts day",
+    "new:bias": "node scripts/new-entry.ts bias",
     "diagrams": "node scripts/diagrams/build.ts",
     "mentor:collect": "node scripts/mentor-sync/collect.ts",
     "mentor:ingest": "node scripts/mentor-sync/ingest.ts",

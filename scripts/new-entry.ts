@@ -1,5 +1,6 @@
 // 用法：pnpm new:trade [品种]   → journal/trades/YYYY/YYYY-MM-DD-品种-NN.md
 //       pnpm new:day            → journal/days/YYYY-MM-DD.md
+//       pnpm new:bias           → journal/agent-bias/YYYY-MM-DD.md
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -8,17 +9,20 @@ const root = join(import.meta.dirname, '..')
 const now = new Date()
 const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
-if (kind !== 'trade' && kind !== 'day') {
-  console.error(`未知类型 ${kind}，只支持 trade / day`)
+if (kind !== 'trade' && kind !== 'day' && kind !== 'bias') {
+  console.error(`未知类型 ${kind}，只支持 trade / day / bias`)
   process.exit(1)
 }
 
-let template = readFileSync(join(root, 'journal/templates', `${kind}.md`), 'utf8').replace('{{date}}', date)
+let template = readFileSync(join(root, 'journal/templates', `${kind === 'bias' ? 'agent-bias' : kind}.md`), 'utf8').replace('{{date}}', date)
 let file: string
 
 if (kind === 'day') {
   mkdirSync(join(root, 'journal/days'), { recursive: true })
   file = join(root, 'journal/days', `${date}.md`)
+} else if (kind === 'bias') {
+  mkdirSync(join(root, 'journal/agent-bias'), { recursive: true })
+  file = join(root, 'journal/agent-bias', `${date}.md`)
 } else {
   template = template.replace(/^symbol: .*$/m, `symbol: ${symbol}`)
   const dir = join(root, 'journal/trades', date.slice(0, 4))
