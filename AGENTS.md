@@ -52,6 +52,7 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - `journal/agent-bias/YYYY-MM-DD.md` 每天一个文件，`watch` 列出当天关注的标的，数据模型见 `src/types.ts` 的 `AgentBiasFrontmatter`。页面 `#/bias`（按天列表）、`#/bias/<日期>`（当天标的和行情图）。
 - 这里是 AI 的看法和建议，**不是用户的交易计划**：不进入统计，点评交易时也不能拿它当用户自己的规则。示例进场 / 止损只用于估算 R，不是交易指令。
 - 用户要求时才新增；状态变化（`status`）也按用户要求或核对实际 K 线后更新，不要事后改写当时的判断。
+- 计划进场区写在 `entryZone`，所有周期自动画成蓝色区域，不用在旁注里重复。
 - 标注写在 `journal/charts/bias-<日期>-<symbol小写>.json`，格式与交易旁注相同，必须基于实际拉取的 K 线数据。
 
 ## 笔记约定

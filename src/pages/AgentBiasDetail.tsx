@@ -25,6 +25,7 @@ function Watch({ day, watch: w }: { day: AgentBiasDay; watch: AgentBiasDay['watc
     ['为什么关注', w.reason],
     ['等什么条件', w.trigger],
     ['什么情况放弃', w.invalidation],
+    ['计划进场区', w.entryZone && `${w.entryZone.bottom}–${w.entryZone.top}`],
     ['示例进场 / 止损', prices],
     ['目标', targets],
   ]

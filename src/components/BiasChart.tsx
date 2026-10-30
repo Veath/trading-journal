@@ -21,6 +21,7 @@ type Watch = AgentBiasDay['watch'][number]
 const FETCH: Record<Interval, number> = { '1d': 120, '4h': 240, '1h': 300, '15m': 300 }
 /** 初始显示分析时间之前多少根 */
 const VIEW: Record<Interval, number> = { '1d': 60, '4h': 72, '1h': 72, '15m': 64 }
+const ENTRY_ZONE_LEAD = 8
 const LIVE_REFRESH_MS = 30_000
 
 const decimals = (n: number) => String(n).split('.')[1]?.length ?? 0
@@ -84,7 +85,7 @@ function CandleChart({ day, watch, sidecar, interval, tz, live }: { day: AgentBi
       // 纵轴包含进场 / 止损 / 第一目标和关键点位；更远的目标不压缩 K 线，在大周期上看
       autoscaleInfoProvider: (base: () => AutoscaleInfo | null) => {
         const info = base()
-        const levels = [watch.entry, watch.stop, watch.targets?.[0], ...(watch.levels ?? []).map((l) => l.price)].filter((v): v is number => v != null)
+        const levels = [watch.entry, watch.stop, watch.targets?.[0], watch.entryZone?.top, watch.entryZone?.bottom, ...(watch.levels ?? []).map((l) => l.price)].filter((v): v is number => v != null)
         if (!info?.priceRange || !levels.length) return info
         const { minValue, maxValue } = info.priceRange
         return { ...info, priceRange: { minValue: Math.min(minValue, ...levels), maxValue: Math.max(maxValue, ...levels) } }
@@ -112,7 +113,14 @@ function CandleChart({ day, watch, sidecar, interval, tz, live }: { day: AgentBi
         return { time: toTime(candles[idx(m.at)].t), position: above ? 'aboveBar' : 'belowBar', shape: above ? 'arrowDown' : 'arrowUp', color: c.text2, text: m.text }
       })
       createSeriesMarkers(series, markers.sort((a, b) => (a.time as number) - (b.time as number)))
-      series.attachPrimitive(new Overlay(sidecarOverlayItems(spec, idx, c), { font: c.font, text: c.text, muted: c.text2, halo: c.bg }))
+      const items = sidecarOverlayItems(spec, idx, c)
+      // 计划进场区：从分析时间前几根开始，向右延伸到边缘，入场用蓝色
+      const zone = watch.entryZone
+      if (zone) {
+        const from = Math.max(0, indexAt(candles, analysisMs, ms) - ENTRY_ZONE_LEAD)
+        items.zones = [...(items.zones ?? []), { from, top: zone.top, bottom: zone.bottom, label: zone.label ?? '计划进场区', color: c.accent }]
+      }
+      series.attachPrimitive(new Overlay(items, { font: c.font, text: c.text, muted: c.text2, halo: c.bg }))
 
       chart.timeScale().setVisibleLogicalRange({
         from: Math.max(0, indexAt(candles, analysisMs, ms) - VIEW[interval]),

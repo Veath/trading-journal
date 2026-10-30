@@ -124,6 +124,7 @@ export interface BiasWatch {
   reason?: string // 为什么值得关注
   trigger?: string // 等什么条件
   invalidation?: string // 什么情况放弃
+  entryZone?: { top: number; bottom: number; label?: string } // 计划进场区，所有周期都会画出来
   // 示例价格，用于估算 R；条件未出现时可以不填
   entry?: number
   stop?: number

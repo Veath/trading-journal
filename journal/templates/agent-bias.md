@@ -10,6 +10,7 @@ watch:
     reason:              # 为什么值得关注
     trigger:             # 等什么条件
     invalidation:        # 什么情况放弃
+    entryZone:           # 计划进场区：{ top: 101, bottom: 100, label: 回踩区 }
     entry:               # 示例价格，用于估算 R；条件未出现时可以不填
     stop:
     targets: []
