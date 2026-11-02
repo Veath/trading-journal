@@ -15,7 +15,8 @@
     "diagrams": "node scripts/diagrams/build.ts",
     "mentor:collect": "node scripts/mentor-sync/collect.ts",
     "mentor:ingest": "node scripts/mentor-sync/ingest.ts",
-    "trade:chart": "node scripts/trade-chart/build.ts"
+    "trade:chart": "node scripts/trade-chart/build.ts",
+    "bias:watch": "node scripts/bias-watch/watch.ts"
   },
   "dependencies": {
     "lightweight-charts": "5.2.1",
