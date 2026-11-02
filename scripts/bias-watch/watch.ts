@@ -1,12 +1,13 @@
 // 用法：pnpm bias:watch [日期] [--symbol CLUSDT] [--every 30] [--once] [--no-notify]
-// 读取 journal/agent-bias/<日期>.md（默认今天），对 status 为 watching / triggered、写了 entryZone 的标的
+// 顶部是 watchlist.ts 的行情列表（现价）；下面读取 journal/agent-bias/<日期>.md（默认今天，没有就只看行情列表），对 status 为 watching / triggered、写了 entryZone 的标的
 // 轮询 Binance 永续公开 15m K 线，按 signal.ts 的模型判断阶段；阶段变化时响铃并发 macOS 通知。
 // 只读，不修改任何日志文件；输出是 Agent 的看法，不是交易指令。
 import { execFile } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseAgentBias } from '../../src/lib/parse.ts'
-import { INTERVALS, fetchKlines, offsetMs, parseTime } from '../../src/lib/market.ts'
+import { INTERVALS, fetchKlines, fetchPrices, offsetMs, parseTime } from '../../src/lib/market.ts'
+import { WATCHLIST } from './watchlist.ts'
 import { ACCEPT_BARS, evaluate, type Setup, type SignalState, type Stage } from './signal.ts'
 
 const ROOT = join(import.meta.dirname, '../..')
@@ -82,40 +83,65 @@ function todayIn(tz: string) {
   return new Date(Date.now() + offsetMs(tz)).toISOString().slice(0, 10)
 }
 
+/** 各合约价格的小数位数（按 tickSize），让 93 显示成 93.00 */
+async function tickDigits(): Promise<Map<string, number>> {
+  const res = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo')
+  const info = (await res.json()) as { symbols: { symbol: string; filters: { filterType: string; tickSize?: string }[] }[] }
+  return new Map(info.symbols.map((s) => {
+    const tick = s.filters.find((f) => f.filterType === 'PRICE_FILTER')?.tickSize ?? '1'
+    return [s.symbol, tick.replace(/0+$/, '').split('.')[1]?.length ?? 0]
+  }))
+}
+
 async function main() {
   const date = positional[0] ?? todayIn('+08:00')
   const file = join(ROOT, 'journal/agent-bias', `${date}.md`)
-  if (!existsSync(file)) {
-    console.error(`找不到 ${file}，先用 pnpm new:bias 新建，或指定日期：pnpm bias:watch 2026-11-02`)
-    process.exit(1)
-  }
-  const day = parseAgentBias(date, readFileSync(file, 'utf8'))
-  const tz = day.tz ?? '+08:00'
-  const from = parseTime(`${day.date} ${day.time ?? '00:00'}`, tz)
+  const day = existsSync(file) ? parseAgentBias(date, readFileSync(file, 'utf8')) : undefined
+  const tz = day?.tz ?? '+08:00'
+  const from = parseTime(`${date} ${day?.time ?? '00:00'}`, tz)
   const only = option('symbol')?.toUpperCase()
   const every = Math.max(10, Number(option('every') ?? 30)) * 1000
 
-  const watches = day.watch.filter((w) => !only || w.symbol.toUpperCase() === only)
+  const watches = (day?.watch ?? []).filter((w) => !only || w.symbol.toUpperCase() === only)
   const active = watches.filter(
     (w) => (w.status === 'watching' || w.status === 'triggered') && w.entryZone && w.bias !== 'neutral',
   )
   const skipped = watches
     .filter((w) => !active.includes(w))
     .map((w) => dim(`跳过 ${w.symbol}：${w.bias === 'neutral' ? '中性' : !w.entryZone ? '没有 entryZone' : `状态 ${w.status}`}`))
-  if (!active.length) {
-    console.error('没有可监控的标的')
-    process.exit(1)
-  }
+  if (!day) skipped.push(dim(`没有 ${date} 的 Agent偏见，只显示行情列表（新建：pnpm new:bias）`))
+  else if (!active.length) skipped.push(dim('Agent偏见里没有可监控的标的，只显示行情列表'))
 
   const last = new Map<string, Stage>()
   const log: string[] = []
 
+  const monitored = new Set(active.map((w) => w.symbol))
+  const digits = await tickDigits().catch(() => new Map<string, number>())
+  const quoteList = async () => {
+    try {
+      const prices = await fetchPrices(WATCHLIST.map((w) => w.symbol))
+      const width = Math.max(...WATCHLIST.map((w) => w.symbol.length))
+      return [
+        bold('行情列表'),
+        ...WATCHLIST.map(({ symbol, note }) => {
+          const price = prices.get(symbol)
+          return `  ${symbol.padEnd(width)}  ${price == null ? red('没有数据'.padStart(12)) : bold((digits.has(symbol) ? price.toFixed(digits.get(symbol)) : String(price)).padStart(12))}` +
+            dim(`  ${note ?? ''}${monitored.has(symbol) ? ' · 监控中' : ''}`)
+        }),
+      ]
+    } catch (e) {
+      return [bold('行情列表'), red(`  拉取失败：${(e as Error).message}`)]
+    }
+  }
+
   const tick = async () => {
     const now = Date.now()
     const lines = [
-      bold(`Agent偏见 ${day.date} 监控`) + dim(`  ${fmtTime(now, tz)}（UTC${tz}）· 每 ${every / 1000} 秒 · Ctrl+C 退出`),
+      bold(`Agent偏见 ${date} 监控`) + dim(`  ${fmtTime(now, tz)}（UTC${tz}）· 每 ${every / 1000} 秒 · Ctrl+C 退出`),
       dim('只看已收盘的 15m；这是 Agent 的看法，不是交易指令。时段、日线收盘等条件见 Agent偏见原文。'),
       ...skipped,
+      '',
+      ...(await quoteList()),
       '',
     ]
     for (const w of active) {

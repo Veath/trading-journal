@@ -19,7 +19,7 @@ pnpm new:trade NQ    # 按模板新建交易
 pnpm new:day         # 按模板新建当日日志
 pnpm new:bias        # 按模板新建当日 Agent偏见
 pnpm trade:chart <id># 用 Binance 公开 K 线生成交易复盘图到 journal/screenshots/
-pnpm bias:watch      # 终端轮询当天 Agent偏见的标的，阶段变化时响铃 + macOS 通知
+pnpm bias:watch      # 终端行情列表 + 轮询当天 Agent偏见的标的，阶段变化时响铃 + macOS 通知
 pnpm diagrams        # 由 scripts/diagrams/*.ts 生成 notes/<主题>/img/*.svg
 pnpm mentor:collect  # 生成 X 采集脚本（会覆盖用户剪贴板）
 pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
@@ -55,7 +55,7 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - 用户要求时才新增；状态变化（`status`）也按用户要求或核对实际 K 线后更新，不要事后改写当时的判断。
 - 计划进场区写在 `entryZone`，所有周期自动画成蓝色区域，不用在旁注里重复。
 - 标注写在 `journal/charts/bias-<日期>-<symbol小写>.json`，格式与交易旁注相同，必须基于实际拉取的 K 线数据。
-- `pnpm bias:watch [日期] [--symbol X] [--every 秒] [--once] [--no-notify]`：只读，监控 `watching` / `triggered` 且有 `entryZone` 的标的。判断逻辑在 `scripts/bias-watch/signal.ts`（有测试），模型固定为「15m 刺破 `entryZone` 外侧（偏多为 bottom）→ 收盘收回内侧 → 收盘突破清扫前最近的摆动点（MSS）」，清扫后连续 4 根收在外侧算放弃，没扫就收到 TP1 算错过。所以写需要监控的 Agent偏见时，`entryZone` 的外侧要是清扫位、内侧是收回位；回踩类计划不适用。时段、日线收盘等文字条件脚本不检查。
+- `pnpm bias:watch [日期] [--symbol X] [--every 秒] [--once] [--no-notify]`：只读。顶部是行情列表（现价，标的在 `scripts/bias-watch/watchlist.ts`，增删关注品种改这里）；下面监控 `watching` / `triggered` 且有 `entryZone` 的标的，当天没有 Agent偏见时只显示行情列表。判断逻辑在 `scripts/bias-watch/signal.ts`（有测试），模型固定为「15m 刺破 `entryZone` 外侧（偏多为 bottom）→ 收盘收回内侧 → 收盘突破清扫前最近的摆动点（MSS）」，清扫后连续 4 根收在外侧算放弃，没扫就收到 TP1 算错过。所以写需要监控的 Agent偏见时，`entryZone` 的外侧要是清扫位、内侧是收回位；回踩类计划不适用。时段、日线收盘等文字条件脚本不检查。
 
 ## 笔记约定
 

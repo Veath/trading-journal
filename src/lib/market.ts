@@ -86,6 +86,15 @@ export async function fetchKlines(symbol: string, interval: Interval, start: num
   return rows.map((r) => ({ t: r[0], open: Number(r[1]), high: Number(r[2]), low: Number(r[3]), close: Number(r[4]) }))
 }
 
+/** 最新成交价（一次请求取全部合约，再按 symbols 过滤） */
+export async function fetchPrices(symbols: string[]): Promise<Map<string, number>> {
+  const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/price')
+  if (!res.ok) throw new Error(`Binance 请求失败 ${res.status}：${await res.text()}`)
+  const rows = (await res.json()) as { symbol: string; price: string }[]
+  const wanted = new Set(symbols)
+  return new Map(rows.filter((r) => wanted.has(r.symbol)).map((r) => [r.symbol, Number(r.price)]))
+}
+
 /** 时间 → 所在 K 线下标；超出范围时取最近的一端 */
 export function indexAt(candles: Candle[], ms: number, intervalMs: number): number {
   const i = candles.findIndex((c) => ms >= c.t && ms < c.t + intervalMs)
