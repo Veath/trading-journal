@@ -137,10 +137,11 @@ async function main() {
   const tick = async () => {
     const now = Date.now()
     const lines = [
-      bold(`Agent偏见 ${date} 监控`) + dim(`  ${fmtTime(now, tz)}（UTC${tz}）· 每 ${every / 1000} 秒 · Ctrl+C 退出`),
+      bold(`Agent偏见 ${date} 监控`) + dim(`  每 ${every / 1000} 秒刷新 · Ctrl+C 退出`),
       dim('只看已收盘的 15m；这是 Agent 的看法，不是交易指令。时段、日线收盘等条件见 Agent偏见原文。'),
       ...skipped,
       '',
+      `刷新时间 ${bold(new Date(now + offsetMs(tz)).toISOString().slice(0, 19).replace('T', ' '))}` + dim(`（UTC${tz}）`),
       ...(await quoteList()),
       '',
     ]
