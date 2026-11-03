@@ -1,0 +1,6 @@
+{
+  "symbol": "CLUSDT",
+  "tz": "+08:00",
+  "exitTime": "2026-11-02 21:30",
+  "timeframes": ["1d", "4h", "1h", "15m"]
+}

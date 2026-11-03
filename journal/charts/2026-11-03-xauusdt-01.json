@@ -1,0 +1,5 @@
+{
+  "symbol": "XAUUSDT",
+  "tz": "+08:00",
+  "timeframes": ["1d", "4h", "1h", "15m"]
+}

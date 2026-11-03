@@ -11,6 +11,8 @@ import {
 } from 'lightweight-charts'
 import type { Trade } from '../types'
 import { chartSidecar } from '../lib/load'
+import { BREAKEVEN_THRESHOLD } from '../lib/parse'
+import { fmtR } from '../lib/format'
 import { baseChartOptions, candleColors, themeColors } from '../lib/chartTheme'
 import { Overlay, sidecarOverlayItems } from '../lib/chartOverlay'
 import {
@@ -158,10 +160,14 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       ]
       if (exitMs != null) {
         const time = toTime(candles[indexAt(candles, exitMs, ms)].t)
+        // 出场点按盈亏着色（盈 = 绿、亏 = 红、保本 / 未知 = 灰），标签带上 R
+        const r = trade.rMultiple
+        const color = r == null || Math.abs(r) < BREAKEVEN_THRESHOLD ? c.text2 : r > 0 ? c.bull : c.bear
+        const text = r == null ? '出场' : `出场 ${fmtR(r)}`
         // 有出场价时画在出场价上，小圆点不遮住整根 K 线
         markers.push(trade.exit != null
-          ? { time, position: 'atPriceMiddle', price: trade.exit, shape: 'circle', color: c.text2, text: '出场', size: 0.6 }
-          : { time, position: 'inBar', shape: 'circle', color: c.text2, text: '出场', size: 0.6 })
+          ? { time, position: 'atPriceMiddle', price: trade.exit, shape: 'circle', color, text, size: 0.8 }
+          : { time, position: 'inBar', shape: 'circle', color, text, size: 0.8 })
       }
       const spec = sidecar.intervals?.[interval] ?? {}
       for (const m of spec.marks ?? []) {
