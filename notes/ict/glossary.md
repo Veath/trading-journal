@@ -28,3 +28,22 @@
 | SMT | Smart Money Technique | 相关品种背离（如 NQ 创新低而 ES 没有） |
 | SSL | Sell-side Liquidity | 卖方流动性（低点下方） |
 | STH / ITH / LTH | Short / Intermediate / Long-term High | 短 / 中 / 长期高点 |
+| ADR | Average Daily Range | 平均日波幅，常取最近 5 日；用来把点数换算到不同品种 |
+| BB | Breaker Block | 扫过流动性后被反向击穿的 OB |
+| BDR / SDR | Buy-side / Sell-side Delivery Range | 做市商模型里的上行 / 下行投递段 |
+| BG | Breakaway Gap | 趋势第三段位移留下、不被回补的 FVG |
+| BISI / SIBI | Buy-side Imbalance Sell-side Inefficiency / 反之 | 看涨 FVG / 看跌 FVG |
+| CBDR | Central Bank Dealers Range | 纽约 14:00–20:00 的区间，用于标准差投影 |
+| CSD | Change in State of Delivery | 交付状态变更，同 CISD |
+| EQ | Equilibrium | 区间 50% 均衡位 |
+| HRLR / LRLR | High / Low Resistance Liquidity Run | 高 / 低阻力的流动性奔袭（见 [流动性](./02-liquidity.md)） |
+| IDR | Dealing Range | 交易区间，上下边界都被扫过 |
+| LV | Liquidity Void | 流动性真空，单边无回撤的大段走势 |
+| MB | Mitigation Block | 失败摆动后被击穿的 OB |
+| MG | Measuring Gap | 趋势中段的 FVG，可用来等距投影终点 |
+| MMXM / MMBM / MMSM | Market Maker Model / Buy / Sell | 做市商模型（见 [交易模型](./06-models.md)） |
+| POI | Point of Interest | PD Array 与流动性池的口语统称 |
+| RB | Rejection Block | 摆动高低点的长影线区 |
+| RDRB | Re-delivered Rebalanced Price Range | 上→下→上（或反之）的再交付结构 |
+| SMR | Smart Money Reversal | 聪明钱反转；Type 1 扫止损、Type 2 失败摆动 |
+| VI | Volume Imbalance | 相邻实体之间的缺口（影线重叠） |
