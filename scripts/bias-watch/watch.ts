@@ -1,5 +1,5 @@
 // 用法：pnpm bias:watch [日期] [--symbol CLUSDT] [--every 30] [--once] [--no-notify]
-// 顶部是 watchlist.ts 的行情列表（现价）；下面读取 journal/agent-bias/<日期>.md（默认今天，没有就只看行情列表），对 status 为 watching / triggered、写了 entryZone 的标的
+// 顶部是 watchlist.ts 的行情列表（现价、当日 00:00 开盘价和涨跌）；下面读取 journal/agent-bias/<日期>.md（默认今天，没有就只看行情列表），对 status 为 watching / triggered、写了 entryZone 的标的
 // 轮询 Binance 永续公开 15m K 线，按 signal.ts 的模型判断阶段；阶段变化时响铃并发 macOS 通知。
 // 只读，不修改任何日志文件；输出是 Agent 的看法，不是交易指令。
 import { execFile } from 'node:child_process'
@@ -39,6 +39,8 @@ const STAGE_LABEL: Record<Stage, string> = {
 }
 
 const fmtTime = (ms: number, tz: string) => new Date(ms + offsetMs(tz)).toISOString().slice(5, 16).replace('T', ' ')
+/** 按终端显示宽度左侧补空格（中文占两格） */
+const padWide = (s: string, n: number) => ' '.repeat(Math.max(0, n - [...s].reduce((w, c) => w + (c.charCodeAt(0) > 0x2e80 ? 2 : 1), 0))) + s
 const fmtR = (r: number) => `${r >= 0 ? '+' : ''}${r.toFixed(1)}R`
 
 function describe(w: Setup, s: SignalState, tz: string): string {
@@ -117,15 +119,41 @@ async function main() {
 
   const monitored = new Set(active.map((w) => w.symbol))
   const digits = await tickDigits().catch(() => new Map<string, number>())
+  const fmtPrice = (symbol: string, p: number) => (digits.has(symbol) ? p.toFixed(digits.get(symbol)) : String(p))
+  // 当日 00:00（按 tz）的开盘价：取从 00:00 开始的第一根 15m 的开盘价，每天只拉一次
+  let openDate = ''
+  let opens = new Map<string, number>()
+  const dayOpens = async () => {
+    const today = todayIn(tz)
+    if (today === openDate && opens.size === WATCHLIST.length) return opens
+    if (today !== openDate) opens = new Map()
+    openDate = today
+    const start = parseTime(`${today} 00:00`, tz)
+    await Promise.all(WATCHLIST.filter((w) => !opens.has(w.symbol)).map(async ({ symbol }) => {
+      const c = (await fetchKlines(symbol, '15m', start, start + M15 - 1).catch(() => []))[0]
+      if (c && c.t === start) opens.set(symbol, c.open)
+    }))
+    return opens
+  }
   const quoteList = async () => {
     try {
-      const prices = await fetchPrices(WATCHLIST.map((w) => w.symbol))
+      const [prices, open] = await Promise.all([fetchPrices(WATCHLIST.map((w) => w.symbol)), dayOpens()])
       const width = Math.max(...WATCHLIST.map((w) => w.symbol.length))
       return [
-        bold('行情列表'),
+        bold('行情列表') + dim(`  涨跌对比当日 00:00（UTC${tz}）开盘价`),
+        dim(`  ${''.padEnd(width)}  ${padWide('00:00 开盘', 12)}  ${padWide('现价', 12)}  ${padWide('涨跌', 12)}  ${padWide('幅度', 8)}`),
         ...WATCHLIST.map(({ symbol, note }) => {
           const price = prices.get(symbol)
-          return `  ${symbol.padEnd(width)}  ${price == null ? red('没有数据'.padStart(12)) : bold((digits.has(symbol) ? price.toFixed(digits.get(symbol)) : String(price)).padStart(12))}` +
+          const o = open.get(symbol)
+          let change = dim('—'.padStart(12) + '  ' + '—'.padStart(8))
+          if (price != null && o != null) {
+            const diff = price - o
+            const sign = diff > 0 ? '+' : diff < 0 ? '-' : ''
+            const paint = diff > 0 ? green : diff < 0 ? red : dim
+            change = paint(`${sign}${fmtPrice(symbol, Math.abs(diff))}`.padStart(12) + '  ' + `${sign}${Math.abs((diff / o) * 100).toFixed(2)}%`.padStart(8))
+          }
+          return `  ${symbol.padEnd(width)}  ${o == null ? dim('—'.padStart(12)) : fmtPrice(symbol, o).padStart(12)}` +
+            `  ${price == null ? red('没有数据'.padStart(12)) : bold(fmtPrice(symbol, price).padStart(12))}  ${change}` +
             dim(`  ${note ?? ''}${monitored.has(symbol) ? ' · 监控中' : ''}`)
         }),
       ]
