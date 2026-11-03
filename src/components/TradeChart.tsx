@@ -11,7 +11,7 @@ import {
 } from 'lightweight-charts'
 import type { Trade } from '../types'
 import { chartSidecar } from '../lib/load'
-import { baseChartOptions, candleColors, themeColors, usePrefersDark } from '../lib/chartTheme'
+import { baseChartOptions, candleColors, themeColors } from '../lib/chartTheme'
 import { Overlay, sidecarOverlayItems } from '../lib/chartOverlay'
 import {
   DEFAULT_TIMEFRAMES,
@@ -58,7 +58,6 @@ export default function TradeChart({ trade, onError, hasFallback }: Props) {
   const timeframes = sidecar.timeframes ?? DEFAULT_TIMEFRAMES
   const initial = (trade.timeframe && timeframes.find((t) => t === trade.timeframe)) || timeframes[timeframes.length - 1]
   const [tab, setTab] = useState<Interval>(initial)
-  const dark = usePrefersDark()
   const tz = tradeTz(trade, sidecar)
 
   return (
@@ -79,7 +78,7 @@ export default function TradeChart({ trade, onError, hasFallback }: Props) {
           ))}
         </div>
       </div>
-      <CandleChart key={`${tab}-${dark}`} trade={trade} sidecar={sidecar} interval={tab} onError={onError} hasFallback={hasFallback} />
+      <CandleChart key={tab} trade={trade} sidecar={sidecar} interval={tab} onError={onError} hasFallback={hasFallback} />
     </section>
   )
 }

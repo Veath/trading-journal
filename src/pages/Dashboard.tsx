@@ -45,6 +45,15 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
 
   return (
     <div className="stack">
+      <header className="page-head">
+        <div>
+          <p className="eyebrow"><b>Overview</b> / {s.trades} closed · measured in R</p>
+          <h1 className="display">
+            结果不等于<em>过程。</em>
+          </h1>
+        </div>
+        <p className="sub">所有统计以 R 为单位；胜率不含保本单，只统计已平仓交易。</p>
+      </header>
       <section className="kpis">
         <Kpi label="总 R" value={fmtR(s.totalR, 1)} tone={signClass(s.totalR)} hint={s.totalPnl != null ? `盈亏 ${fmtMoney(s.totalPnl)}` : `${s.trades} 笔已平仓`} />
         <Kpi
@@ -69,18 +78,21 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
       </section>
 
       <section className="card">
-        <h2>权益曲线</h2>
+        <p className="eyebrow"><b>01</b> / Equity curve</p>
+        <h2>权益曲线，<em>以 R 计。</em></h2>
         <p className="sub">按交易顺序的累计 R；点击曲线可跳转到对应交易</p>
         <EquityChart points={curve} />
       </section>
 
       <div className="grid-2">
         <section className="card">
+          <p className="eyebrow"><b>02</b> / Distribution</p>
           <h2>R 分布</h2>
           <p className="sub">好的系统：亏损集中在 -1R，盈利有右侧长尾</p>
           <RHistogram buckets={buckets} />
         </section>
         <section className="card">
+          <p className="eyebrow"><b>03</b> / Execution</p>
           <h2>执行质量</h2>
           <p className="sub">Trade Psychology：结果之外，更要统计过程</p>
           <div className="kpis compact">
@@ -94,7 +106,8 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
       </div>
 
       <section className="card">
-        <h2>错误的代价</h2>
+        <p className="eyebrow"><b>04</b> / Mistakes</p>
+        <h2>错误的<em>代价</em></h2>
         <p className="sub">每类错误出现在哪些交易里，这些交易一共贡献了多少 R</p>
         {mistakes.length === 0 ? (
           <div className="empty">没有记录错误标签 👍</div>
@@ -127,6 +140,7 @@ export default function Dashboard({ trades }: { trades: Trade[] }) {
       <section className="card">
         <div className="card-head">
           <div>
+            <p className="eyebrow"><b>05</b> / Breakdown</p>
             <h2>分维度统计</h2>
             <p className="sub">找出真正赚钱的 setup、时段和状态</p>
           </div>

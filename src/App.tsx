@@ -20,6 +20,12 @@ const NAV = [
   { path: 'notes', label: '学习笔记', icon: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7' },
 ]
 
+// 顶栏右侧的日期，如 TUE, NOV 3 · 2026
+const TODAY = new Date()
+  .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  .toUpperCase()
+  .replace(/, (\d{4})$/, ' · $1')
+
 export default function App() {
   const route = useRoute()
   const [filters, setFilters] = useState<Filters>(defaultFilters)
@@ -34,13 +40,13 @@ export default function App() {
           <img
             className="brand-logo"
             src={`${import.meta.env.BASE_URL}brand/logo.png`}
-            width="40"
-            height="40"
+            width="32"
+            height="32"
             alt=""
           />
           <span className="brand-copy">
             <span className="brand-name">交易日志</span>
-            <span className="brand-tagline" aria-hidden="true">记录 · 复盘 · 精进</span>
+            <span className="brand-tagline" aria-hidden="true">Private Trading Journal</span>
           </span>
         </a>
         <nav className="nav" aria-label="主导航">
@@ -58,6 +64,7 @@ export default function App() {
             </a>
           ))}
         </nav>
+        <span className="topbar-meta" aria-hidden="true">{TODAY}</span>
       </header>
       <main>
         {showFilters && <FilterBar trades={trades} value={filters} onChange={setFilters} />}

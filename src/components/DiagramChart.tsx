@@ -15,7 +15,7 @@ import {
   type UTCTimestamp,
 } from 'lightweight-charts'
 import type { Diagram, Mark, Segment } from '../../scripts/diagrams/render.ts'
-import { alpha, baseChartOptions, candleColors, themeColors, usePrefersDark, type ChartColors } from '../lib/chartTheme'
+import { alpha, baseChartOptions, candleColors, themeColors, type ChartColors } from '../lib/chartTheme'
 import { Overlay, type OverlaySegment, type OverlayStyle, type OverlayTag } from '../lib/chartOverlay'
 
 // 示意图没有真实时间：第 i 根 K 线放在 BASE + i 天，时间轴隐藏，十字光标显示「第 n 根」
@@ -75,7 +75,6 @@ const points = (values: (number | null)[]) =>
 
 export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
   const ref = useRef<HTMLDivElement>(null)
-  const dark = usePrefersDark()
 
   useEffect(() => {
     const el = ref.current
@@ -244,7 +243,7 @@ export default function DiagramChart({ diagram: d }: { diagram: Diagram }) {
     chart.timeScale().applyOptions({ rightOffset: Math.max(1, off) })
     chart.timeScale().fitContent()
     return () => chart.remove()
-  }, [d, dark])
+  }, [d])
 
   return (
     <figure className="diagram">

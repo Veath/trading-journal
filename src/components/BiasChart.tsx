@@ -11,7 +11,7 @@ import {
 } from 'lightweight-charts'
 import type { AgentBiasDay } from '../types'
 import { chartSidecar } from '../lib/load'
-import { baseChartOptions, candleColors, themeColors, usePrefersDark } from '../lib/chartTheme'
+import { baseChartOptions, candleColors, themeColors } from '../lib/chartTheme'
 import { Overlay, sidecarOverlayItems } from '../lib/chartOverlay'
 import { DEFAULT_TIMEFRAMES, INTERVALS, fetchKlines, indexAt, offsetMs, parseTime, type Candle, type Interval, type Sidecar } from '../lib/market'
 
@@ -30,7 +30,6 @@ export default function BiasChart({ day, watch }: { day: AgentBiasDay; watch: Wa
   const sidecar = chartSidecar(`bias-${day.id}-${watch.symbol.toLowerCase()}`)
   const timeframes = sidecar.timeframes ?? DEFAULT_TIMEFRAMES
   const [tab, setTab] = useState<Interval>(timeframes[timeframes.length - 1])
-  const dark = usePrefersDark()
   const tz = day.tz ?? '+08:00'
   const live = watch.status === 'watching' || watch.status === 'triggered'
 
@@ -52,7 +51,7 @@ export default function BiasChart({ day, watch }: { day: AgentBiasDay; watch: Wa
           ))}
         </div>
       </div>
-      <CandleChart key={`${tab}-${dark}`} day={day} watch={watch} sidecar={sidecar} interval={tab} tz={tz} live={live} />
+      <CandleChart key={tab} day={day} watch={watch} sidecar={sidecar} interval={tab} tz={tz} live={live} />
     </section>
   )
 }

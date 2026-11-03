@@ -1,21 +1,7 @@
-// lightweight-charts 图表的配色：取自 styles.css 的 --chart-* 变量，跟随站点浅色 / 深色模式。
-// 浅色为米色纸面 + 黑白 K 线（与 TradingView 布局一致）；bull / bear 是看涨 / 看跌色，与站点盈亏色一致。
+// lightweight-charts 图表的配色：取自 styles.css 的 --chart-* 变量（站点只有深色主题）。
+// 暖黑底 + 米白 K 线；bull / bear 是看涨 / 看跌色，与站点盈亏色一致。
 // 示意图专用的 EMA 颜色与 scripts/diagrams/render.ts 保持一致。
-import { useEffect, useState } from 'react'
 import { ColorType } from 'lightweight-charts'
-
-const DARK_QUERY = '(prefers-color-scheme: dark)'
-
-export function usePrefersDark(): boolean {
-  const [dark, setDark] = useState(() => matchMedia(DARK_QUERY).matches)
-  useEffect(() => {
-    const mq = matchMedia(DARK_QUERY)
-    const on = () => setDark(mq.matches)
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [])
-  return dark
-}
 
 export function themeColors() {
   const css = getComputedStyle(document.documentElement)
