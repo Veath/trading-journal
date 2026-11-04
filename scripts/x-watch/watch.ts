@@ -17,7 +17,6 @@ import {
   pickNew,
   stateKey,
   type Post,
-  type Source,
   type State,
 } from './posts.ts'
 import { HANDLES } from './watchlist.ts'
@@ -64,15 +63,15 @@ async function tg(method: string, body: object): Promise<void> {
   throw new Error(`Telegram ${method}: ${json.description}`)
 }
 
-async function push(p: Post, source: Source) {
+async function push(p: Post) {
   if (p.photos.length) {
     try {
-      return await tg('sendPhoto', { photo: largePhoto(p.photos[0]), caption: formatMessage(p, source, 700), parse_mode: 'HTML' })
+      return await tg('sendPhoto', { photo: largePhoto(p.photos[0]), caption: formatMessage(p, 700), parse_mode: 'HTML' })
     } catch (e) {
       log(`  图片发送失败，改发文字：${(e as Error).message}`)
     }
   }
-  await tg('sendMessage', { text: formatMessage(p, source), parse_mode: 'HTML', link_preview_options: { is_disabled: true } })
+  await tg('sendMessage', { text: formatMessage(p), parse_mode: 'HTML', link_preview_options: { is_disabled: true } })
 }
 
 const loadState = (): State => (existsSync(STATE_FILE) ? JSON.parse(readFileSync(STATE_FILE, 'utf8')) : {})
@@ -150,6 +149,7 @@ async function cycle(cdp: Cdp, state: State) {
     for (const source of ['posts', 'replies'] as const) {
       const url = `https://x.com/${handle}${source === 'replies' ? '/with_replies' : ''}`
       const key = stateKey(handle, source)
+      const other = stateKey(handle, source === 'posts' ? 'replies' : 'posts')
       if (!(await open(cdp, url))) {
         log(`@${handle} ${source}：页面没有加载出推文，跳过（可能被限流）`)
         continue
@@ -162,12 +162,15 @@ async function cycle(cdp: Cdp, state: State) {
           log(`@${handle} ${source}：首次运行，记录现有 ${items.length} 条，不推送`)
         }
       } else {
-        const fresh = pickNew(state, key, items, Date.now())
+        // 回复页会带出自己的原创帖（对话串的开头），帖子页推过的不再推
+        const pushed = new Set(state[other] ?? [])
+        const fresh = pickNew(state, key, items, Date.now()).filter((p) => !pushed.has(p.id))
         for (const p of fresh) {
           await fillTruncated(cdp, p)
           try {
-            await push(p, source)
+            await push(p)
             markSeen(state, key, [p.id])
+            if (state[other]) markSeen(state, other, [p.id])
             saveState(state)
             log(`@${handle} ${source}：已推送 ${p.id} ${p.text.slice(0, 40).replace(/\n/g, ' ')}`)
           } catch (e) {

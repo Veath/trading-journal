@@ -9,6 +9,8 @@ const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
   text: `text ${id}`,
   quote: '',
   replyTo: '',
+  parent: null,
+  card: '',
   photos: [],
   hasVideo: false,
   truncated: false,
@@ -44,20 +46,38 @@ describe('markSeen', () => {
 })
 
 describe('formatMessage', () => {
-  it('转义 HTML，标注类型、媒体和链接', () => {
+  it('回复：标题带对象，原文放引用块，转义 HTML', () => {
     const msg = formatMessage(
-      post('9', '2026-11-04T09:00:00Z', { text: 'a < b & c', replyTo: 'fred', photos: ['x'], truncated: true }),
-      'replies',
+      post('9', '2026-11-04T09:00:00Z', { text: 'a < b & c', parent: { handle: 'fred', text: 'parent\n\n\n\ntext' } }),
     )
-    expect(msg).toContain('<b>@Keyshotvv</b> · 回复 @fred · 11-04 17:00')
+    expect(msg).toContain('💬 <a href="https://x.com/Keyshotvv"><b>Keyshotvv</b></a> 回复 @fred  ·  <i>11-04 17:00</i>')
+    expect(msg).toContain('<blockquote>parent\n\ntext</blockquote>')
     expect(msg).toContain('a &lt; b &amp; c')
-    expect(msg).toContain('[1 张图] [长帖，正文不全] <a href="https://x.com/Keyshotvv/status/9">查看原帖</a>')
+    expect(msg.indexOf('blockquote')).toBeLessThan(msg.indexOf('a &lt; b'))
+    expect(msg).toContain('<a href="https://x.com/Keyshotvv/status/9">查看原帖 ↗</a>')
   })
 
-  it('按 limit 截断正文', () => {
-    const msg = formatMessage(post('9', '2026-11-04T09:00:00Z', { text: 'x'.repeat(50) }), 'posts', 10)
+  it('没有回复对象的算发帖', () => {
+    expect(formatMessage(post('9', '2026-11-04T09:00:00Z'))).toContain('📝')
+  })
+
+  it('回复自己算续帖，不重复显示上文', () => {
+    const msg = formatMessage(post('9', '2026-11-04T09:00:00Z', { parent: { handle: 'keyshotvv', text: 'x' } }))
+    expect(msg).toContain('🧵')
+    expect(msg).not.toContain('blockquote')
+  })
+
+  it('没有正文时显示链接卡片 / 无文字', () => {
+    expect(formatMessage(post('9', '2026-11-04T09:00:00Z', { text: '', card: 'Fund Your Edge' }))).toContain('🔗 Fund Your Edge')
+    expect(formatMessage(post('9', '2026-11-04T09:00:00Z', { text: '' }))).toContain('（无文字）')
+  })
+
+  it('按 limit 截断正文，标注长帖和多图', () => {
+    const msg = formatMessage(post('9', '2026-11-04T09:00:00Z', { text: 'x'.repeat(50), truncated: true, photos: ['a', 'b'] }), 10)
     expect(msg).toContain(`${'x'.repeat(10)}…`)
-    expect(msg).toContain('· 发帖 ·')
+    expect(msg).toContain('📝')
+    expect(msg).toContain('共 2 张图')
+    expect(msg).toContain('长帖')
   })
 })
 
