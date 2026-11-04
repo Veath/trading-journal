@@ -20,6 +20,7 @@ pnpm new:day         # 按模板新建当日日志
 pnpm new:bias        # 按模板新建当日 Agent偏见
 pnpm trade:chart <id># 用 Binance 公开 K 线生成交易复盘图到 journal/screenshots/
 pnpm bias:watch      # 终端行情列表 + 轮询当天 Agent偏见的标的，阶段变化时响铃 + macOS 通知
+pnpm x:watch         # 监控 scripts/x-watch/watchlist.ts 里 X 账号的发帖和回复，推送到 Telegram（TG_BOT_TOKEN / TG_CHAT_ID 在 .env.local；data/x-watch/browser 是保存 X 登录的独立 Chrome 目录）
 pnpm diagrams        # 由 scripts/diagrams/*.ts 生成 notes/<主题>/img/*.svg
 pnpm mentor:collect  # 生成 X 采集脚本（会覆盖用户剪贴板）
 pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
