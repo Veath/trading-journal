@@ -3,7 +3,7 @@
 // 用 data/x-watch/browser 这个独立的 Chrome 用户目录（gitignore），第一次运行会打开普通 Chrome 的 X 登录页（支持 Google 登录），登录一次后会记住。
 // 配置放在 .env.local（gitignore）：TG_BOT_TOKEN=...、TG_CHAT_ID=...
 // 只读 X 页面，不点赞、不转发、不发帖。已推送记录在 data/x-watch/state.json。
-// 为了少触发 Cloudflare 安全验证：页面之间在站内跳转、最多 30 分钟整页刷新一次；遇到验证就停下（有窗口时等你手动点验证，无头模式按 30 分钟起翻倍暂停）。
+// 为了少触发 Cloudflare 安全验证：页面之间在站内跳转、最多 30 分钟整页刷新一次；遇到验证就停下（有窗口时换成普通 Chrome 让你手动验证，无头模式按 30 分钟起翻倍暂停）。
 import { execFileSync, spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -85,45 +85,61 @@ async function loggedIn(cdp: Cdp) {
   return cookies.some((c) => c.name === 'auth_token')
 }
 
-/** 直接读用户目录里的 Cookies 库（cookie 名不加密），判断有没有 X 的登录 cookie */
-function hasAuthCookie(): boolean {
+/** 直接查用户目录里的 Cookies 库（cookie 名和时间不加密）；sql 只返回一个数字，查不到返回 0 */
+function cookieQuery(sql: string): number {
   const db = join(PROFILE, 'Default/Cookies')
-  if (!existsSync(db)) return false
+  if (!existsSync(db)) return 0
   const tmp = join(DATA, 'cookies-check.db')
   try {
     copyFileSync(db, tmp)
-    const out = execFileSync('sqlite3', [tmp, "select count(*) from cookies where host_key like '%x.com' and name = 'auth_token'"])
-    return Number(String(out).trim()) > 0
+    return Number(String(execFileSync('sqlite3', [tmp, sql])).trim()) || 0
   } catch {
-    return false
+    return 0
   } finally {
     rmSync(tmp, { force: true })
   }
 }
 
+const hasAuthCookie = () => cookieQuery("select count(*) from cookies where host_key like '%x.com' and name = 'auth_token'") > 0
+/** Cloudflare 验证通过后会写入 / 刷新 cf_clearance，用它的更新时间判断 */
+const clearanceUpdated = () =>
+  cookieQuery("select coalesce(max(last_update_utc), 0) from cookies where host_key like '%x.com' and name = 'cf_clearance'")
+
 /**
- * Google 登录会拒绝开着远程调试的浏览器（「此浏览器或应用可能不安全」），
- * 所以登录时用同一个用户目录启动普通 Chrome（不开调试端口），检测到登录 cookie 后关掉，再以监控模式重开。
+ * Google 登录和 Cloudflare 人机验证都会识别开着远程调试的浏览器（登录被拒、验证无限循环），
+ * 所以这两步用同一个用户目录启动普通 Chrome（不开调试端口）让用户手动完成。
+ * 先关掉调试版 Chrome；done() 为真或用户关掉窗口时结束，返回是否由 done() 结束。
  */
-async function ensureLogin(cdp: Cdp): Promise<Cdp> {
-  if (await loggedIn(cdp)) return cdp
-  if (flag('headless')) throw new Error('X 未登录：先不加 --headless 运行一次，在弹出的 Chrome 里登录')
+async function manualStep(url: string, done: () => boolean, cdp?: Cdp): Promise<boolean> {
   await closeBrowser(PROFILE, cdp)
-  const chrome = spawn(CHROME, [`--user-data-dir=${PROFILE}`, '--no-first-run', '--no-default-browser-check', 'https://x.com/i/flow/login'], {
-    stdio: 'ignore',
-  })
-  log('X 未登录：请在弹出的 Chrome 窗口里登录（可以用 Google 登录，只需一次）。登录成功后窗口会自动关闭并开始监控…')
-  while (!hasAuthCookie()) {
-    if (chrome.exitCode != null) throw new Error('登录窗口已关闭，未检测到登录，请重新运行')
+  const chrome = spawn(CHROME, [`--user-data-dir=${PROFILE}`, '--no-first-run', '--no-default-browser-check', url], { stdio: 'ignore' })
+  while (!done()) {
+    if (chrome.exitCode != null) return false
     await sleep(5000)
   }
   await sleep(3000)
   chrome.kill('SIGTERM') // Chrome 收到 SIGTERM 会正常退出并写盘
   await once(chrome, 'exit')
+  return true
+}
+
+async function ensureLogin(cdp: Cdp): Promise<Cdp> {
+  if (await loggedIn(cdp)) return cdp
+  if (flag('headless')) throw new Error('X 未登录：先不加 --headless 运行一次，在弹出的 Chrome 里登录')
+  log('X 未登录：请在弹出的 Chrome 窗口里登录（可以用 Google 登录，只需一次）。登录成功后窗口会自动关闭并开始监控…')
+  if (!(await manualStep('https://x.com/i/flow/login', hasAuthCookie, cdp))) throw new Error('登录窗口已关闭，未检测到登录，请重新运行')
   log('已登录，切换到监控模式')
   const next = await openBrowser(PROFILE, false)
   if (!(await loggedIn(next))) throw new Error('登录状态没有保存下来，请重新运行')
   return next
+}
+
+/** 在普通 Chrome 里让用户手动过 Cloudflare 验证，完成后以监控模式重开 */
+async function solveChallenge(cdp: Cdp): Promise<Cdp> {
+  const before = clearanceUpdated()
+  const auto = await manualStep('https://x.com/home', () => clearanceUpdated() > before, cdp)
+  log(auto ? '检测到验证已通过，切换回监控模式' : '验证窗口已关闭，切换回监控模式')
+  return openBrowser(PROFILE, false)
 }
 
 /** 页面是 Cloudflare 安全验证页 */
@@ -168,15 +184,6 @@ async function open(cdp: Cdp, url: string): Promise<boolean> {
     }
   }
   return false
-}
-
-/** 等安全验证页消失（有窗口时由用户手动点验证） */
-async function waitChallengeSolved(cdp: Cdp) {
-  while (true) {
-    await sleep(15_000)
-    const s = await cdp.evaluate(pageStatus, null).catch(() => null)
-    if (s && !s.challenge) return
-  }
 }
 
 async function fillTruncated(cdp: Cdp, p: Post) {
@@ -234,7 +241,7 @@ async function main() {
     return
   }
   mkdirSync(PROFILE, { recursive: true })
-  const cdp = await ensureLogin(await openBrowser(PROFILE, flag('headless')))
+  let cdp = await ensureLogin(await openBrowser(PROFILE, flag('headless')))
   const state = loadState()
   log(`监控 ${HANDLES.map((h) => `@${h}`).join(' ')}，约每 ${EVERY / 1000} 秒一轮（随机浮动）`)
   let challenges = 0 // 连续遇到安全验证的次数
@@ -255,14 +262,14 @@ async function main() {
         const wait = challengeBackoff(challenges)
         const msg = headless
           ? `${e.message}，暂停 ${wait / 60_000} 分钟后重试。频繁出现时去掉 --headless 运行，在窗口里手动验证。`
-          : `${e.message}，请在 x-watch 的 Chrome 窗口里点「验证您是真人」，通过后自动继续。`
+          : `${e.message}，已换成普通 Chrome 窗口（调试模式下验证会一直循环），请在窗口里点「验证您是真人」；通过后窗口自动关闭并继续监控，没反应可以看到 X 正常页面后直接关掉窗口。`
         log(msg)
         if (challenges === 1) await tg('sendMessage', { text: `⚠️ x-watch：${msg}` }).catch(() => {})
         if (flag('once')) break
         if (headless) await sleep(wait)
         else {
-          await waitChallengeSolved(cdp)
-          log('验证已通过，接下来 2 小时放慢轮询')
+          cdp = await solveChallenge(cdp)
+          log('接下来 2 小时放慢轮询')
         }
         continue
       }
