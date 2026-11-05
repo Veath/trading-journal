@@ -4,7 +4,7 @@
 // 入场 / 止损 / 目标 / 出场自动标注；EQH、信号 K 等需要判断的标注写在 journal/charts/<id>.json（可选）。
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { parseTrade } from '../../src/lib/parse.ts'
+import { exitLabel, parseTrade } from '../../src/lib/parse.ts'
 import { render, type Diagram, type Line, type Mark, type Zone } from '../diagrams/render.ts'
 import {
   DEFAULT_TIMEFRAMES,
@@ -81,7 +81,7 @@ async function main() {
     if (trade.entry != null) lines.push({ from: entryIdx, y: trade.entry, kind: 'entry', label: `入场 ${trade.entry}` })
     if (trade.exit != null) {
       const exitIdx = exitMs ? indexAt(candles, exitMs, cfg.ms) : candles.length - 1
-      lines.push({ from: exitIdx, y: trade.exit, kind: 'neutral', label: `出场 ${trade.exit}` })
+      lines.push({ from: exitIdx, y: trade.exit, kind: 'neutral', label: `${exitLabel(trade.rMultiple)} ${trade.exit}` })
     }
     for (const l of spec.lines ?? []) lines.push({ ...l, from: at(l.from), to: l.to ? at(l.to) : undefined })
 

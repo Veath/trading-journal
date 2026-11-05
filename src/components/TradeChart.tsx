@@ -11,7 +11,7 @@ import {
 } from 'lightweight-charts'
 import type { Trade } from '../types'
 import { chartSidecar } from '../lib/load'
-import { BREAKEVEN_THRESHOLD } from '../lib/parse'
+import { BREAKEVEN_THRESHOLD, exitLabel } from '../lib/parse'
 import { fmtR } from '../lib/format'
 import { baseChartOptions, candleColors, themeColors } from '../lib/chartTheme'
 import { Overlay, sidecarOverlayItems } from '../lib/chartOverlay'
@@ -152,7 +152,7 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       priceLine(trade.target, '目标', c.bull, LineStyle.Dashed)
       priceLine(trade.stop, '止损', c.bear, LineStyle.Dashed)
       priceLine(trade.entry, '入场', c.accent, LineStyle.Solid)
-      priceLine(trade.exit, '出场', c.text2, LineStyle.Dotted)
+      priceLine(trade.exit, exitLabel(trade.rMultiple), c.text2, LineStyle.Dotted)
 
       const short = trade.direction === 'short'
       const markers: SeriesMarker<Time>[] = [
@@ -160,10 +160,10 @@ function CandleChart({ trade, sidecar, interval, onError, hasFallback }: { trade
       ]
       if (exitMs != null) {
         const time = toTime(candles[indexAt(candles, exitMs, ms)].t)
-        // 出场点按盈亏着色（盈 = 绿、亏 = 红、保本 / 未知 = 灰），标签带上 R
+        // 出场点按盈亏着色（盈 = 绿、亏 = 红、保本 / 未知 = 灰），标签写明止盈 / 止损 / 保本、出场价和 R
         const r = trade.rMultiple
         const color = r == null || Math.abs(r) < BREAKEVEN_THRESHOLD ? c.text2 : r > 0 ? c.bull : c.bear
-        const text = r == null ? '出场' : `出场 ${fmtR(r)}`
+        const text = [exitLabel(r), trade.exit, r == null ? undefined : fmtR(r)].filter((v) => v != null).join(' ')
         // 有出场价时画在出场价上，小圆点不遮住整根 K 线
         markers.push(trade.exit != null
           ? { time, position: 'atPriceMiddle', price: trade.exit, shape: 'circle', color, text, size: 0.8 }

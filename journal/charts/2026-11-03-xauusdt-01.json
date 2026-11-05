@@ -1,5 +1,6 @@
 {
   "symbol": "XAUUSDT",
   "tz": "+08:00",
+  "exitTime": "2026-11-04 09:18",
   "timeframes": ["1d", "4h", "1h", "15m"]
 }

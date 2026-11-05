@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseAgentBias, plannedRR } from './parse'
+import { exitLabel, parseAgentBias, plannedRR } from './parse'
 
 describe('parseAgentBias', () => {
   it('解析当天的标的，status 默认 watching，日期默认取文件名', () => {
@@ -19,5 +19,15 @@ describe('plannedRR', () => {
     expect(plannedRR(103.4, 102.4, 105.11)).toBeCloseTo(1.71)
     expect(plannedRR(undefined, 102.4, 105.11)).toBeNull()
     expect(plannedRR(100, 100, 105)).toBeNull()
+  })
+})
+
+describe('exitLabel', () => {
+  it('按 R 区分止盈 / 止损 / 保本', () => {
+    expect(exitLabel(2.31)).toBe('止盈')
+    expect(exitLabel(-1.1)).toBe('止损')
+    expect(exitLabel(0.05)).toBe('保本')
+    expect(exitLabel(-0.05)).toBe('保本')
+    expect(exitLabel(null)).toBe('出场')
   })
 })

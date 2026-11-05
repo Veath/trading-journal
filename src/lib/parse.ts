@@ -47,6 +47,12 @@ export function classifyOutcome(r: number | null, threshold = BREAKEVEN_THRESHOL
   return 'breakeven'
 }
 
+/** 行情图出场点的名称：按实际 R 分为止盈 / 止损 / 保本，算不出 R 时为「出场」 */
+export function exitLabel(r: number | null): string {
+  const outcome = classifyOutcome(r)
+  return outcome === 'win' ? '止盈' : outcome === 'loss' ? '止损' : outcome === 'breakeven' ? '保本' : '出场'
+}
+
 export function parseTrade(id: string, raw: string): Trade {
   const { data, body } = splitFrontmatter(raw)
   const fm = { ...data, date: normalizeDate(data.date) } as unknown as TradeFrontmatter
