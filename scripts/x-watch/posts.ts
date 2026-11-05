@@ -101,6 +101,29 @@ export function extractFullText(head: string): string {
 }
 
 /**
+ * 在浏览器里执行：页面状态。challenge = Cloudflare 安全验证页；
+ * fresh = 没有被标记成「跳转前就在」的推文数（跳转前给旧推文加 data-xw-old，避免把上一页的内容当成新页面）。
+ */
+export function pageStatus(): { challenge: boolean; fresh: number } {
+  const challenge =
+    /just a moment|安全验证|security verification/i.test(document.title + ' ' + (document.body?.innerText ?? '').slice(0, 300)) ||
+    !!document.querySelector('iframe[src*="challenges.cloudflare.com"], script[src*="/cdn-cgi/challenge-platform/"], #challenge-form, .cf-turnstile')
+  return { challenge, fresh: document.querySelectorAll('article[data-testid="tweet"]:not([data-xw-old])').length }
+}
+
+/**
+ * 下一轮前的等待时长：在 base 的 60%～140% 之间随机，另有 10% 的概率「走开一会儿」，等 2～3 倍，
+ * 让请求间隔没有固定规律。rand 是 [0, 1) 随机数，方便测试。
+ */
+export function nextDelay(base: number, rand: () => number = Math.random): number {
+  if (rand() < 0.1) return Math.round(base * (2 + rand()))
+  return Math.round(base * (0.6 + rand() * 0.8))
+}
+
+/** 遇到安全验证后的第 n 次（从 1 开始）暂停时长：30 分钟起，每次翻倍，最多 2 小时 */
+export const challengeBackoff = (n: number) => Math.min(2 * 3600_000, 30 * 60_000 * 2 ** Math.max(0, n - 1))
+
+/**
  * 返回需要推送的新帖（按时间升序）。第一次见到某个 key 时只记录、不推送，避免把历史帖子全发一遍。
  * 不修改 state；推送成功后再调用 markSeen。
  */

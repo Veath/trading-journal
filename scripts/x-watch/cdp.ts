@@ -114,6 +114,11 @@ export async function openBrowser(profile: string, headless: boolean): Promise<C
   const cdp = await Cdp.connect(page.webSocketDebuggerUrl)
   await cdp.send('Page.enable')
   await cdp.send('Network.enable')
+  if (headless) {
+    // 无头模式的 UA 带 HeadlessChrome，很容易被 Cloudflare 识别成自动程序
+    const { userAgent } = await cdp.send<{ userAgent: string }>('Browser.getVersion')
+    await cdp.send('Network.setUserAgentOverride', { userAgent: userAgent.replace('HeadlessChrome', 'Chrome') })
+  }
   return cdp
 }
 

@@ -3,17 +3,21 @@
 // 用 data/x-watch/browser 这个独立的 Chrome 用户目录（gitignore），第一次运行会打开普通 Chrome 的 X 登录页（支持 Google 登录），登录一次后会记住。
 // 配置放在 .env.local（gitignore）：TG_BOT_TOKEN=...、TG_CHAT_ID=...
 // 只读 X 页面，不点赞、不转发、不发帖。已推送记录在 data/x-watch/state.json。
+// 为了少触发 Cloudflare 安全验证：页面之间在站内跳转、最多 30 分钟整页刷新一次；遇到验证就停下（有窗口时等你手动点验证，无头模式按 30 分钟起翻倍暂停）。
 import { execFileSync, spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CHROME, closeBrowser, openBrowser, type Cdp } from './cdp.ts'
 import {
+  challengeBackoff,
   extractFullText,
   extractTimeline,
   formatMessage,
   largePhoto,
   markSeen,
+  nextDelay,
+  pageStatus,
   pickNew,
   stateKey,
   type Post,
@@ -36,7 +40,6 @@ const option = (name: string) => {
 const EVERY = Math.max(60, Number(option('every') ?? 180)) * 1000
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-const jitter = (ms: number) => ms + Math.random() * ms * 0.5
 const log = (...a: unknown[]) => console.log(new Date().toTimeString().slice(0, 8), ...a)
 
 if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE)
@@ -123,18 +126,57 @@ async function ensureLogin(cdp: Cdp): Promise<Cdp> {
   return next
 }
 
-/** 打开页面并等推文加载出来；返回 false 表示超时（限流、页面出错或确实没有内容） */
+/** 页面是 Cloudflare 安全验证页 */
+class ChallengeError extends Error {}
+
+const HARD_EVERY = 30 * 60_000 // 整页刷新的最短间隔，其余跳转都在站内完成
+let lastHardLoad = 0
+
+/**
+ * 打开页面并等推文加载出来；返回 false 表示超时（限流、页面出错或确实没有内容），遇到安全验证抛 ChallengeError。
+ * 默认在 X 的单页应用里用 history.pushState 跳转：只请求 X 的数据接口、不重新请求整页，
+ * Cloudflare 的验证基本只出现在整页请求上，这样能大幅减少触发。距上次整页刷新超过 HARD_EVERY 或站内跳转不可用时才整页加载。
+ */
 async function open(cdp: Cdp, url: string): Promise<boolean> {
-  await cdp.send('Page.navigate', { url })
+  const path = new URL(url).pathname
+  const hard = Date.now() - lastHardLoad > HARD_EVERY
+  const navigated = await cdp
+    .evaluate(
+      ({ path, hard }) => {
+        document.querySelectorAll('article[data-testid="tweet"]').forEach((a) => a.setAttribute('data-xw-old', ''))
+        // 已在目标页时站内跳转不会重新拉数据，只能整页刷新
+        if (hard || location.hostname !== 'x.com' || location.pathname === path || !document.querySelector('[data-testid="primaryColumn"]'))
+          return false
+        history.pushState({}, '', path)
+        dispatchEvent(new PopStateEvent('popstate', { state: {} }))
+        return true
+      },
+      { path, hard },
+    )
+    .catch(() => false)
+  if (!navigated) {
+    await cdp.send('Page.navigate', { url })
+    lastHardLoad = Date.now()
+  }
   for (let i = 0; i < 40; i++) {
     await sleep(500)
-    const n = await cdp.evaluate(() => document.querySelectorAll('article[data-testid="tweet"]').length, null)
-    if (n > 0) {
+    const s = await cdp.evaluate(pageStatus, null).catch(() => null) // 整页跳转中途可能取不到
+    if (s?.challenge) throw new ChallengeError('X 弹出了 Cloudflare 安全验证')
+    if (s && s.fresh > 0) {
       await sleep(1500) // 等后面几条也渲染出来
       return true
     }
   }
   return false
+}
+
+/** 等安全验证页消失（有窗口时由用户手动点验证） */
+async function waitChallengeSolved(cdp: Cdp) {
+  while (true) {
+    await sleep(15_000)
+    const s = await cdp.evaluate(pageStatus, null).catch(() => null)
+    if (s && !s.challenge) return
+  }
 }
 
 async function fillTruncated(cdp: Cdp, p: Post) {
@@ -144,9 +186,11 @@ async function fillTruncated(cdp: Cdp, p: Post) {
   if (full.length > p.text.length) Object.assign(p, { text: full, truncated: false })
 }
 
+const shuffle = <T>(a: T[]) => a.map((v) => [Math.random(), v] as const).sort((x, y) => x[0] - y[0]).map(([, v]) => v)
+
 async function cycle(cdp: Cdp, state: State) {
-  for (const handle of HANDLES) {
-    for (const source of ['posts', 'replies'] as const) {
+  for (const handle of shuffle(HANDLES)) {
+    for (const source of shuffle(['posts', 'replies'] as const)) {
       const url = `https://x.com/${handle}${source === 'replies' ? '/with_replies' : ''}`
       const key = stateKey(handle, source)
       const other = stateKey(handle, source === 'posts' ? 'replies' : 'posts')
@@ -178,7 +222,7 @@ async function cycle(cdp: Cdp, state: State) {
           }
         }
       }
-      await sleep(jitter(2500))
+      await sleep(2000 + Math.random() * 6000) // 页面之间停 2～8 秒
     }
   }
 }
@@ -192,17 +236,42 @@ async function main() {
   mkdirSync(PROFILE, { recursive: true })
   const cdp = await ensureLogin(await openBrowser(PROFILE, flag('headless')))
   const state = loadState()
-  log(`监控 ${HANDLES.map((h) => `@${h}`).join(' ')}，每 ${EVERY / 1000} 秒一轮`)
+  log(`监控 ${HANDLES.map((h) => `@${h}`).join(' ')}，约每 ${EVERY / 1000} 秒一轮（随机浮动）`)
+  let challenges = 0 // 连续遇到安全验证的次数
+  let slowUntil = 0 // 验证过后一段时间内放慢轮询
   while (true) {
     const start = Date.now()
     try {
       await cycle(cdp, state)
+      challenges = 0
     } catch (e) {
       if (cdp.closed) throw new Error('Chrome 已关闭，监控停止')
-      log(`本轮出错：${(e as Error).message}`)
+      if (!(e instanceof ChallengeError)) log(`本轮出错：${(e as Error).message}`)
+      else {
+        challenges++
+        slowUntil = Date.now() + 2 * 3600_000
+        lastHardLoad = 0 // 恢复后先整页刷新一次
+        const headless = flag('headless')
+        const wait = challengeBackoff(challenges)
+        const msg = headless
+          ? `${e.message}，暂停 ${wait / 60_000} 分钟后重试。频繁出现时去掉 --headless 运行，在窗口里手动验证。`
+          : `${e.message}，请在 x-watch 的 Chrome 窗口里点「验证您是真人」，通过后自动继续。`
+        log(msg)
+        if (challenges === 1) await tg('sendMessage', { text: `⚠️ x-watch：${msg}` }).catch(() => {})
+        if (flag('once')) break
+        if (headless) await sleep(wait)
+        else {
+          await waitChallengeSolved(cdp)
+          log('验证已通过，接下来 2 小时放慢轮询')
+        }
+        continue
+      }
     }
     if (flag('once')) break
-    await sleep(Math.max(10_000, jitter(EVERY) - (Date.now() - start)))
+    const every = Date.now() < slowUntil ? EVERY * 2 : EVERY
+    const wait = Math.max(10_000, nextDelay(every) - (Date.now() - start))
+    log(`下一轮在 ${Math.round(wait / 1000)} 秒后`)
+    await sleep(wait)
   }
   cdp.close()
 }

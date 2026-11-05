@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatMessage, largePhoto, markSeen, pickNew, type Post, type State } from './posts.ts'
+import { challengeBackoff, formatMessage, nextDelay, largePhoto, markSeen, pickNew, type Post, type State } from './posts.ts'
 
 const NOW = Date.parse('2026-11-04T10:00:00Z')
 const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
@@ -79,6 +79,21 @@ describe('formatMessage', () => {
     expect(msg).toContain('共 2 张图')
     expect(msg).toContain('长帖')
   })
+})
+
+it('challengeBackoff', () => {
+  expect([1, 2, 3, 4].map((n) => challengeBackoff(n) / 60_000)).toEqual([30, 60, 120, 120])
+})
+
+it('nextDelay：平时在 60%～140% 之间，偶尔 2～3 倍', () => {
+  const seq = (...v: number[]) => () => v.shift()!
+  expect(nextDelay(100, seq(0.5, 0))).toBe(60)
+  expect(nextDelay(100, seq(0.5, 0.999))).toBe(140)
+  expect(nextDelay(100, seq(0.05, 0.5))).toBe(250)
+  for (let i = 0; i < 1000; i++) {
+    const d = nextDelay(100)
+    expect(d >= 60 && d <= 300).toBe(true)
+  }
 })
 
 it('largePhoto', () => {
