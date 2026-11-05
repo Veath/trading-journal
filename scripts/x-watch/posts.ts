@@ -5,11 +5,12 @@ export type Source = 'posts' | 'replies'
 export interface Post {
   id: string
   handle: string
+  name: string // 昵称（显示名），取不到为空
   date: string // ISO
   text: string
   quote: string // 引用推文的正文
   replyTo: string // 「回复 @xxx」里的账号，取不到为空
-  parent: { handle: string; text: string } | null // 时间线上紧挨在上面、用连接线连着的那条（被回复的推文）
+  parent: { handle: string; name: string; text: string } | null // 时间线上紧挨在上面、用连接线连着的那条（被回复的推文）
   card: string // 链接卡片的标题
   photos: string[]
   hasVideo: boolean
@@ -51,19 +52,22 @@ export function extractTimeline(handle: string): Post[] {
     const timeEl = art.querySelector('time')
     const m = (timeEl?.closest('a')?.getAttribute('href') ?? '').match(/^\/([^/]+)\/status\/(\d+)/)
     const texts = art.querySelectorAll('[data-testid="tweetText"]')
-    return { art, timeEl, m, text: textOf(texts[0]), quote: textOf(texts[1]) }
+    // User-Name 里第一个链接是昵称（引用推文的 User-Name 在后面，不会先匹配到）
+    const name = textOf(art.querySelector('[data-testid="User-Name"] a'))
+    return { art, timeEl, m, name, text: textOf(texts[0]), quote: textOf(texts[1]) }
   })
 
   const out: Post[] = []
-  rows.forEach(({ art, timeEl, m, text, quote }, i) => {
+  rows.forEach(({ art, timeEl, m, name, text, quote }, i) => {
     if (!timeEl || !m || m[1].toLowerCase() !== handle.toLowerCase()) return
     const prev = rows[i - 1]
-    const parent = prev?.m && linkedBelow(prev.art) ? { handle: prev.m[1], text: prev.text } : null
+    const parent = prev?.m && linkedBelow(prev.art) ? { handle: prev.m[1], name: prev.name, text: prev.text } : null
     const replyLine = [...art.querySelectorAll<HTMLElement>('div')].find((d) => /^(Replying to|回复)\s*@/.test(d.innerText ?? ''))
     const card = art.querySelector<HTMLElement>('[data-testid="card.wrapper"]')
     out.push({
       id: m[2],
       handle: m[1],
+      name,
       date: timeEl.getAttribute('datetime') ?? '',
       text,
       quote,
@@ -105,9 +109,12 @@ export function extractFullText(head: string): string {
  * fresh = 没有被标记成「跳转前就在」的推文数（跳转前给旧推文加 data-xw-old，避免把上一页的内容当成新页面）。
  */
 export function pageStatus(): { challenge: boolean; fresh: number } {
+  // 正常的 X 页面也会注入 /cdn-cgi/challenge-platform/ 脚本，不能当特征；验证页上没有 X 的应用（#react-root）
   const challenge =
-    /just a moment|安全验证|security verification/i.test(document.title + ' ' + (document.body?.innerText ?? '').slice(0, 300)) ||
-    !!document.querySelector('iframe[src*="challenges.cloudflare.com"], script[src*="/cdn-cgi/challenge-platform/"], #challenge-form, .cf-turnstile')
+    !document.querySelector('#react-root') &&
+    ('_cf_chl_opt' in window ||
+      /just a moment|安全验证|security verification|请稍候/i.test(document.title + ' ' + (document.body?.innerText ?? '').slice(0, 300)) ||
+      !!document.querySelector('iframe[src*="challenges.cloudflare.com"], #challenge-form, .cf-turnstile'))
   return { challenge, fresh: document.querySelectorAll('article[data-testid="tweet"]:not([data-xw-old])').length }
 }
 
@@ -160,8 +167,9 @@ export const fmtTime = (iso: string) => new Date(Date.parse(iso) + 8 * 3600_000)
  * limit 是正文最大字数（sendPhoto 的 caption 只有 1024）。
  */
 export function formatMessage(p: Post, limit = 3000): string {
-  const user = `<a href="https://x.com/${p.handle}"><b>${esc(p.handle)}</b></a>`
+  const user = `<a href="https://x.com/${p.handle}"><b>${esc(p.name || p.handle)}</b></a>${p.name ? ` @${esc(p.handle)}` : ''}`
   const target = p.parent?.handle ?? p.replyTo
+  const targetName = p.parent?.name ? `${esc(p.parent.name)} @${esc(target)}` : `@${esc(target)}`
   const self = !!target && target.toLowerCase() === p.handle.toLowerCase()
   // 回复页上没有回复对象的是对话串开头的原创帖
   const head =
@@ -169,7 +177,7 @@ export function formatMessage(p: Post, limit = 3000): string {
       ? `📝 ${user} 发帖`
       : self
         ? `🧵 ${user} 续帖`
-        : `💬 ${user} 回复 @${esc(target)}`
+        : `💬 ${user} 回复 ${targetName}`
   const lines = [`${head}  ·  <i>${fmtTime(p.date)}</i>`]
 
   if (p.parent && !self) {

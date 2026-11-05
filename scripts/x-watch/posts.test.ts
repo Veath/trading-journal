@@ -5,6 +5,7 @@ const NOW = Date.parse('2026-11-04T10:00:00Z')
 const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
   id,
   handle: 'Keyshotvv',
+  name: '',
   date,
   text: `text ${id}`,
   quote: '',
@@ -48,7 +49,7 @@ describe('markSeen', () => {
 describe('formatMessage', () => {
   it('回复：标题带对象，原文放引用块，转义 HTML', () => {
     const msg = formatMessage(
-      post('9', '2026-11-04T09:00:00Z', { text: 'a < b & c', parent: { handle: 'fred', text: 'parent\n\n\n\ntext' } }),
+      post('9', '2026-11-04T09:00:00Z', { text: 'a < b & c', parent: { handle: 'fred', name: '', text: 'parent\n\n\n\ntext' } }),
     )
     expect(msg).toContain('💬 <a href="https://x.com/Keyshotvv"><b>Keyshotvv</b></a> 回复 @fred  ·  <i>11-04 17:00</i>')
     expect(msg).toContain('<blockquote>parent\n\ntext</blockquote>')
@@ -57,12 +58,19 @@ describe('formatMessage', () => {
     expect(msg).toContain('<a href="https://x.com/Keyshotvv/status/9">查看原帖 ↗</a>')
   })
 
+  it('有昵称时标题显示「昵称 @账号」，回复对象也带昵称', () => {
+    const msg = formatMessage(
+      post('9', '2026-11-04T09:00:00Z', { name: 'Key <shot>', parent: { handle: 'fredtrades', name: 'Fred 💚', text: 'hi' } }),
+    )
+    expect(msg).toContain('💬 <a href="https://x.com/Keyshotvv"><b>Key &lt;shot&gt;</b></a> @Keyshotvv 回复 Fred 💚 @fredtrades')
+  })
+
   it('没有回复对象的算发帖', () => {
     expect(formatMessage(post('9', '2026-11-04T09:00:00Z'))).toContain('📝')
   })
 
   it('回复自己算续帖，不重复显示上文', () => {
-    const msg = formatMessage(post('9', '2026-11-04T09:00:00Z', { parent: { handle: 'keyshotvv', text: 'x' } }))
+    const msg = formatMessage(post('9', '2026-11-04T09:00:00Z', { parent: { handle: 'keyshotvv', name: '', text: 'x' } }))
     expect(msg).toContain('🧵')
     expect(msg).not.toContain('blockquote')
   })

@@ -266,8 +266,11 @@ async function main() {
         log(msg)
         if (challenges === 1) await tg('sendMessage', { text: `⚠️ x-watch：${msg}` }).catch(() => {})
         if (flag('once')) break
-        if (headless) await sleep(wait)
-        else {
+        // 连续多次：可能是 IP 被标记或判断出错，不再反复开窗口
+        if (headless || challenges >= 3) {
+          if (!headless) log(`连续 ${challenges} 次遇到验证，暂停 ${wait / 60_000} 分钟后再试`)
+          await sleep(wait)
+        } else {
           cdp = await solveChallenge(cdp)
           log('接下来 2 小时放慢轮询')
         }
