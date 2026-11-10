@@ -149,12 +149,13 @@ const HARD_EVERY = 30 * 60_000 // 整页刷新的最短间隔，其余跳转都�
 let lastHardLoad = 0
 
 /**
- * 打开页面并等推文加载出来；返回 false 表示超时（限流、页面出错或确实没有内容），遇到安全验证抛 ChallengeError。
+ * 打开页面并等待推文，区分加载成功、帖子受保护和超时。遇到安全验证抛 ChallengeError。
  * 默认在 X 的单页应用里用 history.pushState 跳转：只请求 X 的数据接口、不重新请求整页，
  * Cloudflare 的验证基本只出现在整页请求上，这样能大幅减少触发。距上次整页刷新超过 HARD_EVERY 或站内跳转不可用时才整页加载。
  */
-async function open(cdp: Cdp, url: string): Promise<boolean> {
+async function open(cdp: Cdp, url: string): Promise<'ready' | 'protected' | 'timeout'> {
   const path = new URL(url).pathname
+  const handle = path.split('/')[1]
   const hard = Date.now() - lastHardLoad > HARD_EVERY
   const navigated = await cdp
     .evaluate(
@@ -176,19 +177,20 @@ async function open(cdp: Cdp, url: string): Promise<boolean> {
   }
   for (let i = 0; i < 40; i++) {
     await sleep(500)
-    const s = await cdp.evaluate(pageStatus, null).catch(() => null) // 整页跳转中途可能取不到
+    const s = await cdp.evaluate(pageStatus, handle).catch(() => null) // 整页跳转中途可能取不到
     if (s?.challenge) throw new ChallengeError('X 弹出了 Cloudflare 安全验证')
+    if (s?.protected) return 'protected'
     if (s && s.fresh > 0) {
       await sleep(1500) // 等后面几条也渲染出来
-      return true
+      return 'ready'
     }
   }
-  return false
+  return 'timeout'
 }
 
 async function fillTruncated(cdp: Cdp, p: Post) {
   if (!p.truncated || !p.text) return
-  if (!(await open(cdp, `https://x.com/${p.handle}/status/${p.id}`))) return
+  if ((await open(cdp, `https://x.com/${p.handle}/status/${p.id}`)) !== 'ready') return
   const full = await cdp.evaluate(extractFullText, p.text.slice(0, 20))
   if (full.length > p.text.length) Object.assign(p, { text: full, truncated: false })
 }
@@ -201,8 +203,13 @@ async function cycle(cdp: Cdp, state: State) {
       const url = `https://x.com/${handle}${source === 'replies' ? '/with_replies' : ''}`
       const key = stateKey(handle, source)
       const other = stateKey(handle, source === 'posts' ? 'replies' : 'posts')
-      if (!(await open(cdp, url))) {
-        log(`@${handle} ${source}：页面没有加载出推文，跳过（可能被限流）`)
+      const status = await open(cdp, url)
+      if (status === 'protected') {
+        log(`@${handle} 的帖子受保护，仅获批准的关注者可见，本轮跳过`)
+        break
+      }
+      if (status === 'timeout') {
+        log(`@${handle} ${source}：等待推文加载超时，跳过`)
         continue
       }
       const items = await cdp.evaluate(extractTimeline, handle)

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { challengeBackoff, formatMessage, nextDelay, largePhoto, markSeen, pickNew, type Post, type State } from './posts.ts'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { challengeBackoff, formatMessage, nextDelay, largePhoto, markSeen, pageStatus, pickNew, type Post, type State } from './posts.ts'
 
 const NOW = Date.parse('2026-11-04T10:00:00Z')
 const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
@@ -16,6 +16,33 @@ const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
   hasVideo: false,
   truncated: false,
   ...extra,
+})
+
+describe('pageStatus', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it.each([
+    { name: '识别目标账号的受保护提示', handle: 'lucretiandelta', hasHelpLink: true, expected: true },
+    { name: '切换账号时忽略上一页的受保护提示', handle: 'Keyshotvv', hasHelpLink: true, expected: false },
+    { name: '普通空页面不算受保护', handle: 'LucretianDelta', hasHelpLink: false, expected: false },
+  ])('$name', ({ handle, hasHelpLink, expected }) => {
+    const notice = {
+      textContent: hasHelpLink
+        ? '只有获批准的关注者可以查看 @LucretianDelta 的帖子。'
+        : '当 @LucretianDelta 发帖时，你会在这里看到。',
+      querySelector: (selector: string) => (hasHelpLink && selector === 'a[href$="/articles/14016"]' ? {} : null),
+    }
+    vi.stubGlobal('document', {
+      querySelector: (selector: string) => {
+        if (selector === '#react-root') return {}
+        if (selector === '[data-testid="primaryColumn"] [data-testid="empty_state_body_text"]') return notice
+        return null
+      },
+      querySelectorAll: () => [],
+    })
+
+    expect(pageStatus(handle).protected).toBe(expected)
+  })
 })
 
 describe('pickNew', () => {

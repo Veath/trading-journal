@@ -105,17 +105,26 @@ export function extractFullText(head: string): string {
 }
 
 /**
- * 在浏览器里执行：页面状态。challenge = Cloudflare 安全验证页；
+ * 在浏览器里执行：页面状态。challenge = Cloudflare 安全验证页，protected = 目标账号的帖子受保护。
  * fresh = 没有被标记成「跳转前就在」的推文数（跳转前给旧推文加 data-xw-old，避免把上一页的内容当成新页面）。
  */
-export function pageStatus(): { challenge: boolean; fresh: number } {
+export function pageStatus(handle: string): { challenge: boolean; fresh: number; protected: boolean } {
   // 正常的 X 页面也会注入 /cdn-cgi/challenge-platform/ 脚本，不能当特征；验证页上没有 X 的应用（#react-root）
   const challenge =
     !document.querySelector('#react-root') &&
     ('_cf_chl_opt' in window ||
       /just a moment|安全验证|security verification|请稍候/i.test(document.title + ' ' + (document.body?.innerText ?? '').slice(0, 300)) ||
       !!document.querySelector('iframe[src*="challenges.cloudflare.com"], #challenge-form, .cf-turnstile'))
-  return { challenge, fresh: document.querySelectorAll('article[data-testid="tweet"]:not([data-xw-old])').length }
+  // 用受保护帖子的帮助链接识别提示，并核对账号，避免站内跳转时读到上一页的提示。
+  const notice = document.querySelector('[data-testid="primaryColumn"] [data-testid="empty_state_body_text"]')
+  const noticeHandle = notice?.textContent?.match(/@(\w+)/)?.[1]
+  const protectedPosts =
+    noticeHandle?.toLowerCase() === handle.toLowerCase() && !!notice?.querySelector('a[href$="/articles/14016"]')
+  return {
+    challenge,
+    fresh: document.querySelectorAll('article[data-testid="tweet"]:not([data-xw-old])').length,
+    protected: protectedPosts,
+  }
 }
 
 /**
