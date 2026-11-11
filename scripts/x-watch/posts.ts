@@ -157,6 +157,29 @@ export function pickNew(state: State, key: string, items: Post[], now: number): 
   return [...fresh.values()].sort((a, b) => a.date.localeCompare(b.date))
 }
 
+/** 仅过滤 Fred（现用 fjtrades）的明确推广，连同本人广告对话串的续帖一起处理。 */
+export function isPromotion(p: Post): boolean {
+  const handles = ['fjtrades', 'fredtrades']
+  if (!handles.includes(p.handle.toLowerCase())) return false
+  const parentText = p.parent && handles.includes(p.parent.handle.toLowerCase()) ? p.parent.text : ''
+  const text = [p.text, p.card, parentText].join('\n')
+  const code =
+    /\bcode\s*[:=-]?\s*["'“‘]?\s*fred\b/i.test(text) ||
+    /\b(?:promo|discount|coupon|referral)\s+code\b/i.test(text) ||
+    /\b(?:use|using)\s+my\s+code\b/i.test(text)
+  // 返佣参数和路径来自实际推广帖，避免把 Reddit 的 /r/ 等普通链接当成返佣。
+  const referral =
+    /(?:[?&](?:ref(?:erral)?|aff(?:iliate)?|via)=|\/ref\/)fred\b/i.test(text) ||
+    /vestmarkets\.com\/r\/vnfred\b/i.test(text)
+  const product =
+    /\b(?:prop\s+firms?|funded\s+accounts?|eval(?:uation)?s?)\b/i.test(text) ||
+    /\b(?:lucid(?:flex|trading)?|fundyouredge|fye|alpha\s+funded|vest(?:markets|exchange)?)\b/i.test(text)
+  const partialExit = /\b(?:took|taking|trimmed|scaled)\s+(?:another\s+)?\d+(?:\.\d+)?\s*%\s*off\b/i.test(text)
+  const offer = /\b(?:bogo|sale|giveaway|coupon)\b/i.test(text) || (/\b\d+(?:\.\d+)?\s*%\s*off\b/i.test(text) && !partialExit)
+  const invitation = /\bcheck\s+out\s+(?:lucid|fye|fundyouredge|alpha|vest)\b|\bsign\s*up\b/i.test(text)
+  return code || referral || (product && (offer || invitation))
+}
+
 export function markSeen(state: State, key: string, ids: string[]): void {
   const seen = state[key] ?? []
   for (const id of ids) if (!seen.includes(id)) seen.push(id)

@@ -14,6 +14,7 @@ import {
   extractFullText,
   extractTimeline,
   formatMessage,
+  isPromotion,
   largePhoto,
   markSeen,
   nextDelay,
@@ -226,11 +227,13 @@ async function cycle(cdp: Cdp, state: State) {
         for (const p of fresh) {
           await fillTruncated(cdp, p)
           try {
-            await push(p)
+            const filtered = isPromotion(p)
+            if (!filtered) await push(p)
             markSeen(state, key, [p.id])
             if (state[other]) markSeen(state, other, [p.id])
             saveState(state)
-            log(`@${handle} ${source}：已推送 ${p.id} ${p.text.slice(0, 40).replace(/\n/g, ' ')}`)
+            if (filtered) log(`@${handle} ${source}：已过滤推广帖 ${p.id}`)
+            else log(`@${handle} ${source}：已推送 ${p.id} ${p.text.slice(0, 40).replace(/\n/g, ' ')}`)
           } catch (e) {
             log(`@${handle} ${source}：推送失败，下轮重试：${(e as Error).message}`)
           }

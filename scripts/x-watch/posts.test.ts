@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { challengeBackoff, formatMessage, nextDelay, largePhoto, markSeen, pageStatus, pickNew, type Post, type State } from './posts.ts'
+import { challengeBackoff, formatMessage, isPromotion, nextDelay, largePhoto, markSeen, pageStatus, pickNew, type Post, type State } from './posts.ts'
 
 const NOW = Date.parse('2026-11-04T10:00:00Z')
 const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
@@ -60,6 +60,61 @@ describe('pickNew', () => {
       post('0', '2026-11-02T09:00:00Z'), // 太旧（比如置顶）
     ]
     expect(pickNew(state, 'k', items, NOW).map((p) => p.id)).toEqual(['2', '3'])
+  })
+})
+
+describe('isPromotion', () => {
+  it.each([
+    { name: '优惠码', text: '50K instant accounts with code FRED.' },
+    { name: '带标点的优惠码', text: 'Use code: "FRED" at checkout.' },
+    { name: '其他优惠码', text: 'Discount code: SAVE20 for evaluations.' },
+    { name: '用本人优惠码参加赠奖', text: 'Send proof of using my code to join the giveaway.' },
+    { name: 'FYE 返佣链接', text: 'https://fundyouredge.com/?ref=FRED' },
+    { name: 'Lucid 返佣链接', text: 'https://lucidtrading.com/ref/fred' },
+    { name: 'Vest 活动推广链接', text: 'Join the challenge: https://next.vestmarkets.com/r/vnfred' },
+    { name: '限时折扣', text: 'Lucid evaluations are 60% OFF today.' },
+    { name: 'BOGO 活动', text: 'FundYourEdge has a BOGO sale on evaluations.' },
+    { name: '链接卡片里的购买引导', text: 'Check out Alpha here.', card: 'Simulated funded accounts up to $4M.' },
+  ])('过滤 $name', ({ text, card }) => {
+    expect(isPromotion(post('ad', '2026-11-04T09:00:00Z', { handle: 'fjtrades', text, card: card ?? '' }))).toBe(true)
+  })
+
+  it.each([
+    'Which prop firm do you use? Lucid, Tradeify, MFFU, FYE or Vest?',
+    'My indicator caught the FVG after CPI.',
+    'NQ reached discount and swept sell-side liquidity.',
+    'Took 50% off my NQ position at TP1.',
+    'Trading my Lucid account, took 50% off at TP1.',
+    'Check out this FVG on my Lucid account. Buy at discount.',
+    'Lucid payouts have been faster in my experience.',
+    'Chart reference: https://reddit.com/r/fred',
+  ])('保留普通讨论和交易内容 %s', (text) => {
+    expect(isPromotion(post('trade', '2026-11-04T09:00:00Z', { handle: 'fjtrades', text }))).toBe(false)
+  })
+
+  it('识别改名前的账号及大小写', () => {
+    expect(isPromotion(post('ad', '2026-11-04T09:00:00Z', { handle: 'FredTrades', text: 'Use code FRED.' }))).toBe(true)
+  })
+
+  it('只过滤 Fred 的推广', () => {
+    expect(isPromotion(post('ad', '2026-11-04T09:00:00Z', { text: 'Use code FRED.' }))).toBe(false)
+  })
+
+  it('过滤本人广告对话串的续帖', () => {
+    expect(isPromotion(post('reply', '2026-11-04T09:00:00Z', {
+      handle: 'fjtrades',
+      text: 'Details here.',
+      parent: { handle: 'FJTrades', name: 'Fred', text: 'Evaluations with code FRED.' },
+    }))).toBe(true)
+  })
+
+  it('只凭他人的广告或引用内容不判为本人推广', () => {
+    expect(isPromotion(post('reply', '2026-11-04T09:00:00Z', {
+      handle: 'fjtrades',
+      text: 'These promises look misleading.',
+      parent: { handle: 'someone', name: '', text: 'Use code FRED.' },
+      quote: 'Use code FRED.',
+    }))).toBe(false)
   })
 })
 
