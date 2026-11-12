@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { challengeBackoff, formatMessage, isPromotion, nextDelay, largePhoto, markSeen, pageStatus, pickNew, type Post, type State } from './posts.ts'
+import { challengeBackoff, formatMessage, isPromotion, nextDelay, largePhoto, markSeen, pageStatus, pickNew, restoreOriginalText, type Post, type State } from './posts.ts'
 
 const NOW = Date.parse('2026-11-04T10:00:00Z')
 const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
@@ -16,6 +16,47 @@ const post = (id: string, date: string, extra: Partial<Post> = {}): Post => ({
   hasVideo: false,
   truncated: false,
   ...extra,
+})
+
+describe('restoreOriginalText', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  it('没有自动译文时直接采集，不触发翻译', async () => {
+    const translate = { getAttribute: () => 'Translate post', click: vi.fn() }
+    vi.stubGlobal('document', { querySelectorAll: () => [translate] })
+
+    expect(await restoreOriginalText()).toBe(true)
+    expect(translate.click).not.toHaveBeenCalled()
+  })
+
+  it.each(['Show original', '显示原文', '顯示原文'])('采集前通过「%s」切回原文', async (label) => {
+    vi.useFakeTimers()
+    let translated = true
+    const original = { getAttribute: () => label, click: vi.fn(() => { translated = false }) }
+    const like = { getAttribute: () => 'Like', click: vi.fn() }
+    vi.stubGlobal('document', { querySelectorAll: () => translated ? [original, like] : [like] })
+
+    const restored = restoreOriginalText()
+    await vi.runAllTimersAsync()
+
+    expect(await restored).toBe(true)
+    expect(original.click).toHaveBeenCalledOnce()
+    expect(like.click).not.toHaveBeenCalled()
+  })
+
+  it('切回原文超时则返回失败，阻止推送译文', async () => {
+    vi.useFakeTimers()
+    const original = { getAttribute: () => 'Show original', click: vi.fn() }
+    vi.stubGlobal('document', { querySelectorAll: () => [original] })
+
+    const restored = restoreOriginalText()
+    await vi.runAllTimersAsync()
+
+    expect(await restored).toBe(false)
+  })
 })
 
 describe('pageStatus', () => {
@@ -76,7 +117,7 @@ describe('isPromotion', () => {
     { name: 'BOGO 活动', text: 'FundYourEdge has a BOGO sale on evaluations.' },
     { name: '链接卡片里的购买引导', text: 'Check out Alpha here.', card: 'Simulated funded accounts up to $4M.' },
   ])('过滤 $name', ({ text, card }) => {
-    expect(isPromotion(post('ad', '2026-11-04T09:00:00Z', { handle: 'fjtrades', text, card: card ?? '' }))).toBe(true)
+    expect(isPromotion(post('ad', '2026-11-04T09:00:00Z', { handle: 'fredtradesnq', text, card: card ?? '' }))).toBe(true)
   })
 
   it.each([
@@ -89,11 +130,11 @@ describe('isPromotion', () => {
     'Lucid payouts have been faster in my experience.',
     'Chart reference: https://reddit.com/r/fred',
   ])('保留普通讨论和交易内容 %s', (text) => {
-    expect(isPromotion(post('trade', '2026-11-04T09:00:00Z', { handle: 'fjtrades', text }))).toBe(false)
+    expect(isPromotion(post('trade', '2026-11-04T09:00:00Z', { handle: 'fredtradesnq', text }))).toBe(false)
   })
 
-  it('识别改名前的账号及大小写', () => {
-    expect(isPromotion(post('ad', '2026-11-04T09:00:00Z', { handle: 'FredTrades', text: 'Use code FRED.' }))).toBe(true)
+  it.each(['FJTrades', 'FredTrades'])('识别改名前的账号及大小写 %s', (handle) => {
+    expect(isPromotion(post('ad', '2026-11-04T09:00:00Z', { handle, text: 'Use code FRED.' }))).toBe(true)
   })
 
   it('只过滤 Fred 的推广', () => {
@@ -102,15 +143,15 @@ describe('isPromotion', () => {
 
   it('过滤本人广告对话串的续帖', () => {
     expect(isPromotion(post('reply', '2026-11-04T09:00:00Z', {
-      handle: 'fjtrades',
+      handle: 'fredtradesnq',
       text: 'Details here.',
-      parent: { handle: 'FJTrades', name: 'Fred', text: 'Evaluations with code FRED.' },
+      parent: { handle: 'FredTradesNQ', name: 'Fred', text: 'Evaluations with code FRED.' },
     }))).toBe(true)
   })
 
   it('只凭他人的广告或引用内容不判为本人推广', () => {
     expect(isPromotion(post('reply', '2026-11-04T09:00:00Z', {
-      handle: 'fjtrades',
+      handle: 'fredtradesnq',
       text: 'These promises look misleading.',
       parent: { handle: 'someone', name: '', text: 'Use code FRED.' },
       quote: 'Use code FRED.',

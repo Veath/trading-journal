@@ -25,6 +25,23 @@ const MAX_SEEN = 300
 
 export const stateKey = (handle: string, source: Source) => `${handle.toLowerCase()}/${source}`
 
+/** 在浏览器里执行：采集前将 X 自动翻译的帖子切回原文。 */
+export async function restoreOriginalText(): Promise<boolean> {
+  const originalButtons = () =>
+    [...document.querySelectorAll<HTMLElement>('article[data-testid="tweet"] button, article[data-testid="tweet"] [role="button"]')].filter(
+      (button) => /^(?:show original|显示原文|顯示原文)$/i.test((button.getAttribute('aria-label') || button.textContent || '').trim()),
+    )
+  const buttons = originalButtons()
+  if (!buttons.length) return true
+  for (const button of buttons) button.click()
+  // 等待 X 完成正文替换；失败时让调用方跳过，避免把译文当原文推送。
+  for (let i = 0; i < 20; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    if (!originalButtons().length) return true
+  }
+  return false
+}
+
 /**
  * 在浏览器里执行（通过 toString 传给 DevTools），只能用浏览器 API，辅助函数要写在函数体内。
  * 只取作者是 handle 的推文；转推的链接指向原作者，会被自然排除。
@@ -157,9 +174,9 @@ export function pickNew(state: State, key: string, items: Post[], now: number): 
   return [...fresh.values()].sort((a, b) => a.date.localeCompare(b.date))
 }
 
-/** 仅过滤 Fred（现用 fjtrades）的明确推广，连同本人广告对话串的续帖一起处理。 */
+/** 仅过滤 Fred（现用 fredtradesnq）的明确推广，连同本人广告对话串的续帖一起处理。 */
 export function isPromotion(p: Post): boolean {
-  const handles = ['fjtrades', 'fredtrades']
+  const handles = ['fredtradesnq', 'fjtrades', 'fredtrades']
   if (!handles.includes(p.handle.toLowerCase())) return false
   const parentText = p.parent && handles.includes(p.parent.handle.toLowerCase()) ? p.parent.text : ''
   const text = [p.text, p.card, parentText].join('\n')

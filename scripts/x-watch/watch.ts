@@ -20,6 +20,7 @@ import {
   nextDelay,
   pageStatus,
   pickNew,
+  restoreOriginalText,
   stateKey,
   type Post,
   type State,
@@ -150,11 +151,11 @@ const HARD_EVERY = 30 * 60_000 // 整页刷新的最短间隔，其余跳转都�
 let lastHardLoad = 0
 
 /**
- * 打开页面并等待推文，区分加载成功、帖子受保护和超时。遇到安全验证抛 ChallengeError。
+ * 打开页面并等待推文，切回原文后才算加载成功；区分帖子受保护、原文切换失败和超时。遇到安全验证抛 ChallengeError。
  * 默认在 X 的单页应用里用 history.pushState 跳转：只请求 X 的数据接口、不重新请求整页，
  * Cloudflare 的验证基本只出现在整页请求上，这样能大幅减少触发。距上次整页刷新超过 HARD_EVERY 或站内跳转不可用时才整页加载。
  */
-async function open(cdp: Cdp, url: string): Promise<'ready' | 'protected' | 'timeout'> {
+async function open(cdp: Cdp, url: string): Promise<'ready' | 'protected' | 'translated' | 'timeout'> {
   const path = new URL(url).pathname
   const handle = path.split('/')[1]
   const hard = Date.now() - lastHardLoad > HARD_EVERY
@@ -183,7 +184,7 @@ async function open(cdp: Cdp, url: string): Promise<'ready' | 'protected' | 'tim
     if (s?.protected) return 'protected'
     if (s && s.fresh > 0) {
       await sleep(1500) // 等后面几条也渲染出来
-      return 'ready'
+      return await cdp.evaluate(restoreOriginalText, null) ? 'ready' : 'translated'
     }
   }
   return 'timeout'
@@ -211,6 +212,10 @@ async function cycle(cdp: Cdp, state: State) {
       }
       if (status === 'timeout') {
         log(`@${handle} ${source}：等待推文加载超时，跳过`)
+        continue
+      }
+      if (status === 'translated') {
+        log(`@${handle} ${source}：未能切回原文，跳过以免推送自动译文`)
         continue
       }
       const items = await cdp.evaluate(extractTimeline, handle)
