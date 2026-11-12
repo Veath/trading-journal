@@ -57,6 +57,37 @@ describe('restoreOriginalText', () => {
 
     expect(await restored).toBe(false)
   })
+
+  it('切回原文后继续处理 X 新加载的译文', async () => {
+    vi.useFakeTimers()
+    const next = { getAttribute: () => 'Show original', click: vi.fn(() => { buttons = [] }) }
+    const first = { getAttribute: () => 'Show original', click: vi.fn(() => { buttons = [next] }) }
+    let buttons = [first]
+    vi.stubGlobal('document', { querySelectorAll: () => buttons })
+
+    const restored = restoreOriginalText()
+    await vi.runAllTimersAsync()
+
+    expect(await restored).toBe(true)
+    expect(first.click).toHaveBeenCalledOnce()
+    expect(next.click).toHaveBeenCalledOnce()
+  })
+
+  it('原文尚未完成替换时不重复点击同一个按钮', async () => {
+    vi.useFakeTimers()
+    let translated = true
+    const original = {
+      getAttribute: () => 'Show original',
+      click: vi.fn(() => { setTimeout(() => { translated = false }, 500) }),
+    }
+    vi.stubGlobal('document', { querySelectorAll: () => translated ? [original] : [] })
+
+    const restored = restoreOriginalText()
+    await vi.runAllTimersAsync()
+
+    expect(await restored).toBe(true)
+    expect(original.click).toHaveBeenCalledOnce()
+  })
 })
 
 describe('pageStatus', () => {

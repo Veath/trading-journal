@@ -31,15 +31,20 @@ export async function restoreOriginalText(): Promise<boolean> {
     [...document.querySelectorAll<HTMLElement>('article[data-testid="tweet"] button, article[data-testid="tweet"] [role="button"]')].filter(
       (button) => /^(?:show original|显示原文|顯示原文)$/i.test((button.getAttribute('aria-label') || button.textContent || '').trim()),
     )
-  const buttons = originalButtons()
-  if (!buttons.length) return true
-  for (const button of buttons) button.click()
-  // 等待 X 完成正文替换；失败时让调用方跳过，避免把译文当原文推送。
+  const clicked = new WeakSet<HTMLElement>()
+  // 切回原文会触发列表重新排版，并可能加载新的译文按钮，不能只处理最初的一批。
   for (let i = 0; i < 20; i++) {
+    const buttons = originalButtons()
+    if (!buttons.length) return true
+    for (const button of buttons) {
+      if (clicked.has(button)) continue
+      clicked.add(button)
+      button.click()
+    }
     await new Promise((resolve) => setTimeout(resolve, 100))
-    if (!originalButtons().length) return true
   }
-  return false
+  // 等待 X 完成正文替换；失败时让调用方跳过，避免把译文当原文推送。
+  return !originalButtons().length
 }
 
 /**
