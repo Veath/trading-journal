@@ -19,6 +19,7 @@ pnpm new:trade NQ    # 按模板新建交易
 pnpm new:day         # 按模板新建当日日志
 pnpm new:bias        # 按模板新建当日 Agent偏见
 pnpm trade:chart <id># 用 Binance 公开 K 线生成交易复盘图到 journal/screenshots/
+pnpm trade:sync <id> # 用 Binance 只读 API 查实际成交，填 size / pnl / fees（预览；--write 写回；--pending 处理所有待补的已平仓交易）
 pnpm bias:watch      # 终端行情列表 + 轮询当天 Agent偏见的标的，阶段变化时响铃 + macOS 通知
 pnpm x:watch         # 监控 scripts/x-watch/watchlist.ts 里 X 账号的发帖和回复，推送到 Telegram（TG_BOT_TOKEN / TG_CHAT_ID 在 .env.local；data/x-watch/browser 是保存 X 登录的独立 Chrome 目录）
 pnpm diagrams        # 由 scripts/diagrams/*.ts 生成 notes/<主题>/img/*.svg
@@ -75,6 +76,12 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 - 同步流程：`pnpm mentor:collect` → 用户在已登录 X 的浏览器的「帖子」页（`x.com/<handle>`）和「回复」页（`/with_replies`）分别运行脚本并下载 JSON（两页内容不重叠，只采回复页会漏掉全部原创推文） → `pnpm mentor:ingest` → 按 skill 的「更新导师资料」提炼，并在 `00-profile.md` 的「更新记录」追加一行。
 - `scripts/mentor-sync/`：`collector.js` 是浏览器端模板（`__HANDLE__` 等占位符由 `collect.ts` 替换），依赖 X 的 DOM（`article[data-testid="tweet"]`、`time`、`tweetText`）；采集为 0 条时优先检查这些选择器。长帖在时间线上会被截断（`tweet-text-show-more-link`），脚本滚动结束后会用 `history.pushState` 站内跳到原帖页按开头文字匹配补全，失败的仍记为 `truncated`。`store.ts` 存储与 `nextSince`，`ingest.ts` 合并、去重并生成 `digest-YYYYMMDD-HHMM.md`。
 - 用户已授权：说「更新导师资料」时，由 AI 用浏览器工具完成采集 + 下载 + 同步全流程，下载采集脚本生成的 `<handle>-posts/replies-YYYY-MM-DD.json` 不需要再询问。授权只覆盖这类采集结果文件，下载其他文件仍要先问。
+
+## 币安成交同步
+
+- `scripts/trade-sync/`：`binance.ts` 只发签名的 GET 请求（`userTrades`、`income`、`apiRestrictions`），启动时检查 Key 只有读取权限，有交易 / 提现 / 划转等权限就拒绝；`position.ts` 是纯函数（找仓位、改 frontmatter 单行），有测试。
+- 密钥 `BINANCE_API_KEY` / `BINANCE_API_SECRET` 只放在 `.env.local`，由用户自己填写。AI 不要读取、打印、复述或提交密钥，也不要让用户把密钥发到对话里。这是仓库里唯一用到账户密钥的地方，只在本地脚本中使用，不能进入 `src/`（仪表盘是公开部署的）。
+- 写回规则：只填空着或注释标了「待补 / 估算」的 `size` / `pnl` / `fees`，`entry` / `exit` 只在空着时填。改交易文件属于修改用户的交易记录，先不带 `--write` 预览，用户同意后再写。
 
 ## 边界
 

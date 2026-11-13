@@ -17,7 +17,8 @@
     "mentor:ingest": "node scripts/mentor-sync/ingest.ts",
     "trade:chart": "node scripts/trade-chart/build.ts",
     "bias:watch": "node scripts/bias-watch/watch.ts",
-    "x:watch": "node scripts/x-watch/watch.ts"
+    "x:watch": "node scripts/x-watch/watch.ts",
+    "trade:sync": "node scripts/trade-sync/sync.ts"
   },
   "dependencies": {
     "lightweight-charts": "5.2.1",
