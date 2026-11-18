@@ -16,7 +16,7 @@ pnpm new:trade NQ     # 新建交易 → journal/trades/YYYY/YYYY-MM-DD-nq-01.md
 pnpm new:day          # 新建今天的日志 → journal/days/YYYY-MM-DD.md
 pnpm new:bias         # 新建今天的 Agent偏见 → journal/agent-bias/YYYY-MM-DD.md
 pnpm trade:chart <id> # 用真实 K 线生成交易复盘图（日线 / 4H / 1H，目前支持 Binance 永续）
-pnpm trade:sync <id>  # 用币安只读 API 同步实际成交：仓位、均价、扣费后盈亏（Key 在 .env.local）
+pnpm trade:sync <id>  # 用币安只读 API 同步实际成交：仓位、均价、扣费后盈亏、初始止损（Key 在 .env.local）
 pnpm bias:watch       # 终端行情列表（现价、对比当日 00:00 开盘的涨跌）+ 监控今天 Agent偏见里的标的，出现清扫 / 收回 / 信号时提醒
 pnpm x:watch          # 监控指定 X 账号的发帖和回复，推送到 Telegram 机器人（配置见 .env.local）
 pnpm diagrams         # 重新生成笔记中的 K 线示意图（notes/<主题>/img/*.svg）
@@ -119,7 +119,7 @@ pnpm trade:chart 2026-10-28-btc-01
 
 ### 从币安同步实际成交
 
-不用手抄交割单：用币安的 **只读** API Key 查这笔交易的实际成交，自动算出仓位、成交均价和扣费后盈亏。
+不用手抄交割单：用币安的 **只读** API Key 查这笔交易的实际成交，自动算出仓位、成交均价和扣费后盈亏，并从条件单里找出初始止损和止盈。
 
 ```bash
 pnpm trade:sync 2026-11-04-qqqusdt-01          # 预览
@@ -129,7 +129,8 @@ pnpm trade:sync --pending --write              # 所有 size / pnl / fees 还空
 
 - Key 在币安「API 管理」创建，**只勾「允许读取」**，建议绑定 IP；写进 `.env.local`（不会提交）：`BINANCE_API_KEY=...`、`BINANCE_API_SECRET=...`。脚本会检查 Key 的权限，开了交易、提现等权限就拒绝使用
 - 按交易的 `date` + `time`（时区同旁注 `tz`）找第一笔开仓成交，累计到仓位归零；`pnl` = 已实现盈亏 − 手续费 + 资金费
-- 只填空着或标了「待补 / 估算」的 `size` / `pnl` / `fees`，手写的值不覆盖；`entry` / `exit` 参与 R 的计算，只在空着时填，否则只打印对比
+- 持仓期间的第一张止损条件单作为初始止损填进 `stop`（之后的移动止损只打印，不替换初始风险），第一张止盈条件单填进 `target`；同时打印是止损单触发还是手动平仓
+- 只填空着或标了「待补 / 估算」的 `size` / `pnl` / `fees` / `stop` / `target`，手写的值不覆盖；`entry` / `exit` 参与 R 的计算，只在空着时填，否则只打印对比
 - 币安只能查最近约 6 个月的成交、约 3 个月的资金费，平仓后尽早同步
 
 每日日志模板见 [`journal/templates/day.md`](journal/templates/day.md)：`mood` `sleep` `dailyBias` `news` `maxTrades` `maxLossR` `rulesFollowed`。

@@ -1,15 +1,16 @@
 // 用法：pnpm trade:sync <交易 id ...> [--write]
 //       pnpm trade:sync --pending [--write]   # 所有 size / pnl / fees 还空着或标了「待补 / 估算」的已平仓交易
-// 用 Binance 只读 API 查这笔交易的实际成交，算出仓位、成交均价、扣费后盈亏。
-// 默认只打印结果；加 --write 才写回交易文件，并且只填空着或标了「待补 / 估算」的字段，已有的值不覆盖。
+// 用 Binance 只读 API 查这笔交易的实际成交，算出仓位、成交均价、扣费后盈亏；
+// 再查持仓期间的条件单，第一张止损单为初始止损（stop），第一张止盈单为 target。
+// 默认只打印结果；加 --write 才写回交易文件，并且只填空着或标了「待补 / 估算」的字段，已有的值不覆盖（stop / target 同样不覆盖）。
 // 加 --prices 时，entry / exit 也用实际成交均价覆盖（原值写进注释）。
 // 密钥放在 .env.local：BINANCE_API_KEY、BINANCE_API_SECRET（只勾「允许读取」的 Key）。
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { parseTrade, splitFrontmatter } from '../../src/lib/parse.ts'
 import { binanceSymbol, parseTime, tradeTz, type Sidecar } from '../../src/lib/market.ts'
-import { assertReadOnly, createClient, fundingFees, userTrades, type Client } from './binance.ts'
-import { findPosition, isPlaceholder, round, setField } from './position.ts'
+import { algoOrders, assertReadOnly, createClient, fundingFees, userTrades, type Client } from './binance.ts'
+import { findPosition, findProtection, isPlaceholder, round, setField } from './position.ts'
 
 const ROOT = join(import.meta.dirname, '../..')
 const ENV_FILE = join(ROOT, '.env.local')
@@ -92,6 +93,13 @@ async function syncOne(client: Client, file: string, write: boolean, prices: boo
   console.log(`   数量 ${round(pos.size, 6)}，开仓均价 ${round(pos.entry, 6)}（日志 ${trade.entry ?? '空'}），平仓均价 ${pos.exit === null ? '—' : round(pos.exit, 6)}（日志 ${trade.exit ?? '空'}）`)
   console.log(`   已实现 ${signed(pos.realizedPnl)}，手续费 ${pos.commission.toFixed(4)} ${pos.commissionAssets.join('/')}，资金费 ${signed(funding, 4)}`)
   console.log(`   扣费后盈亏 ${signed(pnl)} USDT（日志 ${trade.pnl ?? '空'}）`)
+  const prot = findProtection(await algoOrders(client, symbol, pos.openTime - 1000, Math.min(Date.now(), (pos.closeTime ?? Date.now()) + 864e5)), pos, trade.direction)
+  if (prot.stop) {
+    const trail = prot.stops.length > 1 ? `，之后调整为 ${prot.stops.slice(1).map((o) => o.triggerPrice).join(' → ')}` : ''
+    console.log(`   初始止损 ${prot.stop.triggerPrice}（条件单 ${prot.stop.id}，开仓后 ${((prot.stop.createTime - pos.openTime) / 1000).toFixed(1)} 秒，${prot.stop.workingType}）${trail}（日志 ${trade.stop ?? '空'}）`)
+  } else console.log(`   持仓期间没查到止损条件单（日志 ${trade.stop ?? '空'}）`)
+  if (prot.target) console.log(`   止盈条件单 ${prot.target.triggerPrice}（${prot.target.status}，日志 ${trade.target ?? '空'}）`)
+  if (pos.closeTime !== null) console.log(`   平仓方式：${prot.triggered ? `条件单 ${prot.triggered.id}（${prot.triggered.type} ${prot.triggered.triggerPrice}）触发` : '手动平仓'}`)
   if (!usdtFees) console.log('   注意：手续费不全是 USDT（可能用 BNB 抵扣），盈亏里没有扣手续费，fees 不写入')
   if (pos.closeTime === null) {
     console.log('   仓位还没平完，不写入')
@@ -103,6 +111,9 @@ async function syncOne(client: Client, file: string, write: boolean, prices: boo
     ['size', round(pos.size, 6), note],
     ['pnl', round(pnl, 2), `${note}：已实现 ${signed(pos.realizedPnl)} − 手续费 ${pos.commission.toFixed(2)}${funding ? ` ${funding >= 0 ? '+' : '−'} 资金费 ${Math.abs(funding).toFixed(2)}` : ''}`],
   ]
+  // stop 决定 R：只用持仓期间第一张止损单（初始止损），移动止损不替换初始风险；已有值不覆盖
+  if (prot.stop) updates.push(['stop', prot.stop.triggerPrice, `${note}：初始止损条件单触发价`])
+  if (prot.target) updates.push(['target', prot.target.triggerPrice, `${note}：止盈条件单触发价`])
   if (usdtFees) updates.push(['fees', round(pos.commission, 4), `${note}：手续费 USDT`, 'pnl'])
   // entry / exit 参与 R 的计算：默认只在空着时填；--prices 时用成交均价覆盖，原值留在注释里
   const priceFields = new Set<string>()

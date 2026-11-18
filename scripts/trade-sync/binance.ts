@@ -1,7 +1,7 @@
 // Binance 只读接口（需要签名）。只发 GET 请求，不下单、不划转。
 // 密钥放在 .env.local：BINANCE_API_KEY、BINANCE_API_SECRET（创建时只勾「允许读取」）。
 import { createHmac } from 'node:crypto'
-import type { Fill } from './position.ts'
+import type { AlgoOrder, Fill } from './position.ts'
 
 const FAPI = 'https://fapi.binance.com'
 const SAPI = 'https://api.binance.com'
@@ -53,6 +53,8 @@ interface RawTrade {
   realizedPnl: string
   commission: string
   commissionAsset: string
+  orderId: number
+  positionSide: 'BOTH' | 'LONG' | 'SHORT'
 }
 
 export async function userTrades(client: Client, symbol: string, start: number, end: number): Promise<Fill[]> {
@@ -71,6 +73,8 @@ export async function userTrades(client: Client, symbol: string, start: number, 
         realizedPnl: Number(r.realizedPnl),
         commission: Number(r.commission),
         commissionAsset: r.commissionAsset,
+        orderId: r.orderId,
+        positionSide: r.positionSide,
       })
     }
   }
@@ -87,4 +91,44 @@ export async function fundingFees(client: Client, symbol: string, start: number,
     limit: 1000,
   })
   return rows.reduce((a, r) => a + Number(r.income), 0)
+}
+
+interface RawAlgoOrder {
+  algoId: number
+  orderType: string
+  side: 'BUY' | 'SELL'
+  positionSide: string
+  quantity: string
+  triggerPrice: string
+  workingType: string
+  algoStatus: string
+  actualOrderId: string
+  createTime: number
+  updateTime: number
+}
+
+/** 历史条件单（止损 / 止盈等，币安把它们放在 Algo 服务里，普通 allOrders 查不到）。
+ * 时间窗口按更新时间过滤：平仓时触发的止损单更新时间会比平仓成交晚几毫秒，调用方要把 end 往后放宽 */
+export async function algoOrders(client: Client, symbol: string, start: number, end: number): Promise<AlgoOrder[]> {
+  const out: AlgoOrder[] = []
+  for (let s = start; s < end; s += WEEK + 1) {
+    const e = Math.min(s + WEEK, end)
+    const rows = await client.get<RawAlgoOrder[]>(FAPI, '/fapi/v1/allAlgoOrders', { symbol, startTime: s, endTime: e, limit: 1000 })
+    if (rows.length === 1000) console.warn(`提示：${symbol} 这段时间条件单超过 1000 个，结果可能不完整`)
+    for (const r of rows) {
+      out.push({
+        id: r.algoId,
+        type: r.orderType,
+        side: r.side,
+        positionSide: r.positionSide,
+        qty: Number(r.quantity),
+        triggerPrice: Number(r.triggerPrice),
+        workingType: r.workingType,
+        status: r.algoStatus,
+        actualOrderId: r.actualOrderId ? Number(r.actualOrderId) : null,
+        createTime: r.createTime,
+      })
+    }
+  }
+  return out
 }

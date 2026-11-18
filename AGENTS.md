@@ -19,7 +19,7 @@ pnpm new:trade NQ    # 按模板新建交易
 pnpm new:day         # 按模板新建当日日志
 pnpm new:bias        # 按模板新建当日 Agent偏见
 pnpm trade:chart <id># 用 Binance 公开 K 线生成交易复盘图到 journal/screenshots/
-pnpm trade:sync <id> # 用 Binance 只读 API 查实际成交，填 size / pnl / fees（预览；--write 写回；--pending 处理所有待补的已平仓交易）
+pnpm trade:sync <id> # 用 Binance 只读 API 查实际成交和条件单，填 size / pnl / fees / stop / target（预览；--write 写回；--pending 处理所有待补的已平仓交易）
 pnpm bias:watch      # 终端行情列表 + 轮询当天 Agent偏见的标的，阶段变化时响铃 + macOS 通知
 pnpm x:watch         # 监控 scripts/x-watch/watchlist.ts 里 X 账号的发帖和回复，推送到 Telegram（TG_BOT_TOKEN / TG_CHAT_ID 在 .env.local；data/x-watch/browser 是保存 X 登录的独立 Chrome 目录）
 pnpm diagrams        # 由 scripts/diagrams/*.ts 生成 notes/<主题>/img/*.svg
@@ -79,9 +79,9 @@ pnpm mentor:ingest   # 合并采集结果到 data/，生成 digest 清单
 
 ## 币安成交同步
 
-- `scripts/trade-sync/`：`binance.ts` 只发签名的 GET 请求（`userTrades`、`income`、`apiRestrictions`），启动时检查 Key 只有读取权限，有交易 / 提现 / 划转等权限就拒绝；`position.ts` 是纯函数（找仓位、改 frontmatter 单行），有测试。
+- `scripts/trade-sync/`：`binance.ts` 只发签名的 GET 请求（`userTrades`、`income`、`allAlgoOrders`、`apiRestrictions`），启动时检查 Key 只有读取权限，有交易 / 提现 / 划转等权限就拒绝；`position.ts` 是纯函数（找仓位、找保护单、改 frontmatter 单行），有测试。账户是双向持仓，按 `positionSide` 区分多空，反手单不会串。持仓期间第一张止损条件单是初始止损（R 按它算），之后的视为移动止损。
 - 密钥 `BINANCE_API_KEY` / `BINANCE_API_SECRET` 只放在 `.env.local`，由用户自己填写。AI 不要读取、打印、复述或提交密钥，也不要让用户把密钥发到对话里。这是仓库里唯一用到账户密钥的地方，只在本地脚本中使用，不能进入 `src/`（仪表盘是公开部署的）。
-- 写回规则：只填空着或注释标了「待补 / 估算」的 `size` / `pnl` / `fees`，`entry` / `exit` 只在空着时填。改交易文件属于修改用户的交易记录，先不带 `--write` 预览，用户同意后再写。
+- 写回规则：只填空着或注释标了「待补 / 估算」的 `size` / `pnl` / `fees` / `stop` / `target`，`entry` / `exit` 只在空着时填。改交易文件属于修改用户的交易记录，先不带 `--write` 预览，用户同意后再写。
 
 ## 边界
 

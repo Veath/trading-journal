@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findPosition, setField, type Fill } from './position.ts'
+import { findPosition, findProtection, setField, type AlgoOrder, type Fill } from './position.ts'
 
 let nextId = 1
 const fill = (time: number, side: 'BUY' | 'SELL', price: number, qty: number, realizedPnl = 0, commission = 0.1): Fill => ({
@@ -96,5 +96,65 @@ describe('setField', () => {
     const u = setField(doc('size: 1'), 'fees', 0.5, 'x')
     expect(u.changed).toBe(false)
     expect(u.reason).toBe('没有 fees 字段')
+  })
+})
+
+describe('findProtection', () => {
+  const algo = (id: number, createTime: number, type: string, side: 'BUY' | 'SELL', triggerPrice: number, status = 'EXPIRED', actualOrderId: number | null = null): AlgoOrder => ({
+    id,
+    type,
+    side,
+    positionSide: side === 'SELL' ? 'LONG' : 'SHORT',
+    qty: 1,
+    triggerPrice,
+    workingType: 'MARK_PRICE',
+    status,
+    actualOrderId,
+    createTime,
+  })
+  const open = { ...fill(100, 'BUY', 100, 1), orderId: 1 }
+  const close = { ...fill(500, 'SELL', 104, 1), orderId: 9 }
+  const pos = findPosition([open, close], 'long', 90)!
+
+  it('第一张止损单是初始止损，后续为移动止损；找出触发平仓的条件单', () => {
+    const p = findProtection(
+      [
+        algo(1, -5000, 'STOP_MARKET', 'SELL', 90), // 开仓 1 秒以前的，属于更早的交易
+        algo(2, 110, 'STOP_MARKET', 'SELL', 95, 'CANCELED'),
+        algo(3, 120, 'TAKE_PROFIT_MARKET', 'SELL', 110),
+        algo(4, 300, 'STOP_MARKET', 'SELL', 104, 'FINISHED', 9),
+        algo(5, 130, 'STOP_MARKET', 'BUY', 120), // 方向不对
+        algo(6, 600, 'STOP_MARKET', 'SELL', 99), // 平仓后的
+      ],
+      pos,
+      'long',
+    )
+    expect(p.stop?.triggerPrice).toBe(95)
+    expect(p.stops.map((o) => o.triggerPrice)).toEqual([95, 104])
+    expect(p.target?.triggerPrice).toBe(110)
+    expect(p.triggered?.id).toBe(4)
+  })
+
+  it('手动平仓、没有止损单', () => {
+    const p = findProtection([algo(3, 120, 'TAKE_PROFIT_MARKET', 'SELL', 110)], pos, 'long')
+    expect(p.stop).toBeNull()
+    expect(p.triggered).toBeNull()
+    expect(p.target?.triggerPrice).toBe(110)
+  })
+})
+
+describe('findPosition 双向持仓', () => {
+  it('反手：平多的 SELL 不算开空', () => {
+    const fills = [
+      { ...fill(100, 'SELL', 666, 8), positionSide: 'LONG' as const }, // 平掉上一笔多单
+      { ...fill(108, 'SELL', 665.8, 10), positionSide: 'SHORT' as const },
+      { ...fill(200, 'BUY', 655, 10, 100), positionSide: 'SHORT' as const },
+      { ...fill(210, 'BUY', 655.5, 13), positionSide: 'LONG' as const }, // 再反手做多
+    ]
+    const p = findPosition(fills, 'short', 50)!
+    expect(p.fills).toHaveLength(2)
+    expect(p.entry).toBe(665.8)
+    expect(p.exit).toBe(655)
+    expect(p.closeTime).toBe(200)
   })
 })
