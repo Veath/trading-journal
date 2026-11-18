@@ -167,7 +167,9 @@ pnpm trade:sync --pending --write              # 所有 size / pnl / fees 还空
 
 1. `pnpm mentor:collect`：生成采集脚本并复制到剪贴板，自动从上次同步到的时间点继续
 2. 在已登录 X 的浏览器先后打开 `https://x.com/Keyshotvv`（帖子）和 `https://x.com/Keyshotvv/with_replies`（回复），分别在控制台（Cmd+Option+J）粘贴运行，等它自动滚动完成并下载 JSON。两个页面内容不重叠，原创推文只在「帖子」页
-3. `pnpm mentor:ingest`：读取「下载」目录中帖子、回复各自最新的采集文件，去重后合并到 `data/mentors/keyshotvv/posts.json`，生成 `digest-*.md` 待提炼清单
+3. `pnpm mentor:ingest`：读取「下载」目录中帖子、回复（以及补采提问）各自最新的采集文件，去重后合并到 `data/mentors/keyshotvv/posts.json`，生成 `digest-*.md` 待提炼清单
 4. 对 Claude 说「更新导师资料」：它会读清单，转述后更新规则、心态和原帖索引
 
-原文只保存在本地的 `data/`（不提交）；仓库里只有转述和原帖链接。第一次运行时没有本地数据，会从今年 1 月 1 日开始采集。
+回复会同时记下被回复的那条推文（通常是粉丝的提问），方便理解简短的回答；已有的回复可以用 `pnpm mentor:collect --questions 2026-11-13 --until 2026-11-16` 补采。
+
+原文和提问只保存在本地的 `data/`（不提交）；仓库里只有转述和原帖链接。第一次运行时没有本地数据，会从今年 1 月 1 日开始采集。

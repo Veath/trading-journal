@@ -1,6 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+/** 他回复的那条推文（通常是粉丝的提问）。原文只存在 data/，笔记里只转述大意、不写提问者 */
+export interface ReplyTo {
+  handle: string
+  text: string
+  hasMedia: boolean
+  url: string
+}
+
 export interface Post {
   id: string
   date: string // ISO
@@ -11,6 +19,8 @@ export interface Post {
   /** 来自「帖子」页还是「回复」页；早期采集没有这个字段 */
   source?: 'posts' | 'replies'
   url: string
+  /** 只有「回复」页的内容有：undefined = 还没查过，null = 查过但没找到 */
+  replyTo?: ReplyTo | null
 }
 
 export interface Store {
@@ -55,6 +65,11 @@ export function nextSince(store: Store): string {
 /** 值得人工 / Claude 阅读的内容：较长的帖子，或包含交易关键词的短回复 */
 const KEYWORDS =
   /止损|止盈|流动性|进场|入场|FVG|IFVG|sweep|清扫|DOL|仓位|日线|周线|4H|1H|15M|5M|1M|盈亏比|RR|胜率|保本|BE|CHOCH|MSS|CISD|OB|BISI|SIBI|CRT|SMT|结构|复盘|等高|等低|EQH|EQL|PDH|PDL|亚盘|伦敦|纽约|分批|假突破|通道|楔形|背景|bias|killzone/i
+
+/** 需要补 replyTo 的回复：在 [from, to) 时间范围内、还没查过的 */
+export function needsReplyTo(p: Post, from: string, to: string): boolean {
+  return p.source === 'replies' && p.replyTo === undefined && p.text.length > 0 && p.date >= from && p.date < to
+}
 
 export function isSubstantive(p: Post, minLength = 20): boolean {
   return p.text.length >= minLength || (p.text.length > 0 && KEYWORDS.test(p.text))

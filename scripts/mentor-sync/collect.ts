@@ -1,16 +1,29 @@
 // 用法：pnpm mentor:collect [--handle Keyshotvv] [--since 2026-10-01] [--no-download]
+//      pnpm mentor:collect --questions 2026-11-13 [--until 2026-11-16]   补采已有回复的提问（replyTo）
 // 生成浏览器采集脚本，打印并复制到剪贴板（macOS）。
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { loadStore, nextSince, parseArgs } from './store.ts'
+import { loadStore, needsReplyTo, nextSince, parseArgs } from './store.ts'
 
 const { handle, flags } = parseArgs(process.argv.slice(2))
-const since = flags.since ? new Date(flags.since).toISOString() : nextSince(loadStore(handle))
+const store = loadStore(handle)
+const since = flags.since ? new Date(flags.since).toISOString() : nextSince(store)
+const iso = (d: string) => new Date(d).toISOString()
+const backfill = flags.questions
+  ? store.posts
+      .filter((p) => needsReplyTo(p, iso(flags.questions), flags.until ? iso(flags.until) : '9999'))
+      .map((p) => ({ id: p.id, head: p.text.slice(0, 20) }))
+  : []
+if (flags.questions && !backfill.length) {
+  console.log('该时间范围内没有需要补提问的回复')
+  process.exit(0)
+}
 const script = readFileSync(join(import.meta.dirname, 'collector.js'), 'utf8')
   .replaceAll('__HANDLE__', handle)
   .replaceAll('__SINCE__', since)
   .replaceAll('__DOWNLOAD__', flags['no-download'] ? 'false' : 'true')
+  .replaceAll('__BACKFILL__', () => JSON.stringify(backfill))
 
 let copied = false
 try {
@@ -21,6 +34,16 @@ try {
 }
 
 if (flags.print) console.log(script)
+if (backfill.length) {
+  console.log(`补采 @${handle} ${backfill.length} 条回复的提问`)
+  console.log(copied ? '✓ 采集脚本已复制到剪贴板' : '复制下面的脚本：\n\n' + script)
+  console.log(`
+下一步：
+  1. 在已登录的浏览器打开 https://x.com/${handle}/with_replies
+  2. 打开开发者工具控制台，粘贴并回车，脚本会逐条打开原帖（约每条 1–2 秒）
+  3. 下载的 ${handle.toLowerCase()}-questions-YYYY-MM-DD.json 保存到「下载」目录后，运行 pnpm mentor:ingest`)
+  process.exit(0)
+}
 console.log(`采集 @${handle} 自 ${since} 之后的内容`)
 console.log(copied ? '✓ 采集脚本已复制到剪贴板' : '复制下面的脚本：\n\n' + script)
 console.log(`

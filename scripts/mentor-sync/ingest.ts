@@ -16,12 +16,14 @@ function latestDownloads(): string[] {
     .map((f) => join(dir, f))
     .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)
   const pick = (source: string) => files.find((f) => f.includes(`-${source}-`))
-  return [pick('posts'), pick('replies')].filter((f) => f !== undefined)
+  return [pick('posts'), pick('replies'), pick('questions')].filter((f) => f !== undefined)
 }
 
 interface Input {
   handle: string
+  source?: 'posts' | 'replies' | 'questions'
   collectedAt: string
+  /** source 为 questions 时只有 id 和 replyTo */
   posts: Post[]
 }
 
@@ -38,15 +40,31 @@ for (const input of inputs) {
     process.exit(1)
   }
 }
-const incoming = inputs.flatMap((i) => i.posts)
+const incoming = inputs.filter((i) => i.source !== 'questions').flatMap((i) => i.posts)
+const answers = inputs.filter((i) => i.source === 'questions').flatMap((i) => i.posts)
 const collectedAt = inputs.map((i) => i.collectedAt).sort().at(-1)!
 
 const store = loadStore(handle)
 const byId = new Map(store.posts.map((p) => [p.id, p]))
 const added: Post[] = []
+const answered: Post[] = []
 let completed = 0
+/** 补上之前没查到的提问；已有的不覆盖 */
+const fillReplyTo = (old: Post, replyTo: Post['replyTo']) => {
+  if (replyTo && !old.replyTo) {
+    old.replyTo = replyTo
+    answered.push(old)
+  } else if (replyTo === null && old.replyTo === undefined) {
+    old.replyTo = null
+  }
+}
+for (const p of answers) {
+  const old = byId.get(p.id)
+  if (old) fillReplyTo(old, p.replyTo)
+}
 for (const p of incoming) {
   const old = byId.get(p.id)
+  if (old && p.replyTo !== undefined) fillReplyTo(old, p.replyTo)
   if (!old) {
     byId.set(p.id, p)
     added.push(p)
@@ -64,28 +82,38 @@ saveStore(store)
 
 const truncated = store.posts.filter((p) => p.truncated).length
 console.log(
-  `@${handle}：新增 ${added.length} 条，补全长帖 ${completed} 条，累计 ${store.posts.length} 条` +
+  `@${handle}：新增 ${added.length} 条，补全长帖 ${completed} 条，补充提问 ${answered.length} 条，累计 ${store.posts.length} 条` +
     (truncated ? `；仍有 ${truncated} 条长帖只有前半段，需要打开原帖补全` : ''),
 )
-if (added.length === 0) {
+if (added.length === 0 && answered.length === 0) {
   console.log('没有新内容，不生成待提炼清单')
   process.exit(0)
 }
 
-const substantive = added.filter((p) => isSubstantive(p))
+// 只补了提问时，清单列出补到提问的回复，用来复查之前的转述
+const listed = added.length ? added : answered
+const substantive = listed.filter((p) => isSubstantive(p) || (p.replyTo && isSubstantive({ ...p, text: p.replyTo.text })))
 const day = collectedAt.slice(0, 10)
 // 文件名带采集时间，同一天多次采集不会互相覆盖
 const stamp = collectedAt.slice(0, 16).replace(/[-:]/g, '').replace('T', '-')
-const digestFile = join(dataDir(handle), `digest-${stamp}.md`)
+const digestFile = join(dataDir(handle), `digest-${stamp}${added.length ? '' : '-questions'}.md`)
+const oneLine = (t: string) => t.replace(/\n+/g, ' / ')
 const lines = [
   `# @${handle} 新增内容 ${day}`,
   '',
   `来源：${files.join('、')}`,
-  `新增 ${added.length} 条，其中值得提炼 ${substantive.length} 条（≥20 字或含交易关键词）。`,
+  added.length
+    ? `新增 ${added.length} 条，其中值得提炼 ${substantive.length} 条（≥20 字或含交易关键词，回复按提问 + 回答算）。`
+    : `补充了 ${answered.length} 条回复的提问，其中值得复查 ${substantive.length} 条：对照提问检查之前的转述是否准确，补上当时因缺少上下文跳过的内容。`,
   '',
-  '用 keyshot-mentor skill 的「更新导师资料」流程处理：转述后更新 notes/mentors/ 下的规则 / 心态 / 原帖索引，只引用下表中的真实链接。',
+  '用 keyshot-mentor skill 的「更新导师资料」流程处理：转述后更新 notes/mentors/ 下的规则 / 心态 / 原帖索引，只引用下表中他本人帖子的真实链接。「问：」是别人的提问，只用来理解语境，笔记里转述大意、不写提问者。',
   '',
-  ...substantive.map((p) => `- ${p.date.slice(0, 10)}${p.source === 'posts' ? ' [帖子]' : ''}${p.hasMedia ? ' [图]' : ''}${p.truncated ? ' [截断]' : ''} ${p.url}\n  ${p.text.replace(/\n+/g, ' / ')}`),
+  ...substantive.map(
+    (p) =>
+      `- ${p.date.slice(0, 10)}${p.source === 'posts' ? ' [帖子]' : ''}${p.hasMedia ? ' [图]' : ''}${p.truncated ? ' [截断]' : ''} ${p.url}\n` +
+      (p.replyTo ? `  问：${oneLine(p.replyTo.text) || '（无文字）'}${p.replyTo.hasMedia ? ' [图]' : ''}\n` : '') +
+      `  ${oneLine(p.text)}`,
+  ),
   '',
 ]
 writeFileSync(digestFile, lines.join('\n'))
