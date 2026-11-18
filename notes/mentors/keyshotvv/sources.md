@@ -1,6 +1,6 @@
 # 原帖索引（2026）
 
-采集范围：[@Keyshotvv](https://x.com/Keyshotvv) 的「帖子」页（原创推文 506 条，2026-02-02 起）和「回复」页（990 条，2026-02-06 起），截至 2026-11-18，共 1496 条。其中：
+采集范围：[@Keyshotvv](https://x.com/Keyshotvv) 的「帖子」页（原创推文 513 条，2026-02-02 起）和「回复」页（1003 条，2026-02-06 起），截至 2026-11-18，共 1516 条。其中：
 
 - 原创推文多为交易记录、复盘和长帖观点，是提炼的主要来源；回复里 20 字以上的约 190 条，其余多为简短回复和闲聊
 - 2026 年 1 月和 6–8 月几乎没有内容
@@ -304,6 +304,13 @@
 | 11-17 | 交易 | 12.75R + 1.75R，24 小时完成；磅日空单目标日线新低；15M / 5M / 1M 进场（图片帖） [↗](https://x.com/Keyshotvv/status/2122618250026729511) [↗](https://x.com/Keyshotvv/status/2122623109815742490) [↗](https://x.com/Keyshotvv/status/2122619073699946690) |
 | 11-18 | 工具 | 不看 SMT [↗](https://x.com/Keyshotvv/status/2122892705252737252) |
 | 11-18 | 进场 | 一笔漏看、一笔仓位给了澳元（图片帖） [↗](https://x.com/Keyshotvv/status/2122891528930840753) [↗](https://x.com/Keyshotvv/status/2122899853508489330) |
+| 11-18 | 进场 | 进场三件事：扫、位移、信号 K；粉丝复述流程（假突破 + 有力度跟随 + 带小结构的 sweep）被他认可 [↗](https://x.com/Keyshotvv/status/2122984984650858704) [↗](https://x.com/Keyshotvv/status/2123066788753846464) |
+| 11-18 | 进场 | 「有力度」没有量化标准：结构破坏的条件是「有力度」，力度就是「又大又粗」 [↗](https://x.com/Keyshotvv/status/2123010614364873088) [↗](https://x.com/Keyshotvv/status/2123012863459770758) |
+| 11-18 | 流动性 | 结构是否转变靠经验判断：清扫、市场氛围、走势的干净程度；做反了也是等跌下去再找多 [↗](https://x.com/Keyshotvv/status/2122911626605232282) [↗](https://x.com/Keyshotvv/status/2122905374101791021) |
+| 11-18 | 周期 | 看 5 分钟的前提是先看过月线、周线、日线、4H、1H [↗](https://x.com/Keyshotvv/status/2123013860659732921) |
+| 11-18 | 工具 | 做外汇可看 DXY，但不是必须 [↗](https://x.com/Keyshotvv/status/2122911379409793030) |
+| 11-18 | 交易 | 每天盯 50 个左右的盘面，靠熟练；外汇不烧心（止损快、止盈快）；澳元两笔 BE 两笔空单、一笔 TP、一笔拿下跌趋势；没看到 20R 的机会；大宗商品复盘第 4 期（图片帖 / 视频帖） [↗](https://x.com/Keyshotvv/status/2122911420048347405) [↗](https://x.com/Keyshotvv/status/2122915543464423556) [↗](https://x.com/Keyshotvv/status/2122902206978674701) [↗](https://x.com/Keyshotvv/status/2122915765477400919) [↗](https://x.com/Keyshotvv/status/2122973742892765471) [↗](https://x.com/Keyshotvv/status/2122927185845690662) |
+| 11-18 | 心态 | 不关心 ICT 本人的战绩和争议；BTC 的 K 线「辣眼睛」；信号 K 入场后先把止损放在红线、被打下来再调 [↗](https://x.com/Keyshotvv/status/2122999501896229011) [↗](https://x.com/Keyshotvv/status/2123040430199804080) [↗](https://x.com/Keyshotvv/status/2123037152036757553) |
 | 11-14 | 进场 | 答疑：信号 K 标准（影线 > 实体 50%、收盘 80% 以上，收在中间不算）、合并 K 线、清扫级别与信号 K 级别不固定对应 [↗](https://x.com/Keyshotvv/status/2121452358811165004) [↗](https://x.com/Keyshotvv/status/2121988596303585779) [↗](https://x.com/Keyshotvv/status/2121452432689648104) [↗](https://x.com/Keyshotvv/status/2121966022031028677) [↗](https://x.com/Keyshotvv/status/2121431873029365792) |
 | 11-14 | 管理 | 答疑：加仓手数同底仓、加仓止损单独平、被插针止损后有逻辑再进、减仓凭感觉 [↗](https://x.com/Keyshotvv/status/2121983087819346239) [↗](https://x.com/Keyshotvv/status/2122001673963073603) |
 | 11-14 | 流动性 | 答疑：PA 与 ICT 读法冲突时顺趋势；相关品种只做扫了的那个；没扫错过就不做 [↗](https://x.com/Keyshotvv/status/2121956599690559870) [↗](https://x.com/Keyshotvv/status/2121404501609591002) |
