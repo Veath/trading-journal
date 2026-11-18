@@ -1,6 +1,6 @@
 # 原帖索引（2026）
 
-采集范围：[@Keyshotvv](https://x.com/Keyshotvv) 的「帖子」页（原创推文 463 条，2026-02-02 起）和「回复」页（797 条，2026-02-06 起），截至 2026-11-10，共 1260 条。其中：
+采集范围：[@Keyshotvv](https://x.com/Keyshotvv) 的「帖子」页（原创推文 506 条，2026-02-02 起）和「回复」页（990 条，2026-02-06 起），截至 2026-11-18，共 1496 条。其中：
 
 - 原创推文多为交易记录、复盘和长帖观点，是提炼的主要来源；回复里 20 字以上的约 190 条，其余多为简短回复和闲聊
 - 2026 年 1 月和 6–8 月几乎没有内容
@@ -270,3 +270,37 @@
 | 11-10 | 交易 | 澳元、纽元空单，DOL 清晰（图片帖）[↗](https://x.com/Keyshotvv/status/2120151640267436209) |
 | 11-10 | 止盈 | 日元做多 DOL PWH，两笔剥头皮 + 两笔 1H 波段；最后一笔回撤 1R 平仓，约 10R（图片帖）[↗](https://x.com/Keyshotvv/status/2120173556571283639) [↗](https://x.com/Keyshotvv/status/2120298561607029071) |
 | 11-10 | 进场 | 模型提示做多纳指，但盈亏比只有 1.3R，不太行（图片帖）[↗](https://x.com/Keyshotvv/status/2120178054748327966) |
+| 11-11 | 止盈 | 美日看多美元做多，一笔止损后二次进场，目标 160.4；纳指抄底目标已到（图片帖） [↗](https://x.com/Keyshotvv/status/2120543122006683836) [↗](https://x.com/Keyshotvv/status/2120545082524979257) |
+| 11-11 | 方向 | 纳指月线收阳看涨、收阴看跌（阴线收盘需在 K 线 50% 以下），目标 23000（图片帖） [↗](https://x.com/Keyshotvv/status/2120546823756722342) |
+| 11-11 | 品种 | 黄金点位以 Comex 为准 [↗](https://x.com/Keyshotvv/status/2120480542974267406) |
+| 11-12 | 交易 | 澳元到周线结构低点终极目标，再空两笔 6.5R；外盘 3 笔空单 6R，美元方向明确外盘就好做（图片帖） [↗](https://x.com/Keyshotvv/status/2120753037962797549) [↗](https://x.com/Keyshotvv/status/2120770949071200517) |
+| 11-12 | 心态 | 1 万小时看盘、错误的经验也是经验、裸 K 考验盘感 [↗](https://x.com/Keyshotvv/status/2120777308957295056) |
+| 11-12 | 品种 | 原油放弃：没有 HTF 逻辑，跑不出盈亏比 [↗](https://x.com/Keyshotvv/status/2120756229656244602) |
+| 11-12 | 心态 | 起步靠赌，守财靠仓位管理；入局容易出局难 [↗](https://x.com/Keyshotvv/status/2120797536051216435) [↗](https://x.com/Keyshotvv/status/2120812441084755990) |
+| 11-12 | 进场 | 位置好但止损不清晰，放弃 [↗](https://x.com/Keyshotvv/status/2120890728754909617) |
+| 11-12 | 交易 | 白糖 6R，临近收盘只给 0.3% 仓位（图片帖） [↗](https://x.com/Keyshotvv/status/2120894434959319521) |
+| 11-12 | 止盈 | 美日 160 疑似干预，尊重走势拿到 160.4、上移平仓线；次日全平合计 10R（图片帖） [↗](https://x.com/Keyshotvv/status/2120925304613167379) [↗](https://x.com/Keyshotvv/status/2121119843340767686) [↗](https://x.com/Keyshotvv/status/2121131554525290725) |
+| 11-13 | 止损 | 两周回撤 10%；内盘两次跳空多承担 8% 风险 [↗](https://x.com/Keyshotvv/status/2121124506802819444) [↗](https://x.com/Keyshotvv/status/2121234862204243979) |
+| 11-13 | 交易 | GBPUSD 顺势做空 IRL → ERL，7.4R（图片帖） [↗](https://x.com/Keyshotvv/status/2121194802494779800) |
+| 11-13 | 进场 | 纽元空单三次加仓，PPI 前提前离场；USDCHF PPI 后再进，合计 16R（图片帖） [↗](https://x.com/Keyshotvv/status/2121237480657850556) [↗](https://x.com/Keyshotvv/status/2121302848466243726) |
+| 11-13 | 止损 | 美元行情统计：每笔 1–2%、只按初始本金算仓位、有加仓无复利；精力只放美元 [↗](https://x.com/Keyshotvv/status/2121251437607039034) [↗](https://x.com/Keyshotvv/status/2121266561340293489) |
+| 11-13 | 学习 | 周末答疑：只答技术面，不答重复和基本面问题 [↗](https://x.com/Keyshotvv/status/2121392600456499347) |
+| 11-14 | 工具 | 答疑：ICT 看流动性、PA 只用信号 K、斐波 50%，其余没用；自己的模型 > 2022 模型 [↗](https://x.com/Keyshotvv/status/2121452187343794550) [↗](https://x.com/Keyshotvv/status/2121450409026060437) [↗](https://x.com/Keyshotvv/status/2121395877227159946) [↗](https://x.com/Keyshotvv/status/2121414037460447477) |
+| 11-14 | 方向 | 答疑：均线 / EMA20 上多下空、日线只看收盘、先看日线目标价再进场、顺势为王 [↗](https://x.com/Keyshotvv/status/2121399035903037824) [↗](https://x.com/Keyshotvv/status/2121480256712515876) [↗](https://x.com/Keyshotvv/status/2121413774607626630) [↗](https://x.com/Keyshotvv/status/2121553997282816100) [↗](https://x.com/Keyshotvv/status/2121396167674335367) [↗](https://x.com/Keyshotvv/status/2121397277436903814) [↗](https://x.com/Keyshotvv/status/2121489989745918176) [↗](https://x.com/Keyshotvv/status/2121554098487185653) |
+| 11-14 | 流动性 | 答疑：平底要肉眼可见、只用平行结构等高等低、双顶双底不看、扫了不代表失效 [↗](https://x.com/Keyshotvv/status/2121484646181650500) [↗](https://x.com/Keyshotvv/status/2121414596150141211) [↗](https://x.com/Keyshotvv/status/2121451151946375415) [↗](https://x.com/Keyshotvv/status/2121488239387439204) [↗](https://x.com/Keyshotvv/status/2121427174603513978) [↗](https://x.com/Keyshotvv/status/2121486667035082859) |
+| 11-14 | 进场 | 答疑：不扫不进、没有信号 = 没有清晰止损、哪个级别够硬做哪个、加仓逻辑、数据前不开仓 [↗](https://x.com/Keyshotvv/status/2121449541354524805) [↗](https://x.com/Keyshotvv/status/2121459371528073714) [↗](https://x.com/Keyshotvv/status/2121460037721927747) [↗](https://x.com/Keyshotvv/status/2121568395137331639) [↗](https://x.com/Keyshotvv/status/2121568099715445144) [↗](https://x.com/Keyshotvv/status/2121479362726044034) [↗](https://x.com/Keyshotvv/status/2121479670780792846) [↗](https://x.com/Keyshotvv/status/2121463875421999213) [↗](https://x.com/Keyshotvv/status/2121577578461102408) |
+| 11-14 | 工具 | 答疑：MSS 不用、FVG 仅代表力度 [↗](https://x.com/Keyshotvv/status/2121554327768903947) [↗](https://x.com/Keyshotvv/status/2121630500288970755) [↗](https://x.com/Keyshotvv/status/2121453124582035486) |
+| 11-14 | 止盈 | 答疑：移动止损规则、2R 提前止盈、推保本看性格、太磨叽就走 [↗](https://x.com/Keyshotvv/status/2121406187971461469) [↗](https://x.com/Keyshotvv/status/2121487800478658671) [↗](https://x.com/Keyshotvv/status/2121484393147760917) [↗](https://x.com/Keyshotvv/status/2121490223276417533) |
+| 11-14 | 心态 | 答疑：体系不清晰看盘是浪费时间、逐笔回放、看原创和二创、只做一个 setup [↗](https://x.com/Keyshotvv/status/2121485722964349387) [↗](https://x.com/Keyshotvv/status/2121487424903893260) [↗](https://x.com/Keyshotvv/status/2121451345484116261) [↗](https://x.com/Keyshotvv/status/2121485999155068963) [↗](https://x.com/Keyshotvv/status/2121451602733408693) [↗](https://x.com/Keyshotvv/status/2121410525263524122) [↗](https://x.com/Keyshotvv/status/2121452035224764725) |
+| 11-15 | 流动性 | 答疑总结：概念只是包装，MSS / CISD 看力度，FVG 不是进场区间，OB 即流动性 [↗](https://x.com/Keyshotvv/status/2121974079683227892) |
+| 11-15 | 进场 | 前提只有先清扫；强趋势里每个流动性都是进场点，不再遵循 MMXM 就停手 [↗](https://x.com/Keyshotvv/status/2121975936371523811) |
+| 11-15 | 流动性 | 价格的有效性基于流动性，流动性的有效性基于时间 [↗](https://x.com/Keyshotvv/status/2122020524234813710) |
+| 11-15 | 学习 | ICT 1H NQ 复盘那一期印象最深 [↗](https://x.com/Keyshotvv/status/2121976674476851470) |
+| 11-15 | 体系 | 趋势交易只适合强趋势市场；均线趋势策略的缺点 [↗](https://x.com/Keyshotvv/status/2121759101969650096) [↗](https://x.com/Keyshotvv/status/2121488754045247927) |
+| 11-16 | 止损 | 德国 40：15 分钟入场拿 4H DOL，止损在 15M FVG 上沿；提现后连错几笔回撤 5% [↗](https://x.com/Keyshotvv/status/2122354545472995551) [↗](https://x.com/Keyshotvv/status/2122357228347031647) [↗](https://x.com/Keyshotvv/status/2122295786851672397) |
+| 11-17 | 工具 | 流动性定止损、均线定方向、信号 K 定进场 [↗](https://x.com/Keyshotvv/status/2122575580914929863) |
+| 11-17 | 止损 | 获取流动性后的新极值是有效止损 [↗](https://x.com/Keyshotvv/status/2122609806137864665) |
+| 11-17 | 止盈 | 美日、NQ 空单到 TP1 推保本博日线新低，加仓单打保本；次日 3.2R + 2.7R 离场（图片帖） [↗](https://x.com/Keyshotvv/status/2122615650506158468) [↗](https://x.com/Keyshotvv/status/2122617349446709534) [↗](https://x.com/Keyshotvv/status/2122654600331403629) [↗](https://x.com/Keyshotvv/status/2122888227359195204) |
+| 11-17 | 交易 | 12.75R + 1.75R，24 小时完成；磅日空单目标日线新低；15M / 5M / 1M 进场（图片帖） [↗](https://x.com/Keyshotvv/status/2122618250026729511) [↗](https://x.com/Keyshotvv/status/2122623109815742490) [↗](https://x.com/Keyshotvv/status/2122619073699946690) |
+| 11-18 | 工具 | 不看 SMT [↗](https://x.com/Keyshotvv/status/2122892705252737252) |
+| 11-18 | 进场 | 一笔漏看、一笔仓位给了澳元（图片帖） [↗](https://x.com/Keyshotvv/status/2122891528930840753) [↗](https://x.com/Keyshotvv/status/2122899853508489330) |
