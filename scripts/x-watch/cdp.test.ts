@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events'
-import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { PassThrough } from 'node:stream'
@@ -8,6 +8,10 @@ import { CHROME, Cdp, closeBrowser, openBrowser } from './cdp.ts'
 
 const { execFileSync, spawn } = vi.hoisted(() => ({ execFileSync: vi.fn(), spawn: vi.fn() }))
 vi.mock('node:child_process', () => ({ execFileSync, spawn }))
+vi.mock('node:fs', async (importOriginal) => {
+  const fs = await importOriginal<typeof import('node:fs')>()
+  return { ...fs, existsSync: vi.fn(fs.existsSync) }
+})
 
 const PID = 12345
 const PORT = 58626
@@ -137,6 +141,7 @@ describe('Chrome 启动和恢复', () => {
   it('Chrome 提前退出时立即报告退出码和错误原因', async () => {
     running = false
     listening = false
+    vi.mocked(existsSync).mockReturnValueOnce(true)
     setTimeout(() => {
       chrome.stderr.write('Failed to create a ProcessSingleton for your profile directory.\n')
       chrome.exitCode = 21
