@@ -18,7 +18,7 @@ pnpm new:bias         # 新建今天的 Agent偏见 → journal/agent-bias/YYYY-
 pnpm trade:chart <id> # 用真实 K 线生成交易复盘图（日线 / 4H / 1H，目前支持 Binance 永续）
 pnpm trade:sync <id>  # 用币安只读 API 同步实际成交：仓位、均价、扣费后盈亏、初始止损（Key 在 .env.local）
 pnpm bias:watch       # 终端行情列表（现价、对比当日 00:00 开盘的涨跌）+ 监控今天 Agent偏见里的标的，出现清扫 / 收回 / 信号时提醒
-pnpm x:watch          # 监控指定 X 账号的发帖和回复，推送到 Telegram 机器人（配置见 .env.local）
+pnpm x:watch          # 默认约每 600 秒监控指定 X 账号的发帖和回复，可用 --every <秒> 调整，推送到 Telegram（配置见 .env.local）
 pnpm diagrams         # 重新生成笔记中的 K 线示意图（notes/<主题>/img/*.svg）
 pnpm mentor:collect   # 生成导师内容采集脚本（复制到剪贴板，在 X 页面控制台运行）
 pnpm mentor:ingest    # 合并下载的采集结果，生成待提炼清单

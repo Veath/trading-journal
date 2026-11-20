@@ -1,9 +1,9 @@
-// 用法：pnpm x:watch [--every 180] [--once] [--headless] [--test]
+// 用法：pnpm x:watch [--every 600] [--once] [--headless] [--test]
 // 轮询 watchlist.ts 里账号的「帖子」和「回复」页，有新内容时推送到 Telegram 机器人。
 // 用 data/x-watch/browser 这个独立的 Chrome 用户目录（gitignore），第一次运行会打开普通 Chrome 的 X 登录页（支持 Google 登录），登录一次后会记住。
 // 配置放在 .env.local（gitignore）：TG_BOT_TOKEN=...、TG_CHAT_ID=...
 // 只读 X 页面，不点赞、不转发、不发帖。已推送记录在 data/x-watch/state.json。
-// 为了少触发 Cloudflare 安全验证：页面之间在站内跳转、最多 30 分钟整页刷新一次；遇到验证就停下（有窗口时换成普通 Chrome 让你手动验证，无头模式按 30 分钟起翻倍暂停）。
+// 遇到 Cloudflare 安全验证就暂停采集；有窗口时首次交给用户手动处理，连续遇到验证或使用无头模式时退避。
 import { execFileSync, spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -39,7 +39,7 @@ const option = (name: string) => {
   const i = args.indexOf(`--${name}`)
   return i >= 0 ? args[i + 1] : undefined
 }
-const EVERY = Math.max(60, Number(option('every') ?? 180)) * 1000
+const EVERY = Math.max(60, Number(option('every') ?? 600)) * 1000
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const log = (...a: unknown[]) => console.log(new Date().toTimeString().slice(0, 8), ...a)
@@ -103,18 +103,19 @@ function cookieQuery(sql: string): number {
 }
 
 const hasAuthCookie = () => cookieQuery("select count(*) from cookies where host_key like '%x.com' and name = 'auth_token'") > 0
-/** Cloudflare 验证通过后会写入 / 刷新 cf_clearance，用它的更新时间判断 */
-const clearanceUpdated = () =>
-  cookieQuery("select coalesce(max(last_update_utc), 0) from cookies where host_key like '%x.com' and name = 'cf_clearance'")
 
 /**
- * Google 登录和 Cloudflare 人机验证都会识别开着远程调试的浏览器（登录被拒、验证无限循环），
- * 所以这两步用同一个用户目录启动普通 Chrome（不开调试端口）让用户手动完成。
- * 先关掉调试版 Chrome；done() 为真或用户关掉窗口时结束，返回是否由 done() 结束。
+ * 暂停监控，用同一个用户目录打开普通 Chrome。登录时可用 done 判断何时自动关闭；
+ * 安全验证时等用户退出 Chrome，Cookie 更新不能证明监控已恢复访问。
  */
-async function manualStep(url: string, done: () => boolean, cdp?: Cdp): Promise<boolean> {
+async function manualStep(url: string, cdp: Cdp, done?: () => boolean): Promise<boolean> {
   await closeBrowser(PROFILE, cdp)
   const chrome = spawn(CHROME, [`--user-data-dir=${PROFILE}`, '--no-first-run', '--no-default-browser-check', url], { stdio: 'ignore' })
+  if (!done) {
+    const [code, signal] = await once(chrome, 'exit')
+    if (code !== 0) throw new Error(`验证窗口异常退出（${signal ?? `退出码 ${code}`}），监控停止`)
+    return true
+  }
   while (!done()) {
     if (chrome.exitCode != null) return false
     await sleep(5000)
@@ -129,31 +130,22 @@ async function ensureLogin(cdp: Cdp): Promise<Cdp> {
   if (await loggedIn(cdp)) return cdp
   if (flag('headless')) throw new Error('X 未登录：先不加 --headless 运行一次，在弹出的 Chrome 里登录')
   log('X 未登录：请在弹出的 Chrome 窗口里登录（可以用 Google 登录，只需一次）。登录成功后窗口会自动关闭并开始监控…')
-  if (!(await manualStep('https://x.com/i/flow/login', hasAuthCookie, cdp))) throw new Error('登录窗口已关闭，未检测到登录，请重新运行')
+  if (!(await manualStep('https://x.com/i/flow/login', cdp, hasAuthCookie))) throw new Error('登录窗口已关闭，未检测到登录，请重新运行')
   log('已登录，切换到监控模式')
   const next = await openBrowser(PROFILE, false)
   if (!(await loggedIn(next))) throw new Error('登录状态没有保存下来，请重新运行')
   return next
 }
 
-/** 在普通 Chrome 里让用户手动过 Cloudflare 验证，完成后以监控模式重开 */
-async function solveChallenge(cdp: Cdp): Promise<Cdp> {
-  const before = clearanceUpdated()
-  const auto = await manualStep('https://x.com/home', () => clearanceUpdated() > before, cdp)
-  log(auto ? '检测到验证已通过，切换回监控模式' : '验证窗口已关闭，切换回监控模式')
-  return openBrowser(PROFILE, false)
-}
-
 /** 页面是 Cloudflare 安全验证页 */
 class ChallengeError extends Error {}
 
-const HARD_EVERY = 30 * 60_000 // 整页刷新的最短间隔，其余跳转都在站内完成
+const HARD_EVERY = 2 * 3600_000 // 定时整页刷新的间隔；站内跳转不可用时仍会整页加载
 let lastHardLoad = 0
 
 /**
  * 打开页面并等待推文，切回原文后才算加载成功；区分帖子受保护、原文切换失败和超时。遇到安全验证抛 ChallengeError。
- * 默认在 X 的单页应用里用 history.pushState 跳转：只请求 X 的数据接口、不重新请求整页，
- * Cloudflare 的验证基本只出现在整页请求上，这样能大幅减少触发。距上次整页刷新超过 HARD_EVERY 或站内跳转不可用时才整页加载。
+ * 优先在 X 的单页应用内跳转，减少整页加载。距上次整页刷新超过 HARD_EVERY 或站内跳转不可用时才整页加载。
  */
 async function open(cdp: Cdp, url: string): Promise<'ready' | 'protected' | 'translated' | 'timeout'> {
   const path = new URL(url).pathname
@@ -256,7 +248,9 @@ async function main() {
     return
   }
   mkdirSync(PROFILE, { recursive: true })
-  let cdp = await ensureLogin(await openBrowser(PROFILE, flag('headless')))
+  const headless = flag('headless')
+  const runOnce = flag('once')
+  let cdp = await ensureLogin(await openBrowser(PROFILE, headless))
   const state = loadState()
   log(`监控 ${HANDLES.map((h) => `@${h}`).join(' ')}，约每 ${EVERY / 1000} 秒一轮（随机浮动）`)
   let challenges = 0 // 连续遇到安全验证的次数
@@ -271,28 +265,28 @@ async function main() {
       if (!(e instanceof ChallengeError)) log(`本轮出错：${(e as Error).message}`)
       else {
         challenges++
-        slowUntil = Date.now() + 2 * 3600_000
-        lastHardLoad = 0 // 恢复后先整页刷新一次
-        const headless = flag('headless')
+        const manual = !runOnce && !headless && challenges === 1
         const wait = challengeBackoff(challenges)
-        const msg = headless
-          ? `${e.message}，暂停 ${wait / 60_000} 分钟后重试。频繁出现时去掉 --headless 运行，在窗口里手动验证。`
-          : `${e.message}，已换成普通 Chrome 窗口（调试模式下验证会一直循环），请在窗口里点「验证您是真人」；通过后窗口自动关闭并继续监控，没反应可以看到 X 正常页面后直接关掉窗口。`
+        const msg = runOnce
+          ? `${e.message}，本次检查结束。`
+          : manual
+            ? `${e.message}。请在弹出的 Chrome 窗口手动验证，看到 X 正常页面后按 ⌘Q 退出该 Chrome，脚本会继续监控。`
+            : `${e.message}，监控暂停 ${wait / 60_000} 分钟后再试${headless ? '。可去掉 --headless 运行并手动验证' : ''}。`
         log(msg)
         if (challenges === 1) await tg('sendMessage', { text: `⚠️ x-watch：${msg}` }).catch(() => {})
-        if (flag('once')) break
-        // 连续多次：可能是 IP 被标记或判断出错，不再反复开窗口
-        if (headless || challenges >= 3) {
-          if (!headless) log(`连续 ${challenges} 次遇到验证，暂停 ${wait / 60_000} 分钟后再试`)
-          await sleep(wait)
-        } else {
-          cdp = await solveChallenge(cdp)
-          log('接下来 2 小时放慢轮询')
+        if (runOnce) break
+        if (manual) {
+          await manualStep('https://x.com/home', cdp)
+          cdp = await openBrowser(PROFILE, false)
+          log('验证窗口已退出，接下来 2 小时放慢轮询')
         }
+        lastHardLoad = 0 // 恢复后先整页刷新一次
+        slowUntil = Date.now() + 2 * 3600_000
+        if (!manual) await sleep(wait)
         continue
       }
     }
-    if (flag('once')) break
+    if (runOnce) break
     const every = Date.now() < slowUntil ? EVERY * 2 : EVERY
     const wait = Math.max(10_000, nextDelay(every) - (Date.now() - start))
     log(`下一轮在 ${Math.round(wait / 1000)} 秒后`)
