@@ -1,36 +1,33 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   calculatePosition,
-  CUSTOM_INSTRUMENT,
-  EXNESS_INSTRUMENTS,
+  CONTRACT_SIZE_PRESETS,
   formatLot,
   formatPrice,
-  type InstrumentSpec,
+  inferPriceDecimals,
   type QuoteMode,
   type RiskMode,
   type StopMode,
 } from '../lib/calc'
-import Select from '../components/Select'
 
-const STORAGE_KEY = 'tj-calc-v1'
-const BINANCE_TICKER_API = 'https://fapi.binance.com/fapi/v1/ticker/price'
+const STORAGE_KEY = 'tj-calc-v2'
 
 const QUICK_RISK_USD = [25, 50, 100, 200, 500]
 const QUICK_RISK_PCT = [0.5, 1, 1.5, 2]
 const QUICK_LEVERAGE = [100, 200, 500, 1000, 2000]
-const QUICK_INSTRUMENTS = EXNESS_INSTRUMENTS.filter((i) => i.group === 'quick')
-const MORE_INSTRUMENTS = [...EXNESS_INSTRUMENTS.filter((i) => i.group !== 'quick'), CUSTOM_INSTRUMENT]
 
-interface SpecOverride {
-  contractSize?: number
-  minLot?: number
-  lotStep?: number
-  quoteMode?: QuoteMode
-  quoteCurrency?: string
+const QUOTE_MODE_LABELS: Record<QuoteMode, string> = {
+  USD: 'USD 计价',
+  USD_BASE: 'USD 基础货币（如 USDJPY）',
+  QUOTE_FX: '非 USD 计价（如日元/欧元）',
 }
 
 interface PersistedState {
-  symbolId: string
+  contractSize: string
+  minLot: string
+  lotStep: string
+  quoteMode: QuoteMode
+  quotePerUsd: string
   centAccount: boolean
   riskMode: RiskMode
   riskUsd: string
@@ -38,12 +35,14 @@ interface PersistedState {
   riskPct: string
   stopMode: StopMode
   leverage: string
-  quotePerUsd: string
-  overrides: Record<string, SpecOverride>
 }
 
 const DEFAULT_STATE: PersistedState = {
-  symbolId: 'XAUUSD',
+  contractSize: '100',
+  minLot: '0.01',
+  lotStep: '0.01',
+  quoteMode: 'USD',
+  quotePerUsd: '155',
   centAccount: false,
   riskMode: 'usd',
   riskUsd: '100',
@@ -51,8 +50,6 @@ const DEFAULT_STATE: PersistedState = {
   riskPct: '1',
   stopMode: 'price',
   leverage: '200',
-  quotePerUsd: '155',
-  overrides: {},
 }
 
 function loadState(): PersistedState {
@@ -60,11 +57,7 @@ function loadState(): PersistedState {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULT_STATE
     const parsed = JSON.parse(raw) as Partial<PersistedState>
-    return {
-      ...DEFAULT_STATE,
-      ...parsed,
-      overrides: parsed.overrides && typeof parsed.overrides === 'object' ? parsed.overrides : {},
-    }
+    return { ...DEFAULT_STATE, ...parsed }
   } catch {
     return DEFAULT_STATE
   }
@@ -125,11 +118,8 @@ export default function Calculator() {
   const [stopStr, setStopStr] = useState('')
   const [targetStr, setTargetStr] = useState('')
   const [distStr, setDistStr] = useState('')
-  const [showSpecs, setShowSpecs] = useState(false)
-  const [specDraft, setSpecDraft] = useState<{ contractSize?: string; minLot?: string; lotStep?: string }>({})
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
-  const [priceLoading, setPriceLoading] = useState(false)
-  const [priceHint, setPriceHint] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -141,76 +131,26 @@ export default function Calculator() {
 
   const patch = (next: Partial<PersistedState>) => setSaved((prev) => ({ ...prev, ...next }))
 
-  const baseSpec: InstrumentSpec = useMemo(() => {
-    return (
-      EXNESS_INSTRUMENTS.find((i) => i.id === saved.symbolId) ??
-      (saved.symbolId === CUSTOM_INSTRUMENT.id ? CUSTOM_INSTRUMENT : EXNESS_INSTRUMENTS[0])
-    )
-  }, [saved.symbolId])
-
-  const override = saved.overrides[baseSpec.id]
-  const spec: InstrumentSpec = useMemo(
-    () => ({
-      ...baseSpec,
-      contractSize: override?.contractSize ?? baseSpec.contractSize,
-      minLot: override?.minLot ?? baseSpec.minLot,
-      lotStep: override?.lotStep ?? baseSpec.lotStep,
-      quoteMode: override?.quoteMode ?? baseSpec.quoteMode,
-      quoteCurrency: override?.quoteCurrency ?? baseSpec.quoteCurrency,
-    }),
-    [baseSpec, override],
-  )
-
-  const hasOverride = Boolean(
-    override &&
-      (override.contractSize != null ||
-        override.minLot != null ||
-        override.lotStep != null ||
-        override.quoteMode != null),
-  )
-
-  const selectSymbol = (id: string) => {
-    if (id === saved.symbolId) return
-    patch({ symbolId: id })
-    // 切换品种时清空旧价格，避免拿黄金价格误算原油手数
-    setEntryStr('')
-    setStopStr('')
-    setTargetStr('')
-    setDistStr('')
-    setSpecDraft({})
-    setPriceHint(null)
-    if (id === CUSTOM_INSTRUMENT.id) setShowSpecs(true)
-  }
-
-  const updateOverride = (field: keyof SpecOverride, value: number | QuoteMode | undefined) => {
-    setSaved((prev) => {
-      const curr = prev.overrides[baseSpec.id] ?? {}
-      const nextCurr = { ...curr, [field]: value }
-      return {
-        ...prev,
-        overrides: { ...prev.overrides, [baseSpec.id]: nextCurr },
-      }
-    })
-  }
-
-  const resetOverride = () => {
-    setSpecDraft({})
-    setSaved((prev) => {
-      const next = { ...prev.overrides }
-      delete next[baseSpec.id]
-      return { ...prev, overrides: next }
-    })
-  }
-
+  const contractSizeNum = parseNum(saved.contractSize) ?? 0
+  const minLotNum = parseNum(saved.minLot) ?? 0.01
+  const lotStepNum = parseNum(saved.lotStep) ?? 0.01
   const entryNum = parseNum(entryStr)
   const stopNum = parseNum(stopStr)
   const targetNum = parseNum(targetStr)
   const distNum = parseNum(distStr)
 
+  const priceDecimals = useMemo(
+    () => inferPriceDecimals(entryStr, stopStr, targetStr, distStr),
+    [entryStr, stopStr, targetStr, distStr],
+  )
+
   const result = useMemo(
     () =>
       calculatePosition({
-        spec,
+        contractSize: contractSizeNum,
+        minLot: minLotNum,
+        lotStep: lotStepNum,
+        quoteMode: saved.quoteMode,
         centAccount: saved.centAccount,
         riskMode: saved.riskMode,
         riskUsd: parseNum(saved.riskUsd),
@@ -224,7 +164,7 @@ export default function Calculator() {
         leverage: parseNum(saved.leverage),
         quotePerUsd: parseNum(saved.quotePerUsd),
       }),
-    [spec, saved, entryNum, stopNum, distNum, targetNum],
+    [contractSizeNum, minLotNum, lotStepNum, saved, entryNum, stopNum, distNum, targetNum],
   )
 
   const triggerCopy = async (key: string, value: string) => {
@@ -236,36 +176,12 @@ export default function Calculator() {
     }, 1500)
   }
 
-  const fetchBinancePrice = async () => {
-    if (!spec.binanceSymbol || priceLoading) return
-    setPriceLoading(true)
-    setPriceHint(null)
-    try {
-      const ctrl = new AbortController()
-      const timer = window.setTimeout(() => ctrl.abort(), 5000)
-      const res = await fetch(`${BINANCE_TICKER_API}?symbol=${encodeURIComponent(spec.binanceSymbol)}`, {
-        signal: ctrl.signal,
-      })
-      window.clearTimeout(timer)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = (await res.json()) as { price?: string }
-      const p = Number(data.price)
-      if (!Number.isFinite(p) || p <= 0) throw new Error('无效价格')
-      setEntryStr(p.toFixed(spec.priceDecimals))
-      setPriceHint(`已填入币安 ${spec.binanceSymbol} 现价（与 Exness 可能有微小价差）`)
-    } catch {
-      setPriceHint('拉取币安现价失败，请直接手动输入 MT5 报价')
-    } finally {
-      setPriceLoading(false)
-    }
-  }
-
   const fillTargetByR = (r: number) => {
     if (entryNum == null || stopNum == null || entryNum === stopNum) return
     const dist = Math.abs(entryNum - stopNum)
     const sign = entryNum > stopNum ? 1 : -1
     const price = entryNum + sign * dist * r
-    if (price > 0) setTargetStr(formatPrice(price, spec.priceDecimals))
+    if (price > 0) setTargetStr(formatPrice(price, priceDecimals))
   }
 
   const swapEntryStop = () => {
@@ -273,20 +189,18 @@ export default function Calculator() {
     setStopStr(entryStr)
   }
 
+  const clearPrices = () => {
+    setEntryStr('')
+    setStopStr('')
+    setTargetStr('')
+    setDistStr('')
+  }
+
   const needsQuoteRate =
-    spec.quoteMode === 'QUOTE_FX' || (spec.quoteMode === 'USD_BASE' && saved.stopMode === 'distance')
+    saved.quoteMode === 'QUOTE_FX' || (saved.quoteMode === 'USD_BASE' && saved.stopMode === 'distance')
 
-  const isQuickSelected = QUICK_INSTRUMENTS.some((i) => i.id === saved.symbolId)
-  const moreOptions = [
-    { value: '__more__', label: '更多品种 / 外汇…' },
-    ...MORE_INSTRUMENTS.map((i) => ({
-      value: i.id,
-      label: i.id === CUSTOM_INSTRUMENT.id ? '自定义规格' : `${i.symbol} · ${i.name}`,
-    })),
-  ]
-
-  const recLotText = result.valid && !result.belowMinLot ? formatLot(result.recommendedLot, spec.lotStep) : null
-  const ceilLotText = result.valid ? formatLot(result.lotCeil, spec.lotStep) : null
+  const recLotText = result.valid && !result.belowMinLot ? formatLot(result.recommendedLot, lotStepNum) : null
+  const ceilLotText = result.valid ? formatLot(result.lotCeil, lotStepNum) : null
   const lotUnit = saved.centAccount ? '美分手' : 'Lot'
 
   const effectiveBalance = parseNum(saved.balanceUsd)
@@ -295,6 +209,9 @@ export default function Calculator() {
     saved.riskMode === 'pct' && effectiveBalance != null && effectiveRiskPct != null
       ? (effectiveBalance * effectiveRiskPct) / 100
       : null
+
+  const hasNonDefaultAdvanced =
+    saved.centAccount || saved.quoteMode !== 'USD' || saved.minLot !== '0.01' || saved.lotStep !== '0.01'
 
   return (
     <div className="stack">
@@ -307,188 +224,17 @@ export default function Calculator() {
             以损定仓，<em>快算手数。</em>
           </h1>
         </div>
-        <p className="sub">按最大可接受亏损与止损位置，直接算出 MT5 下单 Lot，并换算为熟悉的币安数量与名义仓位。</p>
+        <p className="sub">不限品种：按最大亏损、止损价位与 MT5「合约大小」直接算出下单 Lot，并换算为币安视角的数量与名义仓位。</p>
       </header>
 
       <div className="calc-grid">
         {/* 左侧：输入区 */}
         <section className="card calc-inputs">
-          {/* 01 品种 */}
+          {/* 01 风险预算 */}
           <div className="calc-section">
             <div className="calc-section-head">
               <p className="eyebrow">
-                <b>01</b> / 品种 · Exness
-              </p>
-              <Select
-                label="更多 Exness 品种"
-                value={isQuickSelected ? '__more__' : saved.symbolId}
-                options={moreOptions}
-                onChange={(v) => {
-                  if (v !== '__more__') selectSymbol(v)
-                }}
-              />
-            </div>
-
-            <div className="calc-symbol-grid" role="group" aria-label="常用 Exness 品种">
-              {QUICK_INSTRUMENTS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`calc-sym-btn ${saved.symbolId === item.id ? 'on' : ''}`}
-                  onClick={() => selectSymbol(item.id)}
-                >
-                  <span className="calc-sym-code">{item.symbol}</span>
-                  <span className="calc-sym-name">{item.name}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="calc-spec-bar">
-              <div className="calc-spec-meta">
-                <span>
-                  1 {lotUnit} ={' '}
-                  <b>
-                    {fmtCompactQty(result.effectiveContractSize)} {spec.unitLabel}
-                  </b>
-                </span>
-                <span>最小 {spec.minLot}</span>
-                <span>步长 {spec.lotStep}</span>
-                {saved.centAccount && <span className="calc-badge-gold">美分 ÷100</span>}
-                {hasOverride && <span className="calc-badge-gold">已微调</span>}
-              </div>
-              <button type="button" className="calc-link-btn" onClick={() => setShowSpecs((v) => !v)}>
-                {showSpecs ? '收起规格 ▴' : '微调规格 ▾'}
-              </button>
-            </div>
-            {spec.binanceNote && <p className="calc-note">{spec.binanceNote}</p>}
-
-            {showSpecs && (
-              <div className="calc-spec-drawer">
-                <div className="calc-spec-row">
-                  <span className="calc-field-label">账户类型</span>
-                  <div className="segmented" role="group" aria-label="Exness 账户类型">
-                    <button
-                      type="button"
-                      className={!saved.centAccount ? 'on' : ''}
-                      onClick={() => patch({ centAccount: false })}
-                    >
-                      标准 / Pro / Raw
-                    </button>
-                    <button
-                      type="button"
-                      className={saved.centAccount ? 'on' : ''}
-                      onClick={() => patch({ centAccount: true })}
-                    >
-                      美分 Cent (÷100)
-                    </button>
-                  </div>
-                </div>
-
-                <div className="calc-inline-3">
-                  <label className="calc-field">
-                    <span className="calc-field-label">标准合约大小</span>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      value={specDraft.contractSize ?? String(spec.contractSize)}
-                      onChange={(e) => {
-                        const raw = e.target.value
-                        setSpecDraft((d) => ({ ...d, contractSize: raw }))
-                        const n = parseNum(raw)
-                        if (n != null && n > 0) updateOverride('contractSize', n)
-                      }}
-                      onBlur={() => setSpecDraft((d) => ({ ...d, contractSize: undefined }))}
-                    />
-                  </label>
-                  <label className="calc-field">
-                    <span className="calc-field-label">最小手数</span>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      value={specDraft.minLot ?? String(spec.minLot)}
-                      onChange={(e) => {
-                        const raw = e.target.value
-                        setSpecDraft((d) => ({ ...d, minLot: raw }))
-                        const n = parseNum(raw)
-                        if (n != null && n > 0) updateOverride('minLot', n)
-                      }}
-                      onBlur={() => setSpecDraft((d) => ({ ...d, minLot: undefined }))}
-                    />
-                  </label>
-                  <label className="calc-field">
-                    <span className="calc-field-label">手数步长</span>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      value={specDraft.lotStep ?? String(spec.lotStep)}
-                      onChange={(e) => {
-                        const raw = e.target.value
-                        setSpecDraft((d) => ({ ...d, lotStep: raw }))
-                        const n = parseNum(raw)
-                        if (n != null && n > 0) updateOverride('lotStep', n)
-                      }}
-                      onBlur={() => setSpecDraft((d) => ({ ...d, lotStep: undefined }))}
-                    />
-                  </label>
-                </div>
-
-                {baseSpec.id === CUSTOM_INSTRUMENT.id && (
-                  <div className="calc-spec-row">
-                    <span className="calc-field-label">计价方式</span>
-                    <div className="segmented">
-                      {(
-                        [
-                          ['USD', 'USD 计价'],
-                          ['USD_BASE', 'USD 基础货币'],
-                          ['QUOTE_FX', '非 USD 计价'],
-                        ] as [QuoteMode, string][]
-                      ).map(([m, label]) => (
-                        <button
-                          key={m}
-                          type="button"
-                          className={spec.quoteMode === m ? 'on' : ''}
-                          onClick={() => updateOverride('quoteMode', m)}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="calc-field">
-                  <div className="calc-field-top">
-                    <span className="calc-field-label">杠杆（仅用于估算保证金）</span>
-                    <span className="muted num-v">1:{saved.leverage || '—'}</span>
-                  </div>
-                  <div className="calc-chips">
-                    {QUICK_LEVERAGE.map((lv) => (
-                      <button
-                        key={lv}
-                        type="button"
-                        className={`calc-chip ${saved.leverage === String(lv) ? 'on' : ''}`}
-                        onClick={() => patch({ leverage: String(lv) })}
-                      >
-                        1:{lv}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {hasOverride && (
-                  <button type="button" className="calc-link-btn" onClick={resetOverride}>
-                    恢复 {baseSpec.symbol} 默认规格
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 02 风险预算 */}
-          <div className="calc-section">
-            <div className="calc-section-head">
-              <p className="eyebrow">
-                <b>02</b> / 风险预算 (1R)
+                <b>01</b> / 风险预算 (1R)
               </p>
               <div className="segmented" role="group" aria-label="风险输入方式">
                 <button
@@ -588,11 +334,11 @@ export default function Calculator() {
             )}
           </div>
 
-          {/* 03 价位与止损 */}
+          {/* 02 价位与止损 */}
           <div className="calc-section">
             <div className="calc-section-head">
               <p className="eyebrow">
-                <b>03</b> / 价位与止损
+                <b>02</b> / 价位与止损
               </p>
               <div className="segmented" role="group" aria-label="止损输入方式">
                 <button
@@ -607,7 +353,7 @@ export default function Calculator() {
                   className={saved.stopMode === 'distance' ? 'on' : ''}
                   onClick={() => patch({ stopMode: 'distance' })}
                 >
-                  按止损距离
+                  按止损价差
                 </button>
               </div>
             </div>
@@ -618,14 +364,9 @@ export default function Calculator() {
                   <label className="calc-field">
                     <div className="calc-field-top">
                       <span className="calc-field-label">入场价 Entry</span>
-                      {spec.binanceSymbol && (
-                        <button
-                          type="button"
-                          className="calc-link-btn"
-                          onClick={fetchBinancePrice}
-                          disabled={priceLoading}
-                        >
-                          {priceLoading ? '获取中…' : '取币安现价'}
+                      {(entryStr || stopStr || targetStr) && (
+                        <button type="button" className="calc-link-btn" onClick={clearPrices}>
+                          清空
                         </button>
                       )}
                     </div>
@@ -656,8 +397,6 @@ export default function Calculator() {
                     />
                   </label>
                 </div>
-
-                {priceHint && <p className="calc-note">{priceHint}</p>}
 
                 <div className="calc-field">
                   <div className="calc-field-top">
@@ -694,31 +433,17 @@ export default function Calculator() {
               <div className="calc-fields-stack">
                 <div className="calc-inline-2">
                   <label className="calc-field">
-                    <span className="calc-field-label">
-                      {spec.pipSize ? `止损点数 (Pips, 1 pip = ${spec.pipSize})` : '止损价差（价格单位）'}
-                    </span>
+                    <span className="calc-field-label">止损价差（价格单位）</span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      placeholder={spec.pipSize ? '例如 15' : spec.id === 'XAUUSD' ? '例如 12' : '输入价差'}
+                      placeholder="如黄金 15 / 外汇 0.0020"
                       value={distStr}
                       onChange={(e) => setDistStr(e.target.value)}
                     />
                   </label>
                   <label className="calc-field">
-                    <div className="calc-field-top">
-                      <span className="calc-field-label">参考入场价（可选）</span>
-                      {spec.binanceSymbol && (
-                        <button
-                          type="button"
-                          className="calc-link-btn"
-                          onClick={fetchBinancePrice}
-                          disabled={priceLoading}
-                        >
-                          {priceLoading ? '获取中…' : '取现价'}
-                        </button>
-                      )}
-                    </div>
+                    <span className="calc-field-label">参考入场价（可选）</span>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -728,24 +453,166 @@ export default function Calculator() {
                     />
                   </label>
                 </div>
-                {priceHint && <p className="calc-note">{priceHint}</p>}
               </div>
             )}
+          </div>
 
-            {needsQuoteRate && (
-              <label className="calc-field calc-rate-field">
-                <span className="calc-field-label">
-                  折算汇率：1 USD = ? {spec.quoteCurrency ?? '计价货币'}（用于换算美元盈亏）
-                </span>
+          {/* 03 MT5 合约参数 */}
+          <div className="calc-section">
+            <div className="calc-section-head">
+              <p className="eyebrow">
+                <b>03</b> / MT5 合约大小
+              </p>
+              <button type="button" className="calc-link-btn" onClick={() => setShowAdvanced((v) => !v)}>
+                {showAdvanced ? '收起进阶参数 ▴' : '进阶参数 ▾'}
+              </button>
+            </div>
+
+            <div className="calc-fields-stack">
+              <label className="calc-field">
+                <div className="calc-field-top">
+                  <span className="calc-field-label">合约大小 Contract Size（1 标准手 = ?）</span>
+                  <span className="muted num-v">
+                    1 {lotUnit} = {fmtCompactQty(result.effectiveContractSize)}
+                  </span>
+                </div>
                 <input
                   type="text"
                   inputMode="decimal"
-                  placeholder="例如 155"
-                  value={saved.quotePerUsd}
-                  onChange={(e) => patch({ quotePerUsd: e.target.value })}
+                  placeholder="看 MT5 品种详情 → 合约大小"
+                  value={saved.contractSize}
+                  onChange={(e) => patch({ contractSize: e.target.value })}
                 />
               </label>
-            )}
+
+              <div className="calc-size-grid" role="group" aria-label="常见合约大小快捷填入">
+                {CONTRACT_SIZE_PRESETS.map((p) => (
+                  <button
+                    key={p.size}
+                    type="button"
+                    className={`calc-sym-btn ${contractSizeNum === p.size ? 'on' : ''}`}
+                    onClick={() => patch({ contractSize: String(p.size) })}
+                  >
+                    <span className="calc-sym-code">{p.label}</span>
+                    <span className="calc-sym-name">{p.hint}</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="calc-note">
+                在 MT5 iOS 行情页点击任意品种 →「详情 / 规格」即可看到<b>合约大小</b>（Contract size），填到上方即可适用于 Exness 所有品种。
+              </p>
+
+              {needsQuoteRate && (
+                <label className="calc-field">
+                  <span className="calc-field-label">折算汇率（1 USD = ? 计价货币，如 USDJPY 填 155）</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="例如 155"
+                    value={saved.quotePerUsd}
+                    onChange={(e) => patch({ quotePerUsd: e.target.value })}
+                  />
+                </label>
+              )}
+
+              {hasNonDefaultAdvanced && !showAdvanced && (
+                <div className="calc-spec-bar">
+                  <div className="calc-spec-meta">
+                    <span>最小 {minLotNum}</span>
+                    <span>步长 {lotStepNum}</span>
+                    {saved.quoteMode !== 'USD' && <span className="calc-badge-gold">{QUOTE_MODE_LABELS[saved.quoteMode]}</span>}
+                    {saved.centAccount && <span className="calc-badge-gold">美分 ÷100</span>}
+                  </div>
+                </div>
+              )}
+
+              {showAdvanced && (
+                <div className="calc-spec-drawer">
+                  <div className="calc-spec-row">
+                    <span className="calc-field-label">账户类型</span>
+                    <div className="segmented" role="group" aria-label="Exness 账户类型">
+                      <button
+                        type="button"
+                        className={!saved.centAccount ? 'on' : ''}
+                        onClick={() => patch({ centAccount: false })}
+                      >
+                        标准 / Pro / Raw
+                      </button>
+                      <button
+                        type="button"
+                        className={saved.centAccount ? 'on' : ''}
+                        onClick={() => patch({ centAccount: true })}
+                      >
+                        美分 Cent (÷100)
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="calc-inline-2">
+                    <label className="calc-field">
+                      <span className="calc-field-label">最小手数 Min Lot</span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={saved.minLot}
+                        onChange={(e) => patch({ minLot: e.target.value })}
+                      />
+                    </label>
+                    <label className="calc-field">
+                      <span className="calc-field-label">手数步长 Lot Step</span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={saved.lotStep}
+                        onChange={(e) => patch({ lotStep: e.target.value })}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="calc-field">
+                    <span className="calc-field-label">计价方式（默认 USD 计价，非美元结汇品种才需切换）</span>
+                    <div className="segmented" role="group" aria-label="计价方式">
+                      {(
+                        [
+                          ['USD', 'USD 计价'],
+                          ['USD_BASE', 'USD 基础货币'],
+                          ['QUOTE_FX', '非 USD 计价'],
+                        ] as [QuoteMode, string][]
+                      ).map(([m, label]) => (
+                        <button
+                          key={m}
+                          type="button"
+                          className={saved.quoteMode === m ? 'on' : ''}
+                          onClick={() => patch({ quoteMode: m })}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="calc-field">
+                    <div className="calc-field-top">
+                      <span className="calc-field-label">杠杆（仅用于估算保证金）</span>
+                      <span className="muted num-v">1:{saved.leverage || '—'}</span>
+                    </div>
+                    <div className="calc-chips">
+                      {QUICK_LEVERAGE.map((lv) => (
+                        <button
+                          key={lv}
+                          type="button"
+                          className={`calc-chip ${saved.leverage === String(lv) ? 'on' : ''}`}
+                          onClick={() => patch({ leverage: String(lv) })}
+                        >
+                          1:{lv}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
@@ -754,7 +621,7 @@ export default function Calculator() {
           <div className="calc-res-head">
             <div>
               <p className="eyebrow">
-                <b>MT5 Order</b> / {spec.symbol} · {spec.name}
+                <b>MT5 Order</b> / 1 {lotUnit} = {fmtCompactQty(result.effectiveContractSize)}
               </p>
               <div className="calc-res-tags">
                 {result.direction && (
@@ -762,10 +629,7 @@ export default function Calculator() {
                 )}
                 {result.valid && result.stopDistance != null && (
                   <span className="calc-dist-pill">
-                    止损距离{' '}
-                    {result.stopPips != null
-                      ? `${result.stopPips.toFixed(1)} pips`
-                      : formatPrice(result.stopDistance, spec.priceDecimals)}
+                    止损价差 {formatPrice(result.stopDistance, priceDecimals)}
                     {result.stopDistancePct != null ? ` (${result.stopDistancePct.toFixed(2)}%)` : ''}
                   </span>
                 )}
@@ -781,7 +645,7 @@ export default function Calculator() {
           {!result.valid ? (
             <div className="calc-placeholder">
               <div className="calc-big-lot muted">—</div>
-              <p className="sub">{result.error ?? '输入风险预算与止损价位即可实时算出 MT5 手数'}</p>
+              <p className="sub">{result.error ?? '输入风险预算、止损价位与合约大小即可实时算出 MT5 手数'}</p>
             </div>
           ) : (
             <>
@@ -789,7 +653,7 @@ export default function Calculator() {
               <div className="calc-hero">
                 <div className="calc-hero-num">
                   <span className={`calc-big-lot ${result.belowMinLot ? 'neg' : ''}`}>
-                    {result.belowMinLot ? formatLot(0, spec.lotStep) : recLotText}
+                    {result.belowMinLot ? formatLot(0, lotStepNum) : recLotText}
                   </span>
                   <span className="calc-big-unit">{lotUnit}</span>
                 </div>
@@ -807,10 +671,10 @@ export default function Calculator() {
               {/* 低于最小手数警告 */}
               {result.belowMinLot && (
                 <div className="calc-warn">
-                  <b>低于 Exness 最小下单量（{spec.minLot} 手）</b>
+                  <b>低于最小下单量（{minLotNum} 手）</b>
                   <p>
                     按当前止损，理论仅需 <code>{result.rawLot?.toFixed(4)}</code> 手。若强行下最小手数{' '}
-                    <code>{spec.minLot}</code>，触发止损将亏损 <b className="neg">{fmtUsd(-(result.minLotRiskUsd ?? 0), true)}</b>
+                    <code>{minLotNum}</code>，触发止损将亏损 <b className="neg">{fmtUsd(-(result.minLotRiskUsd ?? 0), true)}</b>
                     （超出目标风险{' '}
                     <b className="neg">
                       +{(((result.minLotRiskUsd ?? 0) - (result.targetRiskUsd ?? 1)) / (result.targetRiskUsd ?? 1) * 100).toFixed(0)}%
@@ -832,7 +696,7 @@ export default function Calculator() {
                     向下取整 · 严控风险 {copiedKey === 'floor' && <em className="pos">已复制</em>}
                   </span>
                   <span className="calc-cmp-lot">
-                    {formatLot(result.lotFloor, spec.lotStep)} <small>{lotUnit}</small>
+                    {formatLot(result.lotFloor, lotStepNum)} <small>{lotUnit}</small>
                   </span>
                   <span className="calc-cmp-risk">
                     实亏 <b className="neg">{fmtUsd(-(result.actualRiskFloorUsd ?? 0), true)}</b>
@@ -879,13 +743,9 @@ export default function Calculator() {
                 </p>
                 <div className="kpis compact">
                   <div className="kpi">
-                    <div className="kpi-label">实际持仓数量</div>
-                    <div className="kpi-value">
-                      {fmtCompactQty(result.qtyFloor)} <span className="calc-kpi-unit">{spec.unitLabel}</span>
-                    </div>
-                    <div className="kpi-hint">
-                      1 {lotUnit} = {fmtCompactQty(result.effectiveContractSize)} {spec.unitLabel}
-                    </div>
+                    <div className="kpi-label">等价持仓数量</div>
+                    <div className="kpi-value">{fmtCompactQty(result.qtyFloor)}</div>
+                    <div className="kpi-hint">= 手数 × 合约大小 {fmtCompactQty(result.effectiveContractSize)}</div>
                   </div>
                   <div className="kpi">
                     <div className="kpi-label">实际止损金额</div>
@@ -911,7 +771,7 @@ export default function Calculator() {
                     </div>
                   </div>
                   <div className="kpi">
-                    <div className="kpi-label">每变动 {result.valueStepLabel}</div>
+                    <div className="kpi-label">每动 {result.valueStepLabel}</div>
                     <div className="kpi-value">{fmtUsd(result.valuePerStepUsd)}</div>
                     <div className="kpi-hint">每 1 手止损 {fmtUsd(result.lossPerLotUsd)}</div>
                   </div>
@@ -919,11 +779,11 @@ export default function Calculator() {
                     <div className="kpi-label">分批止盈拆分</div>
                     <div className="kpi-value">
                       {result.splitHalf
-                        ? `${formatLot(result.splitHalf[0], spec.lotStep)} + ${formatLot(result.splitHalf[1], spec.lotStep)}`
+                        ? `${formatLot(result.splitHalf[0], lotStepNum)} + ${formatLot(result.splitHalf[1], lotStepNum)}`
                         : '不可拆'}
                     </div>
                     <div className="kpi-hint">
-                      {result.splitHalf ? 'MT5 可分两笔部分平仓' : `需 ≥ ${formatLot(spec.minLot * 2, spec.lotStep)} 手`}
+                      {result.splitHalf ? 'MT5 可分两笔部分平仓' : `需 ≥ ${formatLot(minLotNum * 2, lotStepNum)} 手`}
                     </div>
                   </div>
                 </div>
@@ -944,10 +804,10 @@ export default function Calculator() {
                       <i className="reward" style={{ flex: result.plannedRR }} />
                     </div>
                     <div className="ladder-labels">
-                      <span style={{ flex: 1 }}>止损 {formatPrice(stopNum, spec.priceDecimals)}</span>
+                      <span style={{ flex: 1 }}>止损 {formatPrice(stopNum, priceDecimals)}</span>
                       <span style={{ flex: result.plannedRR }}>
-                        入场 {formatPrice(entryNum, spec.priceDecimals)}
-                        <span>目标 {formatPrice(targetNum, spec.priceDecimals)}</span>
+                        入场 {formatPrice(entryNum, priceDecimals)}
+                        <span>目标 {formatPrice(targetNum, priceDecimals)}</span>
                       </span>
                     </div>
                   </div>
@@ -971,7 +831,7 @@ export default function Calculator() {
                       </thead>
                       <tbody>
                         {result.rLevels.map((lv) => {
-                          const priceText = formatPrice(lv.price, spec.priceDecimals)
+                          const priceText = formatPrice(lv.price, priceDecimals)
                           const key = `tp-${lv.label}`
                           return (
                             <tr
@@ -997,50 +857,6 @@ export default function Calculator() {
           )}
         </section>
       </div>
-
-      {/* 底部：Exness ↔ 币安合约规格速查表 */}
-      <section className="card">
-        <p className="eyebrow">
-          <b>Reference</b> / Exness ↔ Binance 规格速查
-        </p>
-        <h2>
-          常见品种，<em>手数对照。</em>
-        </h2>
-        <p className="sub">点击任意一行可快速切换上方品种。首次在 Exness 交易新品种前，建议在 MT5 品种「规格」确认后缀与合约大小。</p>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Exness 代码</th>
-                <th>品种</th>
-                <th className="num">1 标准手</th>
-                <th className="num">最小手数</th>
-                <th>币安视角对照</th>
-              </tr>
-            </thead>
-            <tbody>
-              {EXNESS_INSTRUMENTS.map((item) => (
-                <tr
-                  key={item.id}
-                  className={`clickable ${item.id === saved.symbolId ? 'calc-active-row' : ''}`}
-                  onClick={() => {
-                    selectSymbol(item.id)
-                    window.scrollTo({ top: 0, behavior: 'smooth' })
-                  }}
-                >
-                  <td className="symbol">{item.symbol}</td>
-                  <td>{item.name}</td>
-                  <td className="num">
-                    {item.contractSize.toLocaleString('en-US')} {item.unitLabel}
-                  </td>
-                  <td className="num">{formatLot(item.minLot, item.lotStep)}</td>
-                  <td className="muted">{item.binanceNote ?? '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
     </div>
   )
 }

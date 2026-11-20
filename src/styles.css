@@ -493,7 +493,7 @@ div.tv-lightweight-charts td, div.tv-lightweight-charts th { padding: 0; border:
 .calc-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .calc-section-head .eyebrow { margin: 0; }
 
-.calc-symbol-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.calc-size-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .calc-sym-btn {
   display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
   padding: 10px 12px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius);
@@ -501,9 +501,9 @@ div.tv-lightweight-charts td, div.tv-lightweight-charts th { padding: 0; border:
 }
 .calc-sym-btn:hover { border-color: var(--border-strong); background: rgba(236, 226, 200, 0.025); }
 .calc-sym-btn.on { border-color: var(--accent); background: var(--accent-soft); }
-.calc-sym-code { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; color: var(--text); }
+.calc-sym-code { font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: var(--text); font-variant-numeric: tabular-nums; }
 .calc-sym-btn.on .calc-sym-code { color: var(--accent-2); }
-.calc-sym-name { font-size: 11.5px; color: var(--muted); }
+.calc-sym-name { font-size: 11px; color: var(--muted); }
 
 .calc-spec-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
@@ -513,7 +513,8 @@ div.tv-lightweight-charts td, div.tv-lightweight-charts th { padding: 0; border:
 .calc-spec-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .calc-spec-meta b { font-weight: 500; color: var(--text); }
 .calc-badge-gold { padding: 1px 6px; border: 1px solid var(--accent-ring); color: var(--accent-2); font-size: 10px; letter-spacing: 0.06em; }
-.calc-note { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.calc-note { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.calc-note b { color: var(--text-2); font-weight: 500; }
 .calc-link-btn {
   border: 0; background: none; padding: 0; cursor: pointer;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--accent);
@@ -712,7 +713,6 @@ div.tv-lightweight-charts td, div.tv-lightweight-charts th { padding: 0; border:
 
   /* 计算器窄屏优化：16px 输入避免 iOS Safari 自动缩放 */
   .calc-field input { font-size: 16px; height: 44px; }
-  .calc-inline-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .calc-big-lot { font-size: 42px; }
 }
 
